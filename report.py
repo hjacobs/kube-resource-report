@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import click
 import collections
 import csv
 import logging
@@ -106,7 +107,6 @@ def query_cluster(cluster):
                 cluster_usage[k] += parse_resource(v)
             node['usage'] = usage
 
-
     response = request(cluster, '/api/v1/pods')
     response.raise_for_status()
     for pod in response.json()['items']:
@@ -153,26 +153,35 @@ def query_cluster(cluster):
 
     return cluster_summary
 
-cluster_summaries = {}
-discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
-for cluster in discoverer.get_clusters():
-    try:
-        logger.debug('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
-        summary = query_cluster(cluster)
-        cluster_summaries[cluster.id] = summary
-    except Exception as e:
-        print(e)
 
-for cluster_id, summary in sorted(cluster_summaries.items()):
-    worker_instance_type = set()
-    for node in summary['nodes'].values():
-        if node['role'] == 'worker':
-            worker_instance_type.add(node['instance_type'])
-    fields = [cluster_id, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type)]
-    for x in ['capacity', 'allocatable', 'requests', 'usage']:
-        fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024*1024))]
-    fields += [round(summary['cost'], 2)]
-    for f in fields:
-        print(f, '\t', end='')
-    print()
+@click.command()
+@click.option('--cluster-registry')
+def main(cluster_registry):
+    cluster_summaries = {}
+    if cluster_registry:
+        discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
+    else:
+        discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
+    for cluster in discoverer.get_clusters():
+        try:
+            logger.debug('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
+            summary = query_cluster(cluster)
+            cluster_summaries[cluster.id] = summary
+        except Exception as e:
+            print(e)
 
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        worker_instance_type = set()
+        for node in summary['nodes'].values():
+            if node['role'] == 'worker':
+                worker_instance_type.add(node['instance_type'])
+        fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type)]
+        for x in ['capacity', 'allocatable', 'requests', 'usage']:
+            fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024*1024))]
+        fields += [round(summary['cost'], 2)]
+        for f in fields:
+            print(f, '\t', end='')
+        print()
+
+if __name__ == '__main__':
+    main()
