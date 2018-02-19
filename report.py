@@ -149,7 +149,7 @@ def query_cluster(cluster):
         namespace, name = k
         requests = pod['requests']
         usage = pod.get('usage', collections.defaultdict(float))
-        print(namespace, '\t', name, '\t', requests['cpu'], '\t', requests['memory'], '\t', usage['cpu'], '\t', usage['memory'])
+        print(cluster.id, '\t', cluster.api_server_url, '\t', namespace, '\t', name, '\t', requests['cpu'], '\t', requests['memory'], '\t', usage['cpu'], '\t', usage['memory'])
 
     return cluster_summary
 
@@ -170,6 +170,9 @@ def main(cluster_registry):
         except Exception as e:
             print(e)
 
+    print('=' * 40)
+    print('Cluster Summaries')
+    print('=' * 40)
     for cluster_id, summary in sorted(cluster_summaries.items()):
         worker_instance_type = set()
         for node in summary['nodes'].values():
