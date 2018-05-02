@@ -1,0 +1,22 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+kubernetes = "*"
+requests = "*"
+click = "*"
+stups-tokens = "*"
+
+
+[dev-packages]
+
+
+
+[requires]
+
+python_version = "3.6"

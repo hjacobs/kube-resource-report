@@ -151,6 +151,15 @@ def query_cluster(cluster):
         usage = pod.get('usage', collections.defaultdict(float))
         print(cluster.id, '\t', cluster.api_server_url, '\t', namespace, '\t', name, '\t', requests['cpu'], '\t', requests['memory'], '\t', usage['cpu'], '\t', usage['memory'])
 
+    response = request(cluster, '/apis/extensions/v1beta1/ingresses')
+    response.raise_for_status()
+    for item in response.json()['items']:
+        namespace, name = item['metadata']['namespace'], item['metadata']['name']
+        for rule in item['spec']['rules']:
+            # print(cluster.id, '\t', cluster.api_server_url, '\t', namespace, '\t', name, '\t', rule['host'])
+            pass
+
+
     return cluster_summary
 
 

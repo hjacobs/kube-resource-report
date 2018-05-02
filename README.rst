@@ -8,6 +8,7 @@ Usage:
 
 .. code-block::
 
+    $ pipenv install && pipenv shell
     $ ./report.py  # uses clusters defined in ~/.kube/config
     $ OAUTH2_ACCESS_TOKENS=read-only=mytok ./report.py --cluster-registry=https://cluster-registry.example.org  # discover clusters via registry
 
