@@ -35,6 +35,7 @@ def parse_resource(v):
     factor = FACTORS.get(match.group(2), 1)
     return int(match.group(1)) * factor
 
+
 NODE_COSTS_MONTHLY = {}
 
 # CSVs downloaded from https://ec2instances.info/
@@ -67,6 +68,7 @@ def request(cluster, path, **kwargs):
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
 
 def query_cluster(cluster):
     pods = {}
@@ -145,11 +147,33 @@ def query_cluster(cluster):
                     usage[k] += parse_resource(v)
             pod['usage'] = usage
 
+    cpu_slack = collections.Counter()
+    memory_slack = collections.Counter()
+
     for k, pod in sorted(pods.items()):
         namespace, name = k
         requests = pod['requests']
         usage = pod.get('usage', collections.defaultdict(float))
+        cpu_slack[(namespace, name.rsplit('-', 1)[0])] += requests['cpu'] - usage['cpu']
+        memory_slack[(namespace, name.rsplit('-', 1)[0])] += requests['memory'] - usage['memory']
         print(cluster.id, '\t', cluster.api_server_url, '\t', namespace, '\t', name, '\t', requests['cpu'], '\t', requests['memory'], '\t', usage['cpu'], '\t', usage['memory'])
+
+    cost_per_cpu = cluster_cost / cluster_allocatable['cpu']
+    cost_per_memory = cluster_cost / cluster_allocatable['memory']
+
+    print('=' * 40)
+    print('CPU Slack')
+    print('=' * 40)
+    for namespace_name, slack in cpu_slack.most_common(20):
+        namespace, name = namespace_name
+        print(namespace.ljust(16), name.ljust(40), '{:3.2f}'.format(slack), '${:.2f} potential monthly savings'.format(slack * cost_per_cpu))
+
+    print('=' * 40)
+    print('Memory Slack')
+    print('=' * 40)
+    for namespace_name, slack in memory_slack.most_common(20):
+        namespace, name = namespace_name
+        print(namespace.ljust(16), name.ljust(40), '{:6.0f}Mi'.format(slack / (1024*1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory))
 
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
@@ -158,7 +182,6 @@ def query_cluster(cluster):
         for rule in item['spec']['rules']:
             # print(cluster.id, '\t', cluster.api_server_url, '\t', namespace, '\t', name, '\t', rule['host'])
             pass
-
 
     return cluster_summary
 
@@ -194,6 +217,7 @@ def main(cluster_registry):
         for f in fields:
             print(f, '\t', end='')
         print()
+
 
 if __name__ == '__main__':
     main()
