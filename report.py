@@ -51,7 +51,7 @@ for path in Path('.').glob('aws-ec2-costs-hourly-*.csv'):
                 monthly_cost = float(cost.split()[0].strip('$')) * 24 * 30
                 NODE_COSTS_MONTHLY[(region, row['API Name'])] = monthly_cost
             else:
-                raise Exception('Invalid')
+                raise Exception('Invalid price data: {}'.format(cost))
 
 
 session = requests.Session()
@@ -95,7 +95,9 @@ def query_cluster(cluster):
         node['role'] = role
         node['instance_type'] = instance_type
         node['cost'] = NODE_COSTS_MONTHLY.get((region, instance_type))
-        cluster_cost += node['cost']
+        if node['cost'] is None:
+            print('No cost information for {} in {}'.format(instance_type, region))
+        cluster_cost += node['cost'] or 0
 
     response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
     response.raise_for_status()
