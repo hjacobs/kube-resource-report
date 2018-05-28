@@ -96,7 +96,7 @@ def query_cluster(cluster):
         node['instance_type'] = instance_type
         node['cost'] = NODE_COSTS_MONTHLY.get((region, instance_type))
         if node['cost'] is None:
-            print('No cost information for {} in {}'.format(instance_type, region))
+            logger.warning('No cost information for {} in {}'.format(instance_type, region))
         cluster_cost += node['cost'] or 0
 
     response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
@@ -134,7 +134,8 @@ def query_cluster(cluster):
         'allocatable': cluster_allocatable,
         'requests': cluster_requests,
         'usage': cluster_usage,
-        'cost': cluster_cost
+        'cost': cluster_cost,
+        'ingresses': []
     }
 
     response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods')
@@ -158,39 +159,21 @@ def query_cluster(cluster):
         usage = pod.get('usage', collections.defaultdict(float))
         cpu_slack[(namespace, name.rsplit('-', 1)[0])] += requests['cpu'] - usage['cpu']
         memory_slack[(namespace, name.rsplit('-', 1)[0])] += requests['memory'] - usage['memory']
-        print(cluster.id, '\t', cluster.api_server_url, '\t', namespace, '\t', name, '\t', requests['cpu'], '\t', requests['memory'], '\t', usage['cpu'], '\t', usage['memory'])
-
-    cost_per_cpu = cluster_cost / cluster_allocatable['cpu']
-    cost_per_memory = cluster_cost / cluster_allocatable['memory']
-
-    print('=' * 40)
-    print('CPU Slack')
-    print('=' * 40)
-    for namespace_name, slack in cpu_slack.most_common(20):
-        namespace, name = namespace_name
-        print(namespace.ljust(16), name.ljust(40), '{:3.2f}'.format(slack), '${:.2f} potential monthly savings'.format(slack * cost_per_cpu))
-
-    print('=' * 40)
-    print('Memory Slack')
-    print('=' * 40)
-    for namespace_name, slack in memory_slack.most_common(20):
-        namespace, name = namespace_name
-        print(namespace.ljust(16), name.ljust(40), '{:6.0f}Mi'.format(slack / (1024*1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory))
 
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
     for item in response.json()['items']:
         namespace, name = item['metadata']['namespace'], item['metadata']['name']
         for rule in item['spec']['rules']:
-            # print(cluster.id, '\t', cluster.api_server_url, '\t', namespace, '\t', name, '\t', rule['host'])
-            pass
+            cluster_summary['ingresses'].append([namespace, name, rule['host']])
 
     return cluster_summary
 
 
 @click.command()
 @click.option('--cluster-registry')
-def main(cluster_registry):
+@click.argument('output_dir', type=click.Path(exists=True))
+def main(cluster_registry, output_dir):
     cluster_summaries = {}
     if cluster_registry:
         discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
@@ -198,27 +181,58 @@ def main(cluster_registry):
         discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
     for cluster in discoverer.get_clusters():
         try:
-            logger.debug('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
+            logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
             summary = query_cluster(cluster)
             cluster_summaries[cluster.id] = summary
         except Exception as e:
-            print(e)
+            logger.exception(e)
 
-    print('=' * 40)
-    print('Cluster Summaries')
-    print('=' * 40)
-    for cluster_id, summary in sorted(cluster_summaries.items()):
-        worker_instance_type = set()
-        for node in summary['nodes'].values():
-            if node['role'] == 'worker':
-                worker_instance_type.add(node['instance_type'])
-        fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type)]
-        for x in ['capacity', 'allocatable', 'requests', 'usage']:
-            fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024*1024))]
-        fields += [round(summary['cost'], 2)]
-        for f in fields:
-            print(f, '\t', end='')
-        print()
+    output_path = Path(output_dir)
+
+    logger.info('Writing clusters.tsv..')
+    with (output_path / 'clusters.tsv').open('w') as csvfile:
+        writer = csv.writer(csvfile, delimiter='\t')
+        for cluster_id, summary in sorted(cluster_summaries.items()):
+            worker_instance_type = set()
+            for node in summary['nodes'].values():
+                if node['role'] == 'worker':
+                    worker_instance_type.add(node['instance_type'])
+            fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type)]
+            for x in ['capacity', 'allocatable', 'requests', 'usage']:
+                fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024*1024))]
+            fields += [round(summary['cost'], 2)]
+            writer.writerow(fields)
+
+    logger.info('Writing ingresses.tsv..')
+    with (output_path / 'ingresses.tsv').open('w') as csvfile:
+        writer = csv.writer(csvfile, delimiter='\t')
+        for cluster_id, summary in sorted(cluster_summaries.items()):
+            for ingress in summary['ingresses']:
+                writer.writerow([cluster_id, summary['cluster'].api_server_url] + ingress)
+
+    logger.info('Writing pods.tsv..')
+    with (output_path / 'pods.tsv').open('w') as csvfile:
+        writer = csv.writer(csvfile, delimiter='\t')
+        with (output_path / 'slack.tsv').open('w') as csvfile2:
+            slackwriter = csv.writer(csvfile2, delimiter='\t')
+            for cluster_id, summary in sorted(cluster_summaries.items()):
+                cpu_slack = collections.Counter()
+                memory_slack = collections.Counter()
+                for k, pod in summary['pods'].items():
+                    namespace, name = k
+                    requests = pod['requests']
+                    usage = pod.get('usage', collections.defaultdict(float))
+                    cpu_slack[(namespace, name.rsplit('-', 1)[0])] += requests['cpu'] - usage['cpu']
+                    memory_slack[(namespace, name.rsplit('-', 1)[0])] += requests['memory'] - usage['memory']
+                    writer.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, requests['cpu'], requests['memory'], usage['cpu'], usage['memory']])
+                cost_per_cpu = summary['cost'] / summary['allocatable']['cpu']
+                cost_per_memory = summary['cost'] / summary['allocatable']['memory']
+                for namespace_name, slack in cpu_slack.most_common(20):
+                    namespace, name = namespace_name
+                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'cpu', '{:3.2f}'.format(slack), '${:.2f} potential monthly savings'.format(slack * cost_per_cpu)])
+                for namespace_name, slack in memory_slack.most_common(20):
+                    namespace, name = namespace_name
+                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'memory', '{:6.0f}Mi'.format(slack / (1024*1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory)])
 
 
 if __name__ == '__main__':
