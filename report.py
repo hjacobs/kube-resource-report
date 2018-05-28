@@ -92,6 +92,7 @@ def query_cluster(cluster):
         node_count[role] += 1
         region = node['metadata']['labels']['failure-domain.beta.kubernetes.io/region']
         instance_type = node['metadata']['labels']['beta.kubernetes.io/instance-type']
+        node['kubelet_version'] = node['status'].get('nodeInfo', {}).get('kubeletVersion', '')
         node['role'] = role
         node['instance_type'] = instance_type
         node['cost'] = NODE_COSTS_MONTHLY.get((region, instance_type))
@@ -194,10 +195,12 @@ def main(cluster_registry, output_dir):
         writer = csv.writer(csvfile, delimiter='\t')
         for cluster_id, summary in sorted(cluster_summaries.items()):
             worker_instance_type = set()
+            kubelet_version = set()
             for node in summary['nodes'].values():
                 if node['role'] == 'worker':
                     worker_instance_type.add(node['instance_type'])
-            fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type)]
+                kubelet_version.add(node['kubelet_version'])
+            fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type), ','.join(kubelet_version)]
             for x in ['capacity', 'allocatable', 'requests', 'usage']:
                 fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024*1024))]
             fields += [round(summary['cost'], 2)]
