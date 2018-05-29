@@ -19,4 +19,8 @@ The output will be multiple tab-separated files:
     List of cluster summaries with number of nodes and overall costs.
 ``output/slack.tsv``
     List of potential savings (CPU/memory slack).
+``output/ingresses.tsv``
+    List of ingress host rules (informational).
+``output/pods.tsv``
+    List of all pods and their CPU/memory requests and usages.
 
