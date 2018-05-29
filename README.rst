@@ -4,7 +4,7 @@ Kubernetes Resources
 
 Script to generate a report of CPU/memory requests vs. usage (collected via Heapster).
 
-Usage:
+Usage (requires `Pipenv <https://docs.pipenv.org/>`_):
 
 .. code-block::
 
