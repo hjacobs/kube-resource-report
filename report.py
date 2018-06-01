@@ -118,12 +118,14 @@ def query_cluster(cluster):
         if pod['status'].get('phase') in ('Succeeded', 'Failed'):
             # ignore completed pods
             continue
+        labels = pod['metadata'].get('labels', {})
+        application = labels.get('application', labels.get('app', ''))
         requests = collections.defaultdict(float)
         for container in pod['spec']['containers']:
             for k, v in container['resources'].get('requests', {}).items():
                 requests[k] += parse_resource(v)
                 cluster_requests[k] += parse_resource(v)
-        pods[(pod['metadata']['namespace'], pod['metadata']['name'])] = {'requests': requests}
+        pods[(pod['metadata']['namespace'], pod['metadata']['name'])] = {'requests': requests, 'application': application}
 
     cluster_summary = {
         'cluster': cluster,
@@ -224,10 +226,11 @@ def main(cluster_registry, output_dir):
                 for k, pod in summary['pods'].items():
                     namespace, name = k
                     requests = pod['requests']
+                    application = pod['application'] or name.rsplit('-', 1)[0]
                     usage = pod.get('usage', collections.defaultdict(float))
-                    cpu_slack[(namespace, name.rsplit('-', 1)[0])] += requests['cpu'] - usage['cpu']
-                    memory_slack[(namespace, name.rsplit('-', 1)[0])] += requests['memory'] - usage['memory']
-                    writer.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, requests['cpu'], requests['memory'], usage['cpu'], usage['memory']])
+                    cpu_slack[(namespace, application)] += requests['cpu'] - usage['cpu']
+                    memory_slack[(namespace, application)] += requests['memory'] - usage['memory']
+                    writer.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, pod['application'], requests['cpu'], requests['memory'], usage['cpu'], usage['memory']])
                 cost_per_cpu = summary['cost'] / summary['allocatable']['cpu']
                 cost_per_memory = summary['cost'] / summary['allocatable']['memory']
                 for namespace_name, slack in cpu_slack.most_common(20):
