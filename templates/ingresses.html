@@ -8,6 +8,7 @@
                   <th>Cluster ID</th>
                   <th>Namespace</th>
                   <th>Name</th>
+                  <th>Application</th>
                   <th>Host</th>
                   <th>Status</th>
               </tr>
@@ -20,17 +21,18 @@
             <td>{{ ingress[0] }}</td>
             <td>{{ ingress[1] }}</td>
             <td>{{ ingress[2] }}</td>
+            <td>{{ ingress[3] }}</td>
             <td><span class="tag
-                    {% if ingress[3] >= 500 %}
+                    {% if ingress[4] >= 500 %}
                        is-danger
-                    {% elif ingress[3] >= 400 %}
+                    {% elif ingress[4] >= 400 %}
                        is-info
-                    {% elif ingress[3] >= 200 %}
+                    {% elif ingress[4] >= 200 %}
                        is-success
                     {% else: %}
                        is-info
                     {% endif %}
-            ">{{ ingress[3] }}</span></td>
+            ">{{ ingress[4] }}</span></td>
           </tr>
           {%endfor %}
           {%endfor %}

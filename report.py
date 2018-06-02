@@ -14,6 +14,7 @@ import shutil
 from urllib.parse import urljoin
 from pathlib import Path
 
+import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 
@@ -65,7 +66,6 @@ for path in Path('.').glob('aws-ec2-costs-hourly-*.csv'):
 
 
 session = requests.Session()
-futures_session = FuturesSession(executor=ThreadPoolExecutor(max_workers=16))
 
 
 def request(cluster, path, **kwargs):
@@ -81,7 +81,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def query_cluster(cluster):
+def query_cluster(cluster, executor):
+    logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
     pods = {}
     nodes = {}
 
@@ -186,21 +187,25 @@ def query_cluster(cluster):
 
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
-    futures = []
+    futures = {}
+    futures_session = FuturesSession(executor=executor)
     for item in response.json()['items']:
         namespace, name = item['metadata']['namespace'], item['metadata']['name']
+        labels = item['metadata'].get('labels', {})
+        application = labels.get('application', labels.get('app', ''))
         for rule in item['spec']['rules']:
-            l = [namespace, name, rule['host'], 0]
-            futures.append((futures_session.get('https://{}/'.format(rule['host']), timeout=5), l))
+            l = [namespace, name, application, rule['host'], 0]
+            futures[futures_session.get('https://{}/'.format(rule['host']), timeout=5)] = l
             cluster_summary['ingresses'].append(l)
 
-    logger.info('Waiting..')
-    for future, l in futures:
+    logger.info('Waiting for ingress status..')
+    for future in concurrent.futures.as_completed(futures):
+        l = futures[future]
         try:
             status = future.result().status_code
         except:
             status = 999
-        l[3] = status
+        l[4] = status
 
     return cluster_summary
 
@@ -226,13 +231,19 @@ def main(cluster_registry, use_cache, output_dir):
             discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
         else:
             discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
-        for cluster in discoverer.get_clusters():
-            try:
-                logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
-                summary = query_cluster(cluster)
-                cluster_summaries[cluster.id] = summary
-            except Exception as e:
-                logger.exception(e)
+
+        with ThreadPoolExecutor(max_workers=16) as executor:
+            future_to_cluster = {}
+            for cluster in discoverer.get_clusters():
+                future_to_cluster[executor.submit(query_cluster, cluster, executor)] = cluster
+
+            for future in concurrent.futures.as_completed(future_to_cluster):
+                cluster = future_to_cluster[future]
+                try:
+                    summary = future.result()
+                    cluster_summaries[cluster.id] = summary
+                except Exception as e:
+                    logger.exception(e)
 
     with pickle_path.open('wb') as fd:
         pickle.dump(cluster_summaries, fd)
