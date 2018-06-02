@@ -5,7 +5,6 @@ import collections
 import csv
 import pickle
 import datetime
-import json
 import logging
 import os
 import re
@@ -123,6 +122,9 @@ def query_cluster(cluster):
     except Exception as e:
         logger.exception('Failed to query Heapster metrics')
 
+    cost_per_cpu = cluster_cost / cluster_allocatable['cpu']
+    cost_per_memory = cluster_cost / cluster_allocatable['memory']
+
     response = request(cluster, '/api/v1/pods')
     response.raise_for_status()
     for pod in response.json()['items']:
@@ -136,7 +138,7 @@ def query_cluster(cluster):
             for k, v in container['resources'].get('requests', {}).items():
                 requests[k] += parse_resource(v)
                 cluster_requests[k] += parse_resource(v)
-        cost = (requests['cpu'] * requests['memory'] / (cluster_allocatable['cpu'] * cluster_allocatable['memory'])) * cluster_cost
+        cost = max(requests['cpu'] * cost_per_cpu, requests['memory'] * cost_per_memory)
         pods[(pod['metadata']['namespace'], pod['metadata']['name'])] = {'requests': requests, 'application': application, 'cost': cost}
 
     cluster_summary = {
@@ -190,15 +192,16 @@ def query_cluster(cluster):
 
 @click.command()
 @click.option('--cluster-registry')
+@click.option('--use-cache', is_flag=True)
 @click.argument('output_dir', type=click.Path(exists=True))
-def main(cluster_registry, output_dir):
+def main(cluster_registry, use_cache, output_dir):
     cluster_summaries = {}
 
     output_path = Path(output_dir)
 
     pickle_path = output_path / 'dump.pickle'
 
-    if pickle_path.exists():
+    if use_cache and pickle_path.exists():
         with pickle_path.open('rb') as fd:
             cluster_summaries = pickle.load(fd)
 
@@ -216,21 +219,28 @@ def main(cluster_registry, output_dir):
             except Exception as e:
                 logger.exception(e)
 
-
     with pickle_path.open('wb') as fd:
         pickle.dump(cluster_summaries, fd)
 
     applications = {}
+    total_allocatable = collections.defaultdict(int)
+    total_requests = collections.defaultdict(int)
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
+        for r in 'cpu', 'memory':
+            total_allocatable[r] += summary['allocatable'][r]
+            total_requests[r] += summary['requests'][r]
+
+        cost_per_cpu = summary['cost'] / summary['allocatable']['cpu']
+        cost_per_memory = summary['cost'] / summary['allocatable']['memory']
         for k, pod in summary['pods'].items():
             app = applications.get(pod['application'], {'cost': 0, 'requests': {}, 'usage': {}})
             for r in 'cpu', 'memory':
                 app['requests'][r] = app['requests'].get(r, 0) + pod['requests'][r]
                 app['usage'][r] = app['usage'].get(r, 0) + pod.get('usage', {}).get(r, 0)
             app['cost'] += pod['cost']
+            app['slack_cost'] = max((app['requests']['cpu'] - app['usage']['cpu']) * cost_per_cpu, (app['requests']['memory'] - app['usage']['memory']) * cost_per_memory)
             applications[pod['application']] = app
-
 
     logger.info('Writing clusters.tsv..')
     with (output_path / 'clusters.tsv').open('w') as csvfile:
@@ -289,8 +299,11 @@ def main(cluster_registry, output_dir):
         'cluster_summaries': cluster_summaries,
         'applications': applications,
         'total_worker_nodes': sum([s['worker_nodes'] for s in cluster_summaries.values()]),
+        'total_allocatable': total_allocatable,
+        'total_requests': total_requests,
         'total_pods': sum([len(s['pods']) for s in cluster_summaries.values()]),
         'total_cost': sum([s['cost'] for s in cluster_summaries.values()]),
+        'total_slack_cost': sum([a['slack_cost'] for a in applications.values()]),
         'now': datetime.datetime.utcnow(),
         'version': VERSION
     }
@@ -304,7 +317,6 @@ def main(cluster_registry, output_dir):
     for path in templates_path.iterdir():
         if path.match('*.js') or path.match('*.css'):
             shutil.copy(str(path), str(output_path / path.name))
-
 
 
 if __name__ == '__main__':

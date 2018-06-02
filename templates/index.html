@@ -17,6 +17,12 @@
   </div>
   <div class="level-item has-text-centered">
     <div>
+      <p class="heading">Applications</p>
+      <p class="title">{{ applications|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
       <p class="heading">Pods</p>
       <p class="title">{{ total_pods }}</p>
     </div>
@@ -27,6 +33,40 @@
       <p class="title">{{ total_cost|round(2) }}</p>
     </div>
   </div>
+</nav>
+
+<div class="notification is-warning">
+    You can potentially save <strong>{{ total_slack_cost|round(2) }} USD</strong> every month by optimizing resource requests and reducing slack.
+</div>
+
+<h2 class="title">CPU</h2>
+<progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}" ></progress>
+<nav class="level">
+    <div class="level-left">
+        <div class="level-item">
+            {{ total_requests['cpu']|round(2) }} requested
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+           {{ total_allocatable['cpu']|round(2) }} allocatable
+        </div>
+    </div>
+</nav>
+
+<h2 class="title">Memory</h2>
+<progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}" ></progress>
+<nav class="level">
+    <div class="level-left">
+        <div class="level-item">
+            {{ total_requests['memory']|filesizeformat(True) }} requested
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+           {{ total_allocatable['memory']|filesizeformat(True) }} allocatable
+        </div>
+    </div>
 </nav>
 
 {% endblock %}

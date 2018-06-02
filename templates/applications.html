@@ -10,6 +10,7 @@
                   <th>CPU Usage</th>
                   <th>Memory Usage</th>
                   <th>Cost</th>
+                  <th>Slack Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -21,6 +22,7 @@
             <td>{{ (app.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
             <td data-value="{{ (app.usage|default({'memory': 0})).memory }}">{{ (app.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
             <td>{{ app.cost|round(2) }}</td>
+            <td>{{ app.slack_cost|round(2) }}</td>
 
           </tr>
 
