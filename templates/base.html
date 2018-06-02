@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %} - Kubernetes Resource Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script src="sortable.min.js"></script>
+    <link rel="stylesheet" href="sortable-theme-minimal.css" />
+  </head>
+  <body>
+
+  <section class="section">
+    <div class="container">
+    <div class="tabs is-boxed">
+        <ul>
+            <li class="{{ 'is-active' if page == 'clusters' }}"><a href="clusters.html">Clusters</a></li>
+            <li class="{{ 'is-active' if page == 'ingresses' }}"><a href="ingresses.html">Ingresses</a></li>
+            <li class="{{ 'is-active' if page == 'apps' }}"><a href="applications.html">Applications</a></li>
+            <li class="{{ 'is-active' if page == 'pods' }}"><a href="pods.html">Pods</a></li>
+        </ul>
+        </div>
+        {% block content %}{% endblock %}
+    </div>
+  </section>
+  <footer class="footer">
+      <div class="container">
+          <div class="content has-text-centered">
+              <p><a href="https://github.com/hjacobs/kube-resources">Kubernetes Resource Report</a> {{ version }}</p>
+              <p>Page generated {{ now.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+          </div>
+      </div>
+  </footer>
+  </body>
+</html>

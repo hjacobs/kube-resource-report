@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Clusters{% endblock %}
+{% block content %}
+
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Cluster ID</th>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Application</th>
+                  <th>CPU Requests</th>
+                  <th>Memory Requests</th>
+                  <th>CPU Usage</th>
+                  <th>Memory Usage</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for cluster_id, summary in cluster_summaries.items(): %}
+          {% for namespace_name, pod in summary.pods.items(): %}
+          <tr>
+            <td>{{ cluster_id }}</td>
+            <td>{{ namespace_name[0] }}</td>
+            <td>{{ namespace_name[1] }}</td>
+            <td>{{ pod.application }}</td>
+            <td>{{ pod.requests.cpu|round(3) }}</td>
+            <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
+            <td>{{ (pod.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
+            <td data-value="{{ (pod.usage|default({'memory': 0})).memory }}">{{ (pod.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
+          </tr>
+          {%endfor %}
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}

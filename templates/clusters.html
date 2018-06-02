@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Clusters{% endblock %}
+{% block content %}
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th>API URL</th>
+                  <th>Master Nodes</th>
+                  <th>Worker Nodes</th>
+                  <th>CPU Capacity</th>
+                  <th>Memory Capacity</th>
+                  <th>CPU Alloc.</th>
+                  <th>Memory Alloc</th>
+                  <th>CPU Requests</th>
+                  <th>Memory Requests</th>
+                  <th>CPU Used</th>
+                  <th>Memory Used</th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for cluster_id, summary in cluster_summaries.items(): %}
+          <tr>
+            <td>{{ cluster_id }}</td>
+            <td>{{ summary.cluster.api_server_url }}</td>
+            <td>{{ summary.master_nodes }}</td>
+            <td>{{ summary.worker_nodes }}</td>
+            <td>{{ summary.capacity.cpu|round(1) }}</td>
+            <td>{{ summary.capacity.memory|filesizeformat(True) }}</td>
+            <td>{{ summary.allocatable.cpu|round(1) }}</td>
+            <td data-value="{{ summary.allocatable.memory }}">{{ summary.allocatable.memory|filesizeformat(True) }}</td>
+            <td>{{ summary.requests.cpu|round(1) }}</td>
+            <td data-value="{{ summary.requests.memory }}">{{ summary.requests.memory|filesizeformat(True) }}</td>
+            <td>{{ summary.usage.cpu|round(1) }}</td>
+            <td data-value="{{ summary.usage.memory }}">{{ summary.usage.memory|filesizeformat(True) }}</td>
+            <td>{{ summary.cost|round(2) }}</td>
+
+          </tr>
+
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}

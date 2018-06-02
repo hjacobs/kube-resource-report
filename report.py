@@ -3,6 +3,7 @@
 import click
 import collections
 import csv
+import datetime
 import logging
 import os
 import re
@@ -13,6 +14,8 @@ from urllib.parse import urljoin
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+VERSION = 'v0.1'
 
 FACTORS = {
     'm': 1 / 1000,
@@ -248,8 +251,10 @@ def main(cluster_registry, output_dir):
         loader=FileSystemLoader(str(templates_path)),
         autoescape=select_autoescape(['html', 'xml'])
     )
-    template = env.get_template('index.html')
-    template.stream(cluster_summaries=cluster_summaries).dump(str(output_path / 'index.html'))
+    for page in ['clusters', 'ingresses', 'applications', 'pods']:
+        file_name = '{}.html'.format(page)
+        template = env.get_template(file_name)
+        template.stream(page=page, cluster_summaries=cluster_summaries, now=datetime.datetime.utcnow(), version=VERSION).dump(str(output_path / file_name))
 
     for path in templates_path.iterdir():
         if path.match('*.js') or path.match('*.css'):

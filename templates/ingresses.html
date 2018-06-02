@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Clusters{% endblock %}
+{% block content %}
+
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Cluster ID</th>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Host</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for cluster_id, summary in cluster_summaries.items(): %}
+          {% for ingress in summary.ingresses: %}
+          <tr>
+            <td>{{ cluster_id }}</td>
+            <td>{{ ingress[0] }}</td>
+            <td>{{ ingress[1] }}</td>
+            <td>{{ ingress[2] }}</td>
+          </tr>
+          {%endfor %}
+          {%endfor %}
+          </tbody>
+
+        </table>
+
+{% endblock %}
