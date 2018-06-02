@@ -8,8 +8,11 @@ import os
 import re
 import requests
 import cluster_discovery
+import shutil
 from urllib.parse import urljoin
 from pathlib import Path
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 FACTORS = {
     'm': 1 / 1000,
@@ -239,6 +242,19 @@ def main(cluster_registry, output_dir):
                 for namespace_name, slack in memory_slack.most_common(20):
                     namespace, name = namespace_name
                     slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'memory', '{:6.0f}Mi'.format(slack / (1024*1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory)])
+
+    templates_path = Path(__file__).parent / 'templates'
+    env = Environment(
+        loader=FileSystemLoader(str(templates_path)),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+    template = env.get_template('index.html')
+    template.stream(cluster_summaries=cluster_summaries).dump(str(output_path / 'index.html'))
+
+    for path in templates_path.iterdir():
+        if path.match('*.js') or path.match('*.css'):
+            shutil.copy(str(path), str(output_path / path.name))
+
 
 
 if __name__ == '__main__':

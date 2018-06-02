@@ -1,23 +1,17 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 kubernetes = "*"
 requests = "*"
 click = "*"
 stups-tokens = "*"
-
+"jinja2" = "*"
 
 [dev-packages]
 flake8 = "*"
 
-
-
 [requires]
-
 python_version = "3.6"
