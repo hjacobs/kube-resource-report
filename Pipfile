@@ -9,6 +9,7 @@ requests = "*"
 click = "*"
 stups-tokens = "*"
 "jinja2" = "*"
+requests-futures = "*"
 
 [dev-packages]
 flake8 = "*"

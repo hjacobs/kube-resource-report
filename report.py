@@ -14,6 +14,9 @@ import shutil
 from urllib.parse import urljoin
 from pathlib import Path
 
+from concurrent.futures import ThreadPoolExecutor
+from requests_futures.sessions import FuturesSession
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 VERSION = 'v0.1'
@@ -62,6 +65,7 @@ for path in Path('.').glob('aws-ec2-costs-hourly-*.csv'):
 
 
 session = requests.Session()
+futures_session = FuturesSession(executor=ThreadPoolExecutor(max_workers=16))
 
 
 def request(cluster, path, **kwargs):
@@ -182,10 +186,21 @@ def query_cluster(cluster):
 
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
+    futures = []
     for item in response.json()['items']:
         namespace, name = item['metadata']['namespace'], item['metadata']['name']
         for rule in item['spec']['rules']:
-            cluster_summary['ingresses'].append([namespace, name, rule['host']])
+            l = [namespace, name, rule['host'], 0]
+            futures.append((futures_session.get('https://{}/'.format(rule['host']), timeout=5), l))
+            cluster_summary['ingresses'].append(l)
+
+    logger.info('Waiting..')
+    for future, l in futures:
+        try:
+            status = future.result().status_code
+        except:
+            status = 999
+        l[3] = status
 
     return cluster_summary
 
