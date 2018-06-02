@@ -212,9 +212,10 @@ def query_cluster(cluster, executor):
 
 @click.command()
 @click.option('--cluster-registry')
+@click.option('--application-registry')
 @click.option('--use-cache', is_flag=True)
 @click.argument('output_dir', type=click.Path(exists=True))
-def main(cluster_registry, use_cache, output_dir):
+def main(cluster_registry, application_registry, use_cache, output_dir):
     cluster_summaries = {}
 
     output_path = Path(output_dir)
@@ -264,9 +265,28 @@ def main(cluster_registry, use_cache, output_dir):
             for r in 'cpu', 'memory':
                 app['requests'][r] = app['requests'].get(r, 0) + pod['requests'][r]
                 app['usage'][r] = app['usage'].get(r, 0) + pod.get('usage', {}).get(r, 0)
+            app['team'] = ''
             app['cost'] += pod['cost']
             app['slack_cost'] = max((app['requests']['cpu'] - app['usage']['cpu']) * cost_per_cpu, (app['requests']['memory'] - app['usage']['memory']) * cost_per_memory)
             applications[pod['application']] = app
+
+    if application_registry:
+        with ThreadPoolExecutor(max_workers=16) as executor:
+            futures_session = FuturesSession(executor=executor)
+            futures_session.auth = cluster_discovery.OAuthTokenAuth('read-only')
+
+            future_to_app = {}
+            for app_id, app in applications.items():
+                future_to_app[futures_session.get(application_registry + '/apps/' + app_id, timeout=5)] = app
+
+            for future in concurrent.futures.as_completed(future_to_app):
+                app = future_to_app[future]
+                try:
+                    response = future.result()
+                    response.raise_for_status()
+                    app['team'] = response.json()['team_id']
+                except Exception as e:
+                    logger.exception(e)
 
     logger.info('Writing clusters.tsv..')
     with (output_path / 'clusters.tsv').open('w') as csvfile:

@@ -5,6 +5,7 @@
           <thead>
               <tr>
                   <th>ID</th>
+                  <th>Team</th>
                   <th>CPU Requests</th>
                   <th>Memory Requests</th>
                   <th>CPU Usage</th>
@@ -17,6 +18,7 @@
           {% for application_id, app in applications.items(): %}
           <tr>
             <td>{{ application_id }}</td>
+            <td>{{ app.team }}</td>
             <td>{{ app.requests.cpu|round(3) }}</td>
             <td data-value="{{ app.requests.memory }}">{{ app.requests.memory|filesizeformat(True) }}</td>
             <td>{{ (app.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
