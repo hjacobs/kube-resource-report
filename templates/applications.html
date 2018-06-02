@@ -1,4 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Clusters{% endblock %}
+{% block title %}Applications{% endblock %}
 {% block content %}
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th>CPU Requests</th>
+                  <th>Memory Requests</th>
+                  <th>CPU Usage</th>
+                  <th>Memory Usage</th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for application_id, app in applications.items(): %}
+          <tr>
+            <td>{{ application_id }}</td>
+            <td>{{ app.requests.cpu|round(3) }}</td>
+            <td data-value="{{ app.requests.memory }}">{{ app.requests.memory|filesizeformat(True) }}</td>
+            <td>{{ (app.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
+            <td data-value="{{ (app.usage|default({'memory': 0})).memory }}">{{ (app.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
+            <td>{{ app.cost|round(2) }}</td>
+
+          </tr>
+
+          {%endfor %}
+          </tbody>
+
+        </table>
 {% endblock %}

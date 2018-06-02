@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Clusters{% endblock %}
+{% block title %}Pods{% endblock %}
 {% block content %}
 
       <table class="table is-striped" data-sortable>
@@ -13,6 +13,7 @@
                   <th>Memory Requests</th>
                   <th>CPU Usage</th>
                   <th>Memory Usage</th>
+                  <th>Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -27,6 +28,7 @@
             <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
             <td>{{ (pod.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
             <td data-value="{{ (pod.usage|default({'memory': 0})).memory }}">{{ (pod.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
+            <td>{{ pod.cost|round(2)}}</td>
           </tr>
           {%endfor %}
           {%endfor %}

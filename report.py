@@ -3,7 +3,9 @@
 import click
 import collections
 import csv
+import pickle
 import datetime
+import json
 import logging
 import os
 import re
@@ -94,10 +96,10 @@ def query_cluster(cluster):
             cluster_capacity[k] += parse_resource(v)
         for k, v in node['status'].get('allocatable', {}).items():
             cluster_allocatable[k] += parse_resource(v)
-        role = node['metadata']['labels'].get('kubernetes.io/role')
+        role = node['metadata']['labels'].get('kubernetes.io/role') or 'worker'
         node_count[role] += 1
-        region = node['metadata']['labels']['failure-domain.beta.kubernetes.io/region']
-        instance_type = node['metadata']['labels']['beta.kubernetes.io/instance-type']
+        region = node['metadata']['labels'].get('failure-domain.beta.kubernetes.io/region', 'unknown')
+        instance_type = node['metadata']['labels'].get('beta.kubernetes.io/instance-type', 'unknown')
         node['kubelet_version'] = node['status'].get('nodeInfo', {}).get('kubeletVersion', '')
         node['role'] = role
         node['instance_type'] = instance_type
@@ -106,17 +108,20 @@ def query_cluster(cluster):
             logger.warning('No cost information for {} in {}'.format(instance_type, region))
         cluster_cost += node['cost'] or 0
 
-    response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
-    response.raise_for_status()
-    for item in response.json()['items']:
-        key = item['metadata']['name']
-        node = nodes.get(key)
-        if node:
-            usage = collections.defaultdict(float)
-            for k, v in item.get('usage', {}).items():
-                usage[k] += parse_resource(v)
-                cluster_usage[k] += parse_resource(v)
-            node['usage'] = usage
+    try:
+        response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
+        response.raise_for_status()
+        for item in response.json()['items']:
+            key = item['metadata']['name']
+            node = nodes.get(key)
+            if node:
+                usage = collections.defaultdict(float)
+                for k, v in item.get('usage', {}).items():
+                    usage[k] += parse_resource(v)
+                    cluster_usage[k] += parse_resource(v)
+                node['usage'] = usage
+    except Exception as e:
+        logger.exception('Failed to query Heapster metrics')
 
     response = request(cluster, '/api/v1/pods')
     response.raise_for_status()
@@ -131,7 +136,8 @@ def query_cluster(cluster):
             for k, v in container['resources'].get('requests', {}).items():
                 requests[k] += parse_resource(v)
                 cluster_requests[k] += parse_resource(v)
-        pods[(pod['metadata']['namespace'], pod['metadata']['name'])] = {'requests': requests, 'application': application}
+        cost = (requests['cpu'] * requests['memory'] / (cluster_allocatable['cpu'] * cluster_allocatable['memory'])) * cluster_cost
+        pods[(pod['metadata']['namespace'], pod['metadata']['name'])] = {'requests': requests, 'application': application, 'cost': cost}
 
     cluster_summary = {
         'cluster': cluster,
@@ -147,17 +153,20 @@ def query_cluster(cluster):
         'ingresses': []
     }
 
-    response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods')
-    response.raise_for_status()
-    for item in response.json()['items']:
-        key = (item['metadata']['namespace'], item['metadata']['name'])
-        pod = pods.get(key)
-        if pod:
-            usage = collections.defaultdict(float)
-            for container in item['containers']:
-                for k, v in container.get('usage', {}).items():
-                    usage[k] += parse_resource(v)
-            pod['usage'] = usage
+    try:
+        response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods')
+        response.raise_for_status()
+        for item in response.json()['items']:
+            key = (item['metadata']['namespace'], item['metadata']['name'])
+            pod = pods.get(key)
+            if pod:
+                usage = collections.defaultdict(float)
+                for container in item['containers']:
+                    for k, v in container.get('usage', {}).items():
+                        usage[k] += parse_resource(v)
+                pod['usage'] = usage
+    except Exception as e:
+        logger.exception('Failed to query Heapster metrics')
 
     cpu_slack = collections.Counter()
     memory_slack = collections.Counter()
@@ -184,19 +193,44 @@ def query_cluster(cluster):
 @click.argument('output_dir', type=click.Path(exists=True))
 def main(cluster_registry, output_dir):
     cluster_summaries = {}
-    if cluster_registry:
-        discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
-    else:
-        discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
-    for cluster in discoverer.get_clusters():
-        try:
-            logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
-            summary = query_cluster(cluster)
-            cluster_summaries[cluster.id] = summary
-        except Exception as e:
-            logger.exception(e)
 
     output_path = Path(output_dir)
+
+    pickle_path = output_path / 'dump.pickle'
+
+    if pickle_path.exists():
+        with pickle_path.open('rb') as fd:
+            cluster_summaries = pickle.load(fd)
+
+    else:
+
+        if cluster_registry:
+            discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
+        else:
+            discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
+        for cluster in discoverer.get_clusters():
+            try:
+                logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
+                summary = query_cluster(cluster)
+                cluster_summaries[cluster.id] = summary
+            except Exception as e:
+                logger.exception(e)
+
+
+    with pickle_path.open('wb') as fd:
+        pickle.dump(cluster_summaries, fd)
+
+    applications = {}
+
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        for k, pod in summary['pods'].items():
+            app = applications.get(pod['application'], {'cost': 0, 'requests': {}, 'usage': {}})
+            for r in 'cpu', 'memory':
+                app['requests'][r] = app['requests'].get(r, 0) + pod['requests'][r]
+                app['usage'][r] = app['usage'].get(r, 0) + pod.get('usage', {}).get(r, 0)
+            app['cost'] += pod['cost']
+            applications[pod['application']] = app
+
 
     logger.info('Writing clusters.tsv..')
     with (output_path / 'clusters.tsv').open('w') as csvfile:
@@ -251,10 +285,21 @@ def main(cluster_registry, output_dir):
         loader=FileSystemLoader(str(templates_path)),
         autoescape=select_autoescape(['html', 'xml'])
     )
-    for page in ['clusters', 'ingresses', 'applications', 'pods']:
+    context = {
+        'cluster_summaries': cluster_summaries,
+        'applications': applications,
+        'total_worker_nodes': sum([s['worker_nodes'] for s in cluster_summaries.values()]),
+        'total_pods': sum([len(s['pods']) for s in cluster_summaries.values()]),
+        'total_cost': sum([s['cost'] for s in cluster_summaries.values()]),
+        'now': datetime.datetime.utcnow(),
+        'version': VERSION
+    }
+    for page in ['index', 'clusters', 'ingresses', 'applications', 'pods']:
         file_name = '{}.html'.format(page)
+        logger.info('Generating {}..'.format(file_name))
         template = env.get_template(file_name)
-        template.stream(page=page, cluster_summaries=cluster_summaries, now=datetime.datetime.utcnow(), version=VERSION).dump(str(output_path / file_name))
+        context['page'] = page
+        template.stream(**context).dump(str(output_path / file_name))
 
     for path in templates_path.iterdir():
         if path.match('*.js') or path.match('*.css'):

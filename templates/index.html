@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Clusters</p>
+      <p class="title">{{ cluster_summaries|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Worker Nodes</p>
+      <p class="title">{{ total_worker_nodes }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">{{ total_pods }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Cost</p>
+      <p class="title">{{ total_cost|round(2) }}</p>
+    </div>
+  </div>
+</nav>
+
+{% endblock %}
