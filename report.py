@@ -187,25 +187,27 @@ def query_cluster(cluster, executor):
 
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
-    futures = {}
-    futures_session = FuturesSession(executor=executor)
-    for item in response.json()['items']:
-        namespace, name = item['metadata']['namespace'], item['metadata']['name']
-        labels = item['metadata'].get('labels', {})
-        application = labels.get('application', labels.get('app', ''))
-        for rule in item['spec']['rules']:
-            l = [namespace, name, application, rule['host'], 0]
-            futures[futures_session.get('https://{}/'.format(rule['host']), timeout=5)] = l
-            cluster_summary['ingresses'].append(l)
 
-    logger.info('Waiting for ingress status..')
-    for future in concurrent.futures.as_completed(futures):
-        l = futures[future]
-        try:
-            status = future.result().status_code
-        except:
-            status = 999
-        l[4] = status
+    with ThreadPoolExecutor(max_workers=16) as executor:
+        futures = {}
+        futures_session = FuturesSession(executor=executor)
+        for item in response.json()['items']:
+            namespace, name = item['metadata']['namespace'], item['metadata']['name']
+            labels = item['metadata'].get('labels', {})
+            application = labels.get('application', labels.get('app', ''))
+            for rule in item['spec']['rules']:
+                l = [namespace, name, application, rule['host'], 0]
+                futures[futures_session.get('https://{}/'.format(rule['host']), timeout=5)] = l
+                cluster_summary['ingresses'].append(l)
+
+        logger.info('Waiting for ingress status..')
+        for future in concurrent.futures.as_completed(futures):
+            l = futures[future]
+            try:
+                status = future.result().status_code
+            except:
+                status = 999
+            l[4] = status
 
     return cluster_summary
 
@@ -233,7 +235,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         else:
             discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
 
-        with ThreadPoolExecutor(max_workers=16) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             future_to_cluster = {}
             for cluster in discoverer.get_clusters():
                 future_to_cluster[executor.submit(query_cluster, cluster, executor)] = cluster
