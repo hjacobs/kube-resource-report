@@ -34,7 +34,8 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes(serialized, "utf-8"))
 
 
-server_address = ("127.0.0.1", 8080)
-httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
-print("Listening on {}:{}..".format(*server_address))
-httpd.serve_forever()
+if __name__ == "__main__":
+    server_address = ("127.0.0.1", 8080)
+    httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
+    print("Listening on {}:{}..".format(*server_address))
+    httpd.serve_forever()
