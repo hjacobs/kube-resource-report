@@ -116,7 +116,8 @@ def query_cluster(cluster, executor):
         node['cost'] = NODE_COSTS_MONTHLY.get((region, instance_type))
         if node['cost'] is None:
             logger.warning('No cost information for {} in {}'.format(instance_type, region))
-        cluster_cost += node['cost'] or 0
+            node['cost'] = 0
+        cluster_cost += node['cost']
 
     try:
         response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
