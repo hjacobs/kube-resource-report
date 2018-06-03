@@ -3,13 +3,24 @@
 import click
 import collections
 import csv
+import pickle
+import datetime
 import logging
 import os
 import re
 import requests
 import cluster_discovery
+import shutil
 from urllib.parse import urljoin
 from pathlib import Path
+
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
+from requests_futures.sessions import FuturesSession
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+VERSION = 'v0.1'
 
 FACTORS = {
     'm': 1 / 1000,
@@ -70,7 +81,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def query_cluster(cluster):
+def query_cluster(cluster, executor):
+    logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
     pods = {}
     nodes = {}
 
@@ -84,33 +96,46 @@ def query_cluster(cluster):
     cluster_cost = 0
     for node in response.json()['items']:
         nodes[node['metadata']['name']] = node
+        node['capacity'] = {}
+        node['allocatable'] = {}
         for k, v in node['status'].get('capacity', {}).items():
-            cluster_capacity[k] += parse_resource(v)
+            parsed = parse_resource(v)
+            node['capacity'][k] = parsed
+            cluster_capacity[k] += parsed
         for k, v in node['status'].get('allocatable', {}).items():
-            cluster_allocatable[k] += parse_resource(v)
-        role = node['metadata']['labels'].get('kubernetes.io/role')
+            parsed = parse_resource(v)
+            node['allocatable'][k] = parsed
+            cluster_allocatable[k] += parsed
+        role = node['metadata']['labels'].get('kubernetes.io/role') or 'worker'
         node_count[role] += 1
-        region = node['metadata']['labels']['failure-domain.beta.kubernetes.io/region']
-        instance_type = node['metadata']['labels']['beta.kubernetes.io/instance-type']
+        region = node['metadata']['labels'].get('failure-domain.beta.kubernetes.io/region', 'unknown')
+        instance_type = node['metadata']['labels'].get('beta.kubernetes.io/instance-type', 'unknown')
         node['kubelet_version'] = node['status'].get('nodeInfo', {}).get('kubeletVersion', '')
         node['role'] = role
         node['instance_type'] = instance_type
         node['cost'] = NODE_COSTS_MONTHLY.get((region, instance_type))
         if node['cost'] is None:
             logger.warning('No cost information for {} in {}'.format(instance_type, region))
-        cluster_cost += node['cost'] or 0
+            node['cost'] = 0
+        cluster_cost += node['cost']
 
-    response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
-    response.raise_for_status()
-    for item in response.json()['items']:
-        key = item['metadata']['name']
-        node = nodes.get(key)
-        if node:
-            usage = collections.defaultdict(float)
-            for k, v in item.get('usage', {}).items():
-                usage[k] += parse_resource(v)
-                cluster_usage[k] += parse_resource(v)
-            node['usage'] = usage
+    try:
+        response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
+        response.raise_for_status()
+        for item in response.json()['items']:
+            key = item['metadata']['name']
+            node = nodes.get(key)
+            if node:
+                usage = collections.defaultdict(float)
+                for k, v in item.get('usage', {}).items():
+                    usage[k] += parse_resource(v)
+                    cluster_usage[k] += parse_resource(v)
+                node['usage'] = usage
+    except Exception as e:
+        logger.exception('Failed to query Heapster metrics')
+
+    cost_per_cpu = cluster_cost / cluster_allocatable['cpu']
+    cost_per_memory = cluster_cost / cluster_allocatable['memory']
 
     response = request(cluster, '/api/v1/pods')
     response.raise_for_status()
@@ -125,14 +150,18 @@ def query_cluster(cluster):
             for k, v in container['resources'].get('requests', {}).items():
                 requests[k] += parse_resource(v)
                 cluster_requests[k] += parse_resource(v)
-        pods[(pod['metadata']['namespace'], pod['metadata']['name'])] = {'requests': requests, 'application': application}
+        cost = max(requests['cpu'] * cost_per_cpu, requests['memory'] * cost_per_memory)
+        pods[(pod['metadata']['namespace'], pod['metadata']['name'])] = {'requests': requests, 'application': application, 'cost': cost}
 
     cluster_summary = {
         'cluster': cluster,
         'nodes': nodes,
         'pods': pods,
+        'user_pods': len([p for ns, p in pods if ns not in ('kube-system', 'visibility')]),
         'master_nodes': node_count['master'],
         'worker_nodes': node_count['worker'],
+        'kubelet_versions': set([n['kubelet_version'] for n in nodes.values() if n['role'] == 'worker']),
+        'worker_instance_types': set([n['instance_type'] for n in nodes.values() if n['role'] == 'worker']),
         'capacity': cluster_capacity,
         'allocatable': cluster_allocatable,
         'requests': cluster_requests,
@@ -141,17 +170,20 @@ def query_cluster(cluster):
         'ingresses': []
     }
 
-    response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods')
-    response.raise_for_status()
-    for item in response.json()['items']:
-        key = (item['metadata']['namespace'], item['metadata']['name'])
-        pod = pods.get(key)
-        if pod:
-            usage = collections.defaultdict(float)
-            for container in item['containers']:
-                for k, v in container.get('usage', {}).items():
-                    usage[k] += parse_resource(v)
-            pod['usage'] = usage
+    try:
+        response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods')
+        response.raise_for_status()
+        for item in response.json()['items']:
+            key = (item['metadata']['namespace'], item['metadata']['name'])
+            pod = pods.get(key)
+            if pod:
+                usage = collections.defaultdict(float)
+                for container in item['containers']:
+                    for k, v in container.get('usage', {}).items():
+                        usage[k] += parse_resource(v)
+                pod['usage'] = usage
+    except Exception as e:
+        logger.exception('Failed to query Heapster metrics')
 
     cpu_slack = collections.Counter()
     memory_slack = collections.Counter()
@@ -165,32 +197,133 @@ def query_cluster(cluster):
 
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
-    for item in response.json()['items']:
-        namespace, name = item['metadata']['namespace'], item['metadata']['name']
-        for rule in item['spec']['rules']:
-            cluster_summary['ingresses'].append([namespace, name, rule['host']])
+
+    with FuturesSession(max_workers=10) as futures_session:
+        futures = {}
+        for item in response.json()['items']:
+            namespace, name = item['metadata']['namespace'], item['metadata']['name']
+            labels = item['metadata'].get('labels', {})
+            application = labels.get('application', labels.get('app', ''))
+            for rule in item['spec']['rules']:
+                l = [namespace, name, application, rule['host'], 0]
+                futures[futures_session.get('https://{}/'.format(rule['host']), timeout=5)] = l
+                cluster_summary['ingresses'].append(l)
+
+        logger.info('Waiting for ingress status..')
+        for future in concurrent.futures.as_completed(futures):
+            l = futures[future]
+            try:
+                status = future.result().status_code
+            except:
+                status = 999
+            l[4] = status
 
     return cluster_summary
 
 
 @click.command()
 @click.option('--cluster-registry')
+@click.option('--application-registry')
+@click.option('--use-cache', is_flag=True)
 @click.argument('output_dir', type=click.Path(exists=True))
-def main(cluster_registry, output_dir):
+def main(cluster_registry, application_registry, use_cache, output_dir):
     cluster_summaries = {}
-    if cluster_registry:
-        discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
-    else:
-        discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
-    for cluster in discoverer.get_clusters():
-        try:
-            logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
-            summary = query_cluster(cluster)
-            cluster_summaries[cluster.id] = summary
-        except Exception as e:
-            logger.exception(e)
+
+    notifications = []
 
     output_path = Path(output_dir)
+
+    pickle_path = output_path / 'dump.pickle'
+
+    if use_cache and pickle_path.exists():
+        with pickle_path.open('rb') as fd:
+            cluster_summaries = pickle.load(fd)
+
+    else:
+
+        if cluster_registry:
+            discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
+        else:
+            discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            future_to_cluster = {}
+            for cluster in discoverer.get_clusters():
+                future_to_cluster[executor.submit(query_cluster, cluster, executor)] = cluster
+
+            for future in concurrent.futures.as_completed(future_to_cluster):
+                cluster = future_to_cluster[future]
+                try:
+                    summary = future.result()
+                    cluster_summaries[cluster.id] = summary
+                except Exception as e:
+                    notifications.append(['error', 'Failed to query cluster {}: {}'.format(cluster.id, e)])
+                    logger.exception(e)
+
+    with pickle_path.open('wb') as fd:
+        pickle.dump(cluster_summaries, fd)
+
+    teams = {}
+    applications = {}
+    total_allocatable = collections.defaultdict(int)
+    total_requests = collections.defaultdict(int)
+
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        for r in 'cpu', 'memory':
+            total_allocatable[r] += summary['allocatable'][r]
+            total_requests[r] += summary['requests'][r]
+
+        cost_per_cpu = summary['cost'] / summary['allocatable']['cpu']
+        cost_per_memory = summary['cost'] / summary['allocatable']['memory']
+        for k, pod in summary['pods'].items():
+            app = applications.get(pod['application'], {'id': pod['application'], 'cost': 0, 'pods': 0, 'requests': {}, 'usage': {}, 'clusters': set()})
+            for r in 'cpu', 'memory':
+                app['requests'][r] = app['requests'].get(r, 0) + pod['requests'][r]
+                app['usage'][r] = app['usage'].get(r, 0) + pod.get('usage', {}).get(r, 0)
+            app['team'] = ''
+            app['cost'] += pod['cost']
+            app['pods'] += 1
+            app['clusters'].add(cluster_id)
+            app['slack_cost'] = max((app['requests']['cpu'] - app['usage']['cpu']) * cost_per_cpu, (app['requests']['memory'] - app['usage']['memory']) * cost_per_memory)
+            applications[pod['application']] = app
+
+    if application_registry:
+        with FuturesSession(max_workers=10) as futures_session:
+            futures_session.auth = cluster_discovery.OAuthTokenAuth('read-only')
+
+            future_to_app = {}
+            for app_id, app in applications.items():
+                future_to_app[futures_session.get(application_registry + '/apps/' + app_id, timeout=5)] = app
+
+            for future in concurrent.futures.as_completed(future_to_app):
+                app = future_to_app[future]
+                try:
+                    response = future.result()
+                    response.raise_for_status()
+                    data = response.json()
+                    if not isinstance(data, dict):
+                        data = {}
+                except Exception as e:
+                    data = {}
+                    logger.exception(e)
+                team_id = data.get('team_id', '')
+                app['team'] = team_id
+                app['active'] = data.get('active')
+                team = teams.get(team_id, {'clusters': set(), 'applications': set(), 'cost': 0, 'pods': 0, 'requests': {}, 'usage': {}, 'slack_cost': 0})
+                team['applications'].add(app['id'])
+                team['clusters'] |= app['clusters']
+                team['pods'] += app['pods']
+                for r in 'cpu', 'memory':
+                    team['requests'][r] = team['requests'].get(r, 0) + app['requests'][r]
+                    team['usage'][r] = team['usage'].get(r, 0) + app.get('usage', {}).get(r, 0)
+                team['cost'] += app['cost']
+                team['slack_cost'] += app['slack_cost']
+                teams[team_id] = team
+
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        for k, pod in summary['pods'].items():
+            app = applications.get(pod['application'])
+            pod['team'] = app['team']
 
     logger.info('Writing clusters.tsv..')
     with (output_path / 'clusters.tsv').open('w') as csvfile:
@@ -239,6 +372,57 @@ def main(cluster_registry, output_dir):
                 for namespace_name, slack in memory_slack.most_common(20):
                     namespace, name = namespace_name
                     slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'memory', '{:6.0f}Mi'.format(slack / (1024*1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory)])
+
+    templates_path = Path(__file__).parent / 'templates'
+    env = Environment(
+        loader=FileSystemLoader(str(templates_path)),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+    context = {
+        'notifications': notifications,
+        'cluster_summaries': cluster_summaries,
+        'teams': teams,
+        'applications': applications,
+        'total_worker_nodes': sum([s['worker_nodes'] for s in cluster_summaries.values()]),
+        'total_allocatable': total_allocatable,
+        'total_requests': total_requests,
+        'total_pods': sum([len(s['pods']) for s in cluster_summaries.values()]),
+        'total_cost': sum([s['cost'] for s in cluster_summaries.values()]),
+        'total_slack_cost': sum([a['slack_cost'] for a in applications.values()]),
+        'now': datetime.datetime.utcnow(),
+        'version': VERSION
+    }
+    for page in ['index', 'clusters', 'ingresses', 'teams', 'applications', 'pods']:
+        file_name = '{}.html'.format(page)
+        logger.info('Generating {}..'.format(file_name))
+        template = env.get_template(file_name)
+        context['page'] = page
+        template.stream(**context).dump(str(output_path / file_name))
+
+    for cluster_id, summary in cluster_summaries.items():
+        page = 'clusters'
+        file_name = 'cluster-{}.html'.format(cluster_id)
+        logger.info('Generating {}..'.format(file_name))
+        template = env.get_template('cluster.html')
+        context['page'] = page
+        context['cluster_id'] = cluster_id
+        context['summary'] = summary
+        template.stream(**context).dump(str(output_path / file_name))
+
+    for team_id, team in teams.items():
+        page = 'teams'
+        file_name = 'team-{}.html'.format(team_id)
+        logger.info('Generating {}..'.format(file_name))
+        template = env.get_template('team.html')
+        context['page'] = page
+        context['team_id'] = team_id
+        context['team'] = team
+        template.stream(**context).dump(str(output_path / file_name))
+
+
+    for path in templates_path.iterdir():
+        if path.match('*.js') or path.match('*.css'):
+            shutil.copy(str(path), str(output_path / path.name))
 
 
 if __name__ == '__main__':

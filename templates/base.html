@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %} - Kubernetes Resource Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script src="sortable.min.js"></script>
+    <link rel="stylesheet" href="sortable-theme-minimal.css" />
+  </head>
+  <body class="has-navbar-fixed-top">
+  <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item {{ 'is-active' if page == 'index' }}" href="index.html">Overview</a>
+            <a class="navbar-item {{ 'is-active' if page == 'clusters' }}" href="clusters.html">Clusters</a>
+            <a class="navbar-item {{ 'is-active' if page == 'ingresses' }}" href="ingresses.html">Ingresses</a>
+            <a class="navbar-item {{ 'is-active' if page == 'teams' }}" href="teams.html">Teams</a>
+            <a class="navbar-item {{ 'is-active' if page == 'applications' }}" href="applications.html">Applications</a>
+            <a class="navbar-item {{ 'is-active' if page == 'pods' }}" href="pods.html">Pods</a>
+        </div>
+    </div>
+  </nav>
+    <section class="section">
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    </section>
+  <footer class="footer">
+      <div class="container">
+          <div class="content has-text-centered">
+              <p><a href="https://github.com/hjacobs/kube-resources">Kubernetes Resource Report</a> {{ version }}</p>
+              <p>Page generated {{ now.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+          </div>
+      </div>
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Clusters</p>
+      <p class="title">{{ cluster_summaries|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Worker Nodes</p>
+      <p class="title">{{ total_worker_nodes }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Teams</p>
+      <p class="title">{{ teams|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Applications</p>
+      <p class="title">{{ applications|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">{{ total_pods }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Cost</p>
+      <p class="title">{{ '{:,.02f}'.format(total_cost) }}</p>
+    </div>
+  </div>
+</nav>
+
+<div class="notification is-warning">
+    You can potentially save <strong>{{ '{:,.02f}'.format(total_slack_cost) }} USD</strong> every month by optimizing resource requests and reducing slack.
+</div>
+
+<h2 class="title is-5">CPU</h2>
+<progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}" ></progress>
+<nav class="level">
+    <div class="level-left">
+        <div class="level-item">
+            {{ total_requests['cpu']|round(2) }} requested
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+           {{ total_allocatable['cpu']|round(2) }} allocatable
+        </div>
+    </div>
+</nav>
+
+<h2 class="title is-5">Memory</h2>
+<progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}" ></progress>
+<nav class="level">
+    <div class="level-left">
+        <div class="level-item">
+            {{ total_requests['memory']|filesizeformat(True) }} requested
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+           {{ total_allocatable['memory']|filesizeformat(True) }} allocatable
+        </div>
+    </div>
+</nav>
+
+<h2 class="title is-5">Notifications</h2>
+{% for notification in notifications: %}
+<div class="notification is-{{ 'danger' if notification[0] == 'error' }}">
+    {{ notification[1] }}
+</div>
+{% else %}
+<p>No warnings or errors to report.</p>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Clusters{% endblock %}
+{% block content %}
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th>API URL</th>
+                  <th><abbr title="Master Nodes">MN</abbr></th>
+                  <th><abbr title="Worker Nodes">WN</abbr></th>
+                  <th>Inst. Types</th>
+                  <th>Version</th>
+                  <th><abbr title="Ingresses">I</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="User Pods">UP</abbr></th>
+                  <th><abbr title="CPU Capacity">CC</abbr></th>
+                  <th><abbr title="Memory Capacity">MC</abbr></th>
+                  <th><abbr title="CPU Allocatable">CA</abbr></th>
+                  <th><abbr title="Memory Allocatable">MA</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for cluster_id, summary in cluster_summaries.items()|sort: %}
+          <tr>
+            <td><a href="./cluster-{{ cluster_id }}.html">{{ cluster_id }}</a></td>
+            <td>{{ summary.cluster.api_server_url }}</td>
+            <td>{{ summary.master_nodes }}</td>
+            <td>{{ summary.worker_nodes }}</td>
+            <td>{{ summary.worker_instance_types|join(', ') }}</td>
+            <td>{{ summary.kubelet_versions|join(', ') }}</td>
+            <td>{{ summary.ingresses|count }}</td>
+            <td>{{ summary.pods|count }}</td>
+            <td>{{ summary.user_pods }}</td>
+            <td>{{ summary.capacity.cpu|round(1) }}</td>
+            <td>{{ summary.capacity.memory|filesizeformat(True) }}</td>
+            <td>{{ summary.allocatable.cpu|round(1) }}</td>
+            <td data-value="{{ summary.allocatable.memory }}">{{ summary.allocatable.memory|filesizeformat(True) }}</td>
+            <td>{{ summary.requests.cpu|round(1) }}</td>
+            <td data-value="{{ summary.requests.memory }}">{{ summary.requests.memory|filesizeformat(True) }}</td>
+            <td>{{ summary.usage.cpu|round(1) }}</td>
+            <td data-value="{{ summary.usage.memory }}">{{ summary.usage.memory|filesizeformat(True) }}</td>
+            <td class="has-text-right">{{ '{:,.02f}'.format(summary.cost) }}</td>
+
+          </tr>
+
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}

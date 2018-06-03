@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Cluster {{ cluster_id }}{% endblock %}
+{% block content %}
+<h1 class="title">Cluster {{ cluster_id }}</h1>
+<h2 class="subtitle">{{ summary.cluster.api_server_url }}</h1>
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Master Nodes</p>
+      <p class="title">{{ summary.master_nodes }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Worker Nodes</p>
+      <p class="title">{{ summary.worker_nodes }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">{{ summary.pods|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">CPU Requests / Allocatable</p>
+      <p class="title">{{ summary.requests.cpu|round(1) }} / {{ summary.allocatable.cpu|round(1) }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Memory Requests / Allocatable</p>
+      <p class="title">{{ summary.requests.memory|filesizeformat(True) }} / {{ summary.allocatable.memory|filesizeformat(True) }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Cost</p>
+      <p class="title">{{ '{:,.02f}'.format(summary.cost) }}</p>
+    </div>
+  </div>
+</nav>
+
+    <h2 class="title is-5">Nodes</h2>
+
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Instance Type</th>
+                  <th>Kubelet Version</th>
+                  <th><abbr title="CPU Capacity">CC</abbr></th>
+                  <th><abbr title="Memory Capacity">MC</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for node_name, node in summary.nodes.items()|sort: %}
+          <tr>
+            <td>{{ node_name }}</td>
+            <td>{{ node.role }}</td>
+            <td>{{ node.instance_type }}</td>
+            <td>{{ node.kubelet_version }}</td>
+            <td>{{ node.capacity.cpu|round(1) }}</td>
+            <td>{{ node.capacity.memory|filesizeformat(True) }}</td>
+            <td>{{ (node.usage|default({'cpu':0})).cpu|round(1) }}</td>
+            <td data-value="{{ (node.usage|default({'memory':0})).memory }}">{{ (node.usage|default({'memory':0})).memory|filesizeformat(True) }}</td>
+            <td class="has-text-right">{{ '{:,.02f}'.format(node.cost) }}</td>
+          </tr>
+          {%endfor %}
+          </tbody>
+
+        </table>
+
+
+    <h2 class="title is-5">Ingresses</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Application</th>
+                  <th>Host</th>
+                  <th>Status</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for ingress in summary.ingresses: %}
+          <tr>
+            <td>{{ ingress[0] }}</td>
+            <td>{{ ingress[1] }}</td>
+            <td>{{ ingress[2] }}</td>
+            <td>{{ ingress[3] }}</td>
+            <td><span class="tag
+                    {% if ingress[4] >= 500 %}
+                       is-danger
+                    {% elif ingress[4] >= 400 %}
+                       is-info
+                    {% elif ingress[4] >= 200 %}
+                       is-success
+                    {% else: %}
+                       is-info
+                    {% endif %}
+            ">{{ ingress[4] }}</span></td>
+          </tr>
+          {%endfor %}
+          </tbody>
+
+        </table>
+    <h2 class="title is-5">Pods</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Application</th>
+                  <th>Team</th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for namespace_name, pod in summary.pods.items(): %}
+          <tr>
+            <td>{{ namespace_name[0] }}</td>
+            <td>{{ namespace_name[1] }}</td>
+            <td>{{ pod.application }}</td>
+            <td><a href="team-{{ pod.team }}.html">{{ pod.team }}</a></td>
+            <td>{{ pod.requests.cpu|round(3) }}</td>
+            <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
+            <td>{{ (pod.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
+            <td data-value="{{ (pod.usage|default({'memory': 0})).memory }}">{{ (pod.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
+            <td class="has-text-right">{{ '{:,.02f}'.format(pod.cost) }}</td>
+          </tr>
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}
