@@ -6,4 +6,4 @@ install:
   - pipenv install --dev
 script:
   - flake8
-  - py.test
+  - py.test --doctest-modules
