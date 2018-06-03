@@ -8,6 +8,8 @@
                   <th>API URL</th>
                   <th>Master Nodes</th>
                   <th>Worker Nodes</th>
+                  <th>Instance Types</th>
+                  <th>K8s Version</th>
                   <th>CPU Capacity</th>
                   <th>Memory Capacity</th>
                   <th>CPU Alloc.</th>
@@ -26,6 +28,8 @@
             <td>{{ summary.cluster.api_server_url }}</td>
             <td>{{ summary.master_nodes }}</td>
             <td>{{ summary.worker_nodes }}</td>
+            <td>{{ summary.worker_instance_types|join(', ') }}</td>
+            <td>{{ summary.kubelet_versions|join(', ') }}</td>
             <td>{{ summary.capacity.cpu|round(1) }}</td>
             <td>{{ summary.capacity.memory|filesizeformat(True) }}</td>
             <td>{{ summary.allocatable.cpu|round(1) }}</td>

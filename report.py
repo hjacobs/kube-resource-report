@@ -152,6 +152,8 @@ def query_cluster(cluster, executor):
         'pods': pods,
         'master_nodes': node_count['master'],
         'worker_nodes': node_count['worker'],
+        'kubelet_versions': set([n['kubelet_version'] for n in nodes.values() if n['role'] == 'worker']),
+        'worker_instance_types': set([n['instance_type'] for n in nodes.values() if n['role'] == 'worker']),
         'capacity': cluster_capacity,
         'allocatable': cluster_allocatable,
         'requests': cluster_requests,
@@ -188,9 +190,8 @@ def query_cluster(cluster, executor):
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
 
-    with ThreadPoolExecutor(max_workers=16) as executor:
+    with FuturesSession(max_workers=10) as futures_session:
         futures = {}
-        futures_session = FuturesSession(executor=executor)
         for item in response.json()['items']:
             namespace, name = item['metadata']['namespace'], item['metadata']['name']
             labels = item['metadata'].get('labels', {})
@@ -251,6 +252,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
     with pickle_path.open('wb') as fd:
         pickle.dump(cluster_summaries, fd)
 
+    teams = {}
     applications = {}
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
@@ -263,18 +265,18 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         cost_per_cpu = summary['cost'] / summary['allocatable']['cpu']
         cost_per_memory = summary['cost'] / summary['allocatable']['memory']
         for k, pod in summary['pods'].items():
-            app = applications.get(pod['application'], {'cost': 0, 'requests': {}, 'usage': {}})
+            app = applications.get(pod['application'], {'id': pod['application'], 'cost': 0, 'requests': {}, 'usage': {}, 'clusters': set()})
             for r in 'cpu', 'memory':
                 app['requests'][r] = app['requests'].get(r, 0) + pod['requests'][r]
                 app['usage'][r] = app['usage'].get(r, 0) + pod.get('usage', {}).get(r, 0)
             app['team'] = ''
             app['cost'] += pod['cost']
+            app['clusters'].add(cluster_id)
             app['slack_cost'] = max((app['requests']['cpu'] - app['usage']['cpu']) * cost_per_cpu, (app['requests']['memory'] - app['usage']['memory']) * cost_per_memory)
             applications[pod['application']] = app
 
     if application_registry:
-        with ThreadPoolExecutor(max_workers=16) as executor:
-            futures_session = FuturesSession(executor=executor)
+        with FuturesSession(max_workers=10) as futures_session:
             futures_session.auth = cluster_discovery.OAuthTokenAuth('read-only')
 
             future_to_app = {}
@@ -286,9 +288,20 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                 try:
                     response = future.result()
                     response.raise_for_status()
-                    app['team'] = response.json()['team_id']
+                    team_id = response.json()['team_id']
                 except Exception as e:
                     logger.exception(e)
+                    team_id = ''
+                app['team'] = team_id
+                team = teams.get(team_id, {'clusters': set(), 'applications': set(), 'cost': 0, 'requests': {}, 'usage': {}, 'slack_cost': 0})
+                team['applications'].add(app['id'])
+                team['clusters'] |= app['clusters']
+                for r in 'cpu', 'memory':
+                    team['requests'][r] = team['requests'].get(r, 0) + app['requests'][r]
+                    team['usage'][r] = team['usage'].get(r, 0) + app.get('usage', {}).get(r, 0)
+                team['cost'] += app['cost']
+                team['slack_cost'] += app['slack_cost']
+                teams[team_id] = team
 
     logger.info('Writing clusters.tsv..')
     with (output_path / 'clusters.tsv').open('w') as csvfile:
@@ -345,6 +358,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
     )
     context = {
         'cluster_summaries': cluster_summaries,
+        'teams': teams,
         'applications': applications,
         'total_worker_nodes': sum([s['worker_nodes'] for s in cluster_summaries.values()]),
         'total_allocatable': total_allocatable,
@@ -355,7 +369,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         'now': datetime.datetime.utcnow(),
         'version': VERSION
     }
-    for page in ['index', 'clusters', 'ingresses', 'applications', 'pods']:
+    for page in ['index', 'clusters', 'ingresses', 'teams', 'applications', 'pods']:
         file_name = '{}.html'.format(page)
         logger.info('Generating {}..'.format(file_name))
         template = env.get_template(file_name)
