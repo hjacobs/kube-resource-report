@@ -8,8 +8,11 @@
                   <th>API URL</th>
                   <th><abbr title="Master Nodes">MN</abbr></th>
                   <th><abbr title="Worker Nodes">WN</abbr></th>
-                  <th>Instance Types</th>
+                  <th>Inst. Types</th>
                   <th>Version</th>
+                  <th><abbr title="Ingresses">I</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="User Pods">UP</abbr></th>
                   <th>CPU Capacity</th>
                   <th>Memory Capacity</th>
                   <th>CPU Alloc.</th>
@@ -30,6 +33,9 @@
             <td>{{ summary.worker_nodes }}</td>
             <td>{{ summary.worker_instance_types|join(', ') }}</td>
             <td>{{ summary.kubelet_versions|join(', ') }}</td>
+            <td>{{ summary.ingresses|count }}</td>
+            <td>{{ summary.pods|count }}</td>
+            <td>{{ summary.user_pods }}</td>
             <td>{{ summary.capacity.cpu|round(1) }}</td>
             <td>{{ summary.capacity.memory|filesizeformat(True) }}</td>
             <td>{{ summary.allocatable.cpu|round(1) }}</td>

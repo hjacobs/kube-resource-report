@@ -150,6 +150,7 @@ def query_cluster(cluster, executor):
         'cluster': cluster,
         'nodes': nodes,
         'pods': pods,
+        'user_pods': len([p for ns, p in pods if ns not in ('kube-system', 'visibility')]),
         'master_nodes': node_count['master'],
         'worker_nodes': node_count['worker'],
         'kubelet_versions': set([n['kubelet_version'] for n in nodes.values() if n['role'] == 'worker']),
