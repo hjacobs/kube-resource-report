@@ -4,7 +4,9 @@ Kubernetes Resource Report
 
 **This early version only supports the AWS eu-central-1 region for price/cost information**
 
-Script to generate a report of CPU/memory requests vs. usage (collected via Heapster).
+Script to generate a HTML report of CPU/memory requests vs. usage (collected via Heapster) for one or more Kubernetes clusters.
+
+Want to see how the report looks? `Check out the sample HTML report! <https://hjacobs.github.io/kube-resource-report/sample-report/output/index.html>`_)
 
 * Collect all cluster nodes and their estimated costs (AWS only)
 * Collect all pods and use the ``application`` or ``app`` label as application ID
