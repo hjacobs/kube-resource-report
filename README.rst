@@ -56,3 +56,5 @@ The optional application registry can provide information per application ID, it
     "team_id": "<team-id>",
     "active": true
     }
+
+See the ``application-registry.py`` script in the ``sample-report`` folder for an example implementation.
