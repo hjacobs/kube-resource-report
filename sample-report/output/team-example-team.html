@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Team Example-team - Kubernetes Resource Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script src="sortable.min.js"></script>
+    <link rel="stylesheet" href="sortable-theme-minimal.css" />
+  </head>
+  <body class="has-navbar-fixed-top">
+  <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item " href="index.html">Overview</a>
+            <a class="navbar-item " href="clusters.html">Clusters</a>
+            <a class="navbar-item " href="ingresses.html">Ingresses</a>
+            <a class="navbar-item is-active" href="teams.html">Teams</a>
+            <a class="navbar-item " href="applications.html">Applications</a>
+            <a class="navbar-item " href="pods.html">Pods</a>
+        </div>
+    </div>
+  </nav>
+    <section class="section">
+    <div class="container">
+        
+<h1 class="title">Team Example-team</h1>
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Applications</p>
+      <p class="title">2</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">4</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">CPU Requests</p>
+      <p class="title">0.4</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Memory Requests</p>
+      <p class="title">800.0 MiB</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Cost</p>
+      <p class="title">0.00</p>
+    </div>
+  </div>
+</nav>
+    <div class="notification is-warning">
+        You can potentially save <strong>0.00 USD</strong> every month by optimizing resource requests and reducing slack.
+    </div>
+    <h2 class="title is-5">Clusters</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th>API URL</th>
+                  <th><abbr title="Master Nodes">MN</abbr></th>
+                  <th><abbr title="Worker Nodes">WN</abbr></th>
+                  <th>Inst. Types</th>
+                  <th>Version</th>
+                  <th><abbr title="Ingresses">I</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="User Pods">UP</abbr></th>
+                  <th><abbr title="CPU Allocatable">CA</abbr></th>
+                  <th><abbr title="Memory Allocatable">MA</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+              
+          
+          <tr>
+            <td><a href="./cluster-minikube.html">minikube</a></td>
+            <td>https://192.168.99.100:8443</td>
+            <td>0</td>
+            <td>1</td>
+            <td>unknown</td>
+            <td>v1.10.0</td>
+            <td>1</td>
+            <td>18</td>
+            <td>7</td>
+            <td>2.0</td>
+            <td data-value="1992347648.0">1.9 GiB</td>
+            <td>1.3</td>
+            <td data-value="1111490560.0">1.0 GiB</td>
+            <td>0.2</td>
+            <td data-value="1754574848.0">1.6 GiB</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+
+          
+          </tbody>
+
+        </table>
+    <h2 class="title is-5">Applications</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th><abbr title="Active?">A?</abbr></th>
+                  <th><abbr title="Clusters">C</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th>CPU Requests</th>
+                  <th>Memory Requests</th>
+                  <th>CPU Usage</th>
+                  <th>Memory Usage</th>
+                  <th>Cost</th>
+                  <th>Slack Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          
+          
+          
+          
+          <tr>
+            <td>example-app</td>
+            <td>
+                
+                
+                <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
+
+                
+                
+
+                </td>
+            <td>1</td>
+            <td>1</td>
+            <td>0.1</td>
+            <td data-value="209715200.0">200.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="2179072.0">2.1 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+            
+          
+          
+          
+          
+          
+          
+          
+          
+          <tr>
+            <td>legacy-service</td>
+            <td>
+                
+                
+                <span class="icon"><i class="fas fa-exclamation-triangle has-text-warning"></i></span>
+                
+                
+
+                </td>
+            <td>1</td>
+            <td>3</td>
+            <td>0.3</td>
+            <td data-value="629145600.0">600.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="6934528.0">6.6 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+            
+          
+          </tbody>
+
+        </table>
+
+    </div>
+    </section>
+  <footer class="footer">
+      <div class="container">
+          <div class="content has-text-centered">
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
+              <p>Page generated 2018-06-03 19:24 UTC</p>
+          </div>
+      </div>
+  </footer>
+  </body>
+</html>

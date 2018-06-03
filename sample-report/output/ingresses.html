@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ingresses - Kubernetes Resource Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script src="sortable.min.js"></script>
+    <link rel="stylesheet" href="sortable-theme-minimal.css" />
+  </head>
+  <body class="has-navbar-fixed-top">
+  <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item " href="index.html">Overview</a>
+            <a class="navbar-item " href="clusters.html">Clusters</a>
+            <a class="navbar-item is-active" href="ingresses.html">Ingresses</a>
+            <a class="navbar-item " href="teams.html">Teams</a>
+            <a class="navbar-item " href="applications.html">Applications</a>
+            <a class="navbar-item " href="pods.html">Pods</a>
+        </div>
+    </div>
+  </nav>
+    <section class="section">
+    <div class="container">
+        
+
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Cluster ID</th>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Application</th>
+                  <th>Host</th>
+                  <th>Status</th>
+              </tr>
+          </thead>
+          <tbody>
+          
+          
+          <tr>
+            <td><a href="./cluster-minikube.html">minikube</a></td>
+            <td>default</td>
+            <td>kube-ops-view</td>
+            <td></td>
+            <td>kube-ops-view.example.org</td>
+            <td><span class="tag
+                    
+                       is-danger
+                    
+            ">999</span></td>
+          </tr>
+          
+          
+          </tbody>
+
+        </table>
+
+
+    </div>
+    </section>
+  <footer class="footer">
+      <div class="container">
+          <div class="content has-text-centered">
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
+              <p>Page generated 2018-06-03 19:24 UTC</p>
+          </div>
+      </div>
+  </footer>
+  </body>
+</html>

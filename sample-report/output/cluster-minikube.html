@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cluster minikube - Kubernetes Resource Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script src="sortable.min.js"></script>
+    <link rel="stylesheet" href="sortable-theme-minimal.css" />
+  </head>
+  <body class="has-navbar-fixed-top">
+  <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item " href="index.html">Overview</a>
+            <a class="navbar-item is-active" href="clusters.html">Clusters</a>
+            <a class="navbar-item " href="ingresses.html">Ingresses</a>
+            <a class="navbar-item " href="teams.html">Teams</a>
+            <a class="navbar-item " href="applications.html">Applications</a>
+            <a class="navbar-item " href="pods.html">Pods</a>
+        </div>
+    </div>
+  </nav>
+    <section class="section">
+    <div class="container">
+        
+<h1 class="title">Cluster minikube</h1>
+<h2 class="subtitle">https://192.168.99.100:8443</h1>
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Master Nodes</p>
+      <p class="title">0</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Worker Nodes</p>
+      <p class="title">1</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">18</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">CPU Requests / Allocatable</p>
+      <p class="title">1.3 / 2.0</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Memory Requests / Allocatable</p>
+      <p class="title">1.0 GiB / 1.9 GiB</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Cost</p>
+      <p class="title">0.00</p>
+    </div>
+  </div>
+</nav>
+
+    <h2 class="title is-5">Nodes</h2>
+
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Instance Type</th>
+                  <th>Kubelet Version</th>
+                  <th><abbr title="CPU Capacity">CC</abbr></th>
+                  <th><abbr title="Memory Capacity">MC</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          
+          <tr>
+            <td>minikube</td>
+            <td>worker</td>
+            <td>unknown</td>
+            <td>v1.10.0</td>
+            <td>2</td>
+            <td>2.0 GiB</td>
+            <td>0.2</td>
+            <td data-value="1754574848.0">1.6 GiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          </tbody>
+
+        </table>
+
+
+    <h2 class="title is-5">Ingresses</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Application</th>
+                  <th>Host</th>
+                  <th>Status</th>
+              </tr>
+          </thead>
+          <tbody>
+          
+          <tr>
+            <td>default</td>
+            <td>kube-ops-view</td>
+            <td></td>
+            <td>kube-ops-view.example.org</td>
+            <td><span class="tag
+                    
+                       is-danger
+                    
+            ">999</span></td>
+          </tr>
+          
+          </tbody>
+
+        </table>
+    <h2 class="title is-5">Pods</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Application</th>
+                  <th>Team</th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          
+          <tr>
+            <td>default</td>
+            <td>example-app-8db59d5d6-p5psv</td>
+            <td>example-app</td>
+            <td><a href="team-example-team.html">example-team</a></td>
+            <td>0.1</td>
+            <td data-value="209715200.0">200.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="2179072.0">2.1 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>default</td>
+            <td>kube-ops-view-5f859bf4d9-9jlwc</td>
+            <td>kube-ops-view</td>
+            <td><a href="team-hjacobs.html">hjacobs</a></td>
+            <td>0.05</td>
+            <td data-value="52428800.0">50.0 MiB</td>
+            <td>0.007</td>
+            <td data-value="53284864.0">50.8 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>default</td>
+            <td>kube-ops-view-redis-5cb9899f5f-2jbll</td>
+            <td>kube-ops-view-redis</td>
+            <td><a href="team-.html"></a></td>
+            <td>0.05</td>
+            <td data-value="52428800.0">50.0 MiB</td>
+            <td>0.001</td>
+            <td data-value="2904064.0">2.8 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>default</td>
+            <td>legacy-service-54c4c4f55d-cpj9w</td>
+            <td>legacy-service</td>
+            <td><a href="team-example-team.html">example-team</a></td>
+            <td>0.1</td>
+            <td data-value="209715200.0">200.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="1949696.0">1.9 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>default</td>
+            <td>legacy-service-54c4c4f55d-cxcbx</td>
+            <td>legacy-service</td>
+            <td><a href="team-example-team.html">example-team</a></td>
+            <td>0.1</td>
+            <td data-value="209715200.0">200.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="2183168.0">2.1 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>default</td>
+            <td>legacy-service-54c4c4f55d-w5tld</td>
+            <td>legacy-service</td>
+            <td><a href="team-example-team.html">example-team</a></td>
+            <td>0.1</td>
+            <td data-value="209715200.0">200.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="2801664.0">2.7 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>default</td>
+            <td>nginx-65899c769f-cl8pg</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.0</td>
+            <td data-value="2228224.0">2.1 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>etcd-minikube</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.016</td>
+            <td data-value="62345216.0">59.5 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>heapster-569j9</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.0</td>
+            <td data-value="27201536.0">25.9 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>influxdb-grafana-vdrsk</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.0</td>
+            <td data-value="42430464.0">40.5 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>kube-addon-manager-minikube</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.005</td>
+            <td data-value="52428800.0">50.0 MiB</td>
+            <td>0.015</td>
+            <td data-value="29847552.0">28.5 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>kube-apiserver-minikube</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.25</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.026</td>
+            <td data-value="281268224.0">268.2 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>kube-controller-manager-minikube</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.2</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.031</td>
+            <td data-value="71667712.0">68.3 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>kube-dns-86f4d74b45-s8lq8</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.26</td>
+            <td data-value="115343360.0">110.0 MiB</td>
+            <td>0.001</td>
+            <td data-value="36454400.0">34.8 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>kube-proxy-qnpsc</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.002</td>
+            <td data-value="19472384.0">18.6 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>kube-scheduler-minikube</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.1</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.007</td>
+            <td data-value="18034688.0">17.2 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>kubernetes-dashboard-5498ccf677-8fv9v</td>
+            <td>kubernetes-dashboard</td>
+            <td><a href="team-.html"></a></td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.0</td>
+            <td data-value="17420288.0">16.6 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          <tr>
+            <td>kube-system</td>
+            <td>storage-provisioner</td>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.0</td>
+            <td data-value="24285184.0">23.2 MiB</td>
+            <td class="has-text-right">0.00</td>
+          </tr>
+          
+          </tbody>
+
+        </table>
+
+    </div>
+    </section>
+  <footer class="footer">
+      <div class="container">
+          <div class="content has-text-centered">
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
+              <p>Page generated 2018-06-03 19:24 UTC</p>
+          </div>
+      </div>
+  </footer>
+  </body>
+</html>
