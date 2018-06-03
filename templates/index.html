@@ -75,4 +75,11 @@
     </div>
 </nav>
 
+<h2 class="title is-5">Notifications</h2>
+{% for notification in notifications: %}
+<div class="notification is-{{ 'danger' if notification[0] == 'error' }}">
+    {{ notification[1] }}
+</div>
+{% endfor %}
+
 {% endblock %}

@@ -222,6 +222,8 @@ def query_cluster(cluster, executor):
 def main(cluster_registry, application_registry, use_cache, output_dir):
     cluster_summaries = {}
 
+    notifications = []
+
     output_path = Path(output_dir)
 
     pickle_path = output_path / 'dump.pickle'
@@ -248,6 +250,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                     summary = future.result()
                     cluster_summaries[cluster.id] = summary
                 except Exception as e:
+                    notifications.append(['error', 'Failed to query cluster {}: {}'.format(cluster.id, e)])
                     logger.exception(e)
 
     with pickle_path.open('wb') as fd:
@@ -364,6 +367,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         autoescape=select_autoescape(['html', 'xml'])
     )
     context = {
+        'notifications': notifications,
         'cluster_summaries': cluster_summaries,
         'teams': teams,
         'applications': applications,
