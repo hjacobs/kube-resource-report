@@ -2,6 +2,39 @@
 {% block title %}Team {{ team_id|capitalize }}{% endblock %}
 {% block content %}
 <h1 class="title">Team {{ team_id|capitalize }}</h1>
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Applications</p>
+      <p class="title">{{ team.applications|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">{{ team.pods }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">CPU Requests</p>
+      <p class="title">{{ team.requests.cpu|round(1) }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Memory Requests</p>
+      <p class="title">{{ team.requests.memory|filesizeformat(True) }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Cost</p>
+      <p class="title">{{ '{:,.02f}'.format(team.cost) }}</p>
+    </div>
+  </div>
+</nav>
     <div class="notification is-warning">
         You can potentially save <strong>{{ '{:,.02f}'.format(team.slack_cost) }} USD</strong> every month by optimizing resource requests and reducing slack.
     </div>

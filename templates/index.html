@@ -80,6 +80,8 @@
 <div class="notification is-{{ 'danger' if notification[0] == 'error' }}">
     {{ notification[1] }}
 </div>
+{% else %}
+<p>No warnings or errors to report.</p>
 {% endfor %}
 
 {% endblock %}
