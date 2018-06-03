@@ -265,12 +265,13 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         cost_per_cpu = summary['cost'] / summary['allocatable']['cpu']
         cost_per_memory = summary['cost'] / summary['allocatable']['memory']
         for k, pod in summary['pods'].items():
-            app = applications.get(pod['application'], {'id': pod['application'], 'cost': 0, 'requests': {}, 'usage': {}, 'clusters': set()})
+            app = applications.get(pod['application'], {'id': pod['application'], 'cost': 0, 'pods': 0, 'requests': {}, 'usage': {}, 'clusters': set()})
             for r in 'cpu', 'memory':
                 app['requests'][r] = app['requests'].get(r, 0) + pod['requests'][r]
                 app['usage'][r] = app['usage'].get(r, 0) + pod.get('usage', {}).get(r, 0)
             app['team'] = ''
             app['cost'] += pod['cost']
+            app['pods'] += 1
             app['clusters'].add(cluster_id)
             app['slack_cost'] = max((app['requests']['cpu'] - app['usage']['cpu']) * cost_per_cpu, (app['requests']['memory'] - app['usage']['memory']) * cost_per_memory)
             applications[pod['application']] = app
@@ -293,9 +294,10 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                     logger.exception(e)
                     team_id = ''
                 app['team'] = team_id
-                team = teams.get(team_id, {'clusters': set(), 'applications': set(), 'cost': 0, 'requests': {}, 'usage': {}, 'slack_cost': 0})
+                team = teams.get(team_id, {'clusters': set(), 'applications': set(), 'cost': 0, 'pods': 0, 'requests': {}, 'usage': {}, 'slack_cost': 0})
                 team['applications'].add(app['id'])
                 team['clusters'] |= app['clusters']
+                team['pods'] += app['pods']
                 for r in 'cpu', 'memory':
                     team['requests'][r] = team['requests'].get(r, 0) + app['requests'][r]
                     team['usage'][r] = team['usage'].get(r, 0) + app.get('usage', {}).get(r, 0)
