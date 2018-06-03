@@ -237,6 +237,7 @@ def query_cluster(cluster, executor):
 def main(cluster_registry, application_registry, use_cache, output_dir):
     generate_report(cluster_registry, application_registry, use_cache, output_dir)
 
+
 def generate_report(cluster_registry, application_registry, use_cache, output_dir):
     cluster_summaries = {}
 
