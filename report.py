@@ -96,10 +96,16 @@ def query_cluster(cluster, executor):
     cluster_cost = 0
     for node in response.json()['items']:
         nodes[node['metadata']['name']] = node
+        node['capacity'] = {}
+        node['allocatable'] = {}
         for k, v in node['status'].get('capacity', {}).items():
-            cluster_capacity[k] += parse_resource(v)
+            parsed = parse_resource(v)
+            node['capacity'][k] = parsed
+            cluster_capacity[k] += parsed
         for k, v in node['status'].get('allocatable', {}).items():
-            cluster_allocatable[k] += parse_resource(v)
+            parsed = parse_resource(v)
+            node['allocatable'][k] = parsed
+            cluster_allocatable[k] += parsed
         role = node['metadata']['labels'].get('kubernetes.io/role') or 'worker'
         node_count[role] += 1
         region = node['metadata']['labels'].get('failure-domain.beta.kubernetes.io/region', 'unknown')
@@ -385,6 +391,16 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         logger.info('Generating {}..'.format(file_name))
         template = env.get_template(file_name)
         context['page'] = page
+        template.stream(**context).dump(str(output_path / file_name))
+
+    for cluster_id, summary in cluster_summaries.items():
+        page = 'clusters'
+        file_name = 'cluster-{}.html'.format(cluster_id)
+        logger.info('Generating {}..'.format(file_name))
+        template = env.get_template('cluster.html')
+        context['page'] = page
+        context['cluster_id'] = cluster_id
+        context['summary'] = summary
         template.stream(**context).dump(str(output_path / file_name))
 
     for team_id, team in teams.items():

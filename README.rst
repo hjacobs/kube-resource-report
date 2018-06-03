@@ -13,7 +13,7 @@ Usage (requires `Pipenv <https://docs.pipenv.org/>`_):
     $ ./report.py output/ # uses clusters defined in ~/.kube/config
     $ OAUTH2_ACCESS_TOKENS=read-only=mytok ./report.py --cluster-registry=https://cluster-registry.example.org output/ # discover clusters via registry
 
-The output will be multiple tab-separated files:
+The output will be HTML files plus multiple tab-separated files:
 
 ``output/clusters.tsv``
     List of cluster summaries with number of nodes and overall costs.
