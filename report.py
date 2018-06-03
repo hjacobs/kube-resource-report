@@ -293,6 +293,7 @@ def generate_report(cluster_registry, application_registry, use_cache, output_di
                 app['requests'][r] = app['requests'].get(r, 0) + pod['requests'][r]
                 app['usage'][r] = app['usage'].get(r, 0) + pod.get('usage', {}).get(r, 0)
             app['team'] = ''
+            app['active'] = None
             app['cost'] += pod['cost']
             app['pods'] += 1
             app['clusters'].add(cluster_id)
@@ -307,7 +308,8 @@ def generate_report(cluster_registry, application_registry, use_cache, output_di
 
             future_to_app = {}
             for app_id, app in applications.items():
-                future_to_app[futures_session.get(application_registry + '/apps/' + app_id, timeout=5)] = app
+                if app_id:
+                    future_to_app[futures_session.get(application_registry + '/apps/' + app_id, timeout=5)] = app
 
             for future in concurrent.futures.as_completed(future_to_app):
                 app = future_to_app[future]
@@ -318,8 +320,8 @@ def generate_report(cluster_registry, application_registry, use_cache, output_di
                     if not isinstance(data, dict):
                         data = {}
                 except Exception as e:
+                    logger.warning('Failed to look up application {}: {}'.format(app['id'], e))
                     data = {}
-                    logger.exception(e)
                 team_id = data.get('team_id', '')
                 app['team'] = team_id
                 app['active'] = data.get('active')

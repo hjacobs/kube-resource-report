@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Applications - Kubernetes Resource Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script src="sortable.min.js"></script>
+    <link rel="stylesheet" href="sortable-theme-minimal.css" />
+  </head>
+  <body class="has-navbar-fixed-top">
+  <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item " href="index.html">Overview</a>
+            <a class="navbar-item " href="clusters.html">Clusters</a>
+            <a class="navbar-item " href="ingresses.html">Ingresses</a>
+            <a class="navbar-item " href="teams.html">Teams</a>
+            <a class="navbar-item is-active" href="applications.html">Applications</a>
+            <a class="navbar-item " href="pods.html">Pods</a>
+        </div>
+    </div>
+  </nav>
+    <section class="section">
+    <div class="container">
+        
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th>Team</th>
+                  <th><abbr title="Active?">A?</abbr></th>
+                  <th><abbr title="Clusters">C</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+                  <th>Slack Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          
+          <tr>
+            <td></td>
+            <td><a href="team-.html"></a></td>
+            <td>
+                
+
+                </td>
+            <td>1</td>
+            <td>11</td>
+            <td>0.815</td>
+            <td data-value="167772160.0">160.0 MiB</td>
+            <td>0.098</td>
+            <td data-value="615235584.0">586.7 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+
+          
+          <tr>
+            <td>example-app</td>
+            <td><a href="team-example-team.html">example-team</a></td>
+            <td>
+                
+                
+                <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
+
+                
+                
+
+                </td>
+            <td>1</td>
+            <td>1</td>
+            <td>0.1</td>
+            <td data-value="209715200.0">200.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="2179072.0">2.1 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+
+          
+          <tr>
+            <td>kube-ops-view</td>
+            <td><a href="team-hjacobs.html">hjacobs</a></td>
+            <td>
+                
+                
+                <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
+
+                
+                
+
+                </td>
+            <td>1</td>
+            <td>1</td>
+            <td>0.05</td>
+            <td data-value="52428800.0">50.0 MiB</td>
+            <td>0.007</td>
+            <td data-value="53284864.0">50.8 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+
+          
+          <tr>
+            <td>kube-ops-view-redis</td>
+            <td><a href="team-.html"></a></td>
+            <td>
+                
+
+                </td>
+            <td>1</td>
+            <td>1</td>
+            <td>0.05</td>
+            <td data-value="52428800.0">50.0 MiB</td>
+            <td>0.001</td>
+            <td data-value="2904064.0">2.8 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+
+          
+          <tr>
+            <td>kubernetes-dashboard</td>
+            <td><a href="team-.html"></a></td>
+            <td>
+                
+
+                </td>
+            <td>1</td>
+            <td>1</td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+            <td>0.0</td>
+            <td data-value="17420288.0">16.6 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+
+          
+          <tr>
+            <td>legacy-service</td>
+            <td><a href="team-example-team.html">example-team</a></td>
+            <td>
+                
+                
+                <span class="icon"><i class="fas fa-exclamation-triangle has-text-warning"></i></span>
+                
+                
+
+                </td>
+            <td>1</td>
+            <td>3</td>
+            <td>0.3</td>
+            <td data-value="629145600.0">600.0 MiB</td>
+            <td>0.0</td>
+            <td data-value="6934528.0">6.6 MiB</td>
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.00</td>
+
+          </tr>
+
+          
+          </tbody>
+
+        </table>
+
+    </div>
+    </section>
+  <footer class="footer">
+      <div class="container">
+          <div class="content has-text-centered">
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
+              <p>Page generated 2018-06-03 19:24 UTC</p>
+          </div>
+      </div>
+  </footer>
+  </body>
+</html>

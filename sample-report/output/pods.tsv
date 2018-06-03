@@ -1,0 +1,18 @@
+minikube	https://192.168.99.100:8443	default	example-app-8db59d5d6-p5psv	example-app	0.1	209715200.0	0.0	2179072.0
+minikube	https://192.168.99.100:8443	default	kube-ops-view-5f859bf4d9-9jlwc	kube-ops-view	0.05	52428800.0	0.007	53284864.0
+minikube	https://192.168.99.100:8443	default	kube-ops-view-redis-5cb9899f5f-2jbll	kube-ops-view-redis	0.05	52428800.0	0.001	2904064.0
+minikube	https://192.168.99.100:8443	default	legacy-service-54c4c4f55d-cpj9w	legacy-service	0.1	209715200.0	0.0	1949696.0
+minikube	https://192.168.99.100:8443	default	legacy-service-54c4c4f55d-cxcbx	legacy-service	0.1	209715200.0	0.0	2183168.0
+minikube	https://192.168.99.100:8443	default	legacy-service-54c4c4f55d-w5tld	legacy-service	0.1	209715200.0	0.0	2801664.0
+minikube	https://192.168.99.100:8443	default	nginx-65899c769f-cl8pg		0.0	0.0	0.0	2228224.0
+minikube	https://192.168.99.100:8443	kube-system	etcd-minikube		0.0	0.0	0.016	62345216.0
+minikube	https://192.168.99.100:8443	kube-system	heapster-569j9		0.0	0.0	0.0	27201536.0
+minikube	https://192.168.99.100:8443	kube-system	influxdb-grafana-vdrsk		0.0	0.0	0.0	42430464.0
+minikube	https://192.168.99.100:8443	kube-system	kube-addon-manager-minikube		0.005	52428800.0	0.015	29847552.0
+minikube	https://192.168.99.100:8443	kube-system	kube-apiserver-minikube		0.25	0.0	0.026000000000000002	281268224.0
+minikube	https://192.168.99.100:8443	kube-system	kube-controller-manager-minikube		0.2	0.0	0.031	71667712.0
+minikube	https://192.168.99.100:8443	kube-system	kube-dns-86f4d74b45-s8lq8		0.26	115343360.0	0.001	36454400.0
+minikube	https://192.168.99.100:8443	kube-system	kube-proxy-qnpsc		0.0	0.0	0.002	19472384.0
+minikube	https://192.168.99.100:8443	kube-system	kube-scheduler-minikube		0.1	0.0	0.007	18034688.0
+minikube	https://192.168.99.100:8443	kube-system	kubernetes-dashboard-5498ccf677-8fv9v	kubernetes-dashboard	0.0	0.0	0.0	17420288.0
+minikube	https://192.168.99.100:8443	kube-system	storage-provisioner		0.0	0.0	0.0	24285184.0

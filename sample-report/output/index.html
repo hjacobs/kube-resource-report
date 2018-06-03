@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Overview - Kubernetes Resource Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script src="sortable.min.js"></script>
+    <link rel="stylesheet" href="sortable-theme-minimal.css" />
+  </head>
+  <body class="has-navbar-fixed-top">
+  <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item is-active" href="index.html">Overview</a>
+            <a class="navbar-item " href="clusters.html">Clusters</a>
+            <a class="navbar-item " href="ingresses.html">Ingresses</a>
+            <a class="navbar-item " href="teams.html">Teams</a>
+            <a class="navbar-item " href="applications.html">Applications</a>
+            <a class="navbar-item " href="pods.html">Pods</a>
+        </div>
+    </div>
+  </nav>
+    <section class="section">
+    <div class="container">
+        
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Clusters</p>
+      <p class="title">1</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Worker Nodes</p>
+      <p class="title">1</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Teams</p>
+      <p class="title">3</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Applications</p>
+      <p class="title">6</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">18</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Cost</p>
+      <p class="title">0.00</p>
+    </div>
+  </div>
+</nav>
+
+<div class="notification is-warning">
+    You can potentially save <strong>0.00 USD</strong> every month by optimizing resource requests and reducing slack.
+</div>
+
+<h2 class="title is-5">CPU</h2>
+<progress class="progress" value="1.3150000000000002" max="2.0" ></progress>
+<nav class="level">
+    <div class="level-left">
+        <div class="level-item">
+            1.32 requested
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+           2.0 allocatable
+        </div>
+    </div>
+</nav>
+
+<h2 class="title is-5">Memory</h2>
+<progress class="progress" value="1111490560.0" max="1992347648.0" ></progress>
+<nav class="level">
+    <div class="level-left">
+        <div class="level-item">
+            1.0 GiB requested
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+           1.9 GiB allocatable
+        </div>
+    </div>
+</nav>
+
+<h2 class="title is-5">Notifications</h2>
+
+<p>No warnings or errors to report.</p>
+
+
+
+    </div>
+    </section>
+  <footer class="footer">
+      <div class="container">
+          <div class="content has-text-centered">
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
+              <p>Page generated 2018-06-03 19:24 UTC</p>
+          </div>
+      </div>
+  </footer>
+  </body>
+</html>
