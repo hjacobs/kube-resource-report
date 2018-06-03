@@ -9,10 +9,10 @@
                   <th>Namespace</th>
                   <th>Name</th>
                   <th>Application</th>
-                  <th>CPU Requests</th>
-                  <th>Memory Requests</th>
-                  <th>CPU Usage</th>
-                  <th>Memory Usage</th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
                   <th>Cost</th>
               </tr>
           </thead>
@@ -28,7 +28,7 @@
             <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
             <td>{{ (pod.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
             <td data-value="{{ (pod.usage|default({'memory': 0})).memory }}">{{ (pod.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
-            <td>{{ pod.cost|round(2)}}</td>
+            <td class="has-text-right">{{ '{:,.02f}'.format(pod.cost) }}</td>
           </tr>
           {%endfor %}
           {%endfor %}

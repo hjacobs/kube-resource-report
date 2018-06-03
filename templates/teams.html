@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Teams{% endblock %}
+{% block content %}
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th><abbr title="Clusters">C</abbr></th>
+                  <th><abbr title="Applications">A</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Cost</th>
+                  <th>Slack Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for team_id, team in teams.items()|sort: %}
+          <tr>
+              <td><a href="team-{{ team_id }}.html" class="{{ 'is-italic' if not team_id }}">{{ team_id if team_id else '?unknown?' }}</a></td>
+            <td>{{ team.clusters|count }}</td>
+            <td>{{ team.applications|count }}</td>
+            <td>{{ team.pods }}</td>
+            <td>{{ team.requests.cpu|round(3) }}</td>
+            <td data-value="{{ team.requests.memory }}">{{ team.requests.memory|filesizeformat(True) }}</td>
+            <td>{{ (team.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
+            <td data-value="{{ (team.usage|default({'memory': 0})).memory }}">{{ (team.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
+            <td class="has-text-right">{{ '{:,.02f}'.format(team.cost) }}</td>
+            <td class="has-text-right">{{ '{:,.02f}'.format(team.slack_cost) }}</td>
+
+          </tr>
+
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}

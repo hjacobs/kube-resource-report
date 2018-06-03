@@ -36,16 +36,16 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Cost</p>
-      <p class="title">{{ total_cost|round(2) }}</p>
+      <p class="title">{{ '{:,.02f}'.format(total_cost) }}</p>
     </div>
   </div>
 </nav>
 
 <div class="notification is-warning">
-    You can potentially save <strong>{{ total_slack_cost|round(2) }} USD</strong> every month by optimizing resource requests and reducing slack.
+    You can potentially save <strong>{{ '{:,.02f}'.format(total_slack_cost) }} USD</strong> every month by optimizing resource requests and reducing slack.
 </div>
 
-<h2 class="title">CPU</h2>
+<h2 class="title is-5">CPU</h2>
 <progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}" ></progress>
 <nav class="level">
     <div class="level-left">
@@ -60,7 +60,7 @@
     </div>
 </nav>
 
-<h2 class="title">Memory</h2>
+<h2 class="title is-5">Memory</h2>
 <progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}" ></progress>
 <nav class="level">
     <div class="level-left">

@@ -13,19 +13,19 @@
                   <th><abbr title="Ingresses">I</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="User Pods">UP</abbr></th>
-                  <th>CPU Capacity</th>
-                  <th>Memory Capacity</th>
-                  <th>CPU Alloc.</th>
-                  <th>Memory Alloc</th>
-                  <th>CPU Requests</th>
-                  <th>Memory Requests</th>
-                  <th>CPU Used</th>
-                  <th>Memory Used</th>
+                  <th><abbr title="CPU Capacity">CC</abbr></th>
+                  <th><abbr title="Memory Capacity">MC</abbr></th>
+                  <th><abbr title="CPU Allocatable">CA</abbr></th>
+                  <th><abbr title="Memory Allocatable">MA</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th><abbr title="CPU Used">CU</abbr></th>
+                  <th><abbr title="Memory Used">MU</abbr></th>
                   <th>Cost</th>
               </tr>
           </thead>
           <tbody>
-          {% for cluster_id, summary in cluster_summaries.items(): %}
+          {% for cluster_id, summary in cluster_summaries.items()|sort: %}
           <tr>
             <td>{{ cluster_id }}</td>
             <td>{{ summary.cluster.api_server_url }}</td>
@@ -44,7 +44,7 @@
             <td data-value="{{ summary.requests.memory }}">{{ summary.requests.memory|filesizeformat(True) }}</td>
             <td>{{ summary.usage.cpu|round(1) }}</td>
             <td data-value="{{ summary.usage.memory }}">{{ summary.usage.memory|filesizeformat(True) }}</td>
-            <td>{{ summary.cost|round(2) }}</td>
+            <td class="has-text-right">{{ '{:,.02f}'.format(summary.cost) }}</td>
 
           </tr>
 

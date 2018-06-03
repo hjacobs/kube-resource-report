@@ -290,11 +290,15 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                 try:
                     response = future.result()
                     response.raise_for_status()
-                    team_id = response.json()['team_id']
+                    data = response.json()
+                    if not isinstance(data, dict):
+                        data = {}
                 except Exception as e:
+                    data = {}
                     logger.exception(e)
-                    team_id = ''
+                team_id = data.get('team_id', '')
                 app['team'] = team_id
+                app['active'] = data.get('active')
                 team = teams.get(team_id, {'clusters': set(), 'applications': set(), 'cost': 0, 'pods': 0, 'requests': {}, 'usage': {}, 'slack_cost': 0})
                 team['applications'].add(app['id'])
                 team['clusters'] |= app['clusters']
@@ -378,6 +382,17 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         template = env.get_template(file_name)
         context['page'] = page
         template.stream(**context).dump(str(output_path / file_name))
+
+    for team_id, team in teams.items():
+        page = 'teams'
+        file_name = 'team-{}.html'.format(team_id)
+        logger.info('Generating {}..'.format(file_name))
+        template = env.get_template('team.html')
+        context['page'] = page
+        context['team_id'] = team_id
+        context['team'] = team
+        template.stream(**context).dump(str(output_path / file_name))
+
 
     for path in templates_path.iterdir():
         if path.match('*.js') or path.match('*.css'):
