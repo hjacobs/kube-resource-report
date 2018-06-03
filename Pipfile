@@ -14,6 +14,7 @@ requests-futures = "*"
 [dev-packages]
 flake8 = "*"
 pytest = "*"
+pytest-watch = "*"
 
 [requires]
 python_version = "3.6"

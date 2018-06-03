@@ -44,6 +44,12 @@ RESOURCE_PATTERN = re.compile('^(\d*)(\D*)$')
 
 
 def parse_resource(v):
+    '''
+    >>> parse_resource('100m')
+    0.1
+    >>> parse_resource('2Gi')
+    2147483648
+    '''
     match = RESOURCE_PATTERN.match(v)
     factor = FACTORS.get(match.group(2), 1)
     return int(match.group(1)) * factor
@@ -229,6 +235,9 @@ def query_cluster(cluster, executor):
 @click.option('--use-cache', is_flag=True)
 @click.argument('output_dir', type=click.Path(exists=True))
 def main(cluster_registry, application_registry, use_cache, output_dir):
+    generate_report(cluster_registry, application_registry, use_cache, output_dir)
+
+def generate_report(cluster_registry, application_registry, use_cache, output_dir):
     cluster_summaries = {}
 
     notifications = []
@@ -430,6 +439,8 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
     for path in templates_path.iterdir():
         if path.match('*.js') or path.match('*.css'):
             shutil.copy(str(path), str(output_path / path.name))
+
+    return cluster_summaries
 
 
 if __name__ == '__main__':
