@@ -320,6 +320,11 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                 team['slack_cost'] += app['slack_cost']
                 teams[team_id] = team
 
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        for k, pod in summary['pods'].items():
+            app = applications.get(pod['application'])
+            pod['team'] = app['team']
+
     logger.info('Writing clusters.tsv..')
     with (output_path / 'clusters.tsv').open('w') as csvfile:
         writer = csv.writer(csvfile, delimiter='\t')

@@ -25,26 +25,14 @@
   </div>
   <div class="level-item has-text-centered">
     <div>
-      <p class="heading">CPU Allocatable</p>
-      <p class="title">{{ summary.allocatable.cpu|round(1) }}</p>
+      <p class="heading">CPU Requests / Allocatable</p>
+      <p class="title">{{ summary.requests.cpu|round(1) }} / {{ summary.allocatable.cpu|round(1) }}</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
     <div>
-      <p class="heading">Memory Allocatable</p>
-      <p class="title">{{ summary.allocatable.memory|filesizeformat(True) }}</p>
-    </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">CPU Requests</p>
-      <p class="title">{{ summary.requests.cpu|round(1) }}</p>
-    </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Memory Requests</p>
-      <p class="title">{{ summary.requests.memory|filesizeformat(True) }}</p>
+      <p class="heading">Memory Requests / Allocatable</p>
+      <p class="title">{{ summary.requests.memory|filesizeformat(True) }} / {{ summary.allocatable.memory|filesizeformat(True) }}</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
@@ -131,6 +119,7 @@
                   <th>Namespace</th>
                   <th>Name</th>
                   <th>Application</th>
+                  <th>Team</th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
                   <th><abbr title="CPU Used">CU</abbr></th>
@@ -144,6 +133,7 @@
             <td>{{ namespace_name[0] }}</td>
             <td>{{ namespace_name[1] }}</td>
             <td>{{ pod.application }}</td>
+            <td><a href="team-{{ pod.team }}.html">{{ pod.team }}</a></td>
             <td>{{ pod.requests.cpu|round(3) }}</td>
             <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
             <td>{{ (pod.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
