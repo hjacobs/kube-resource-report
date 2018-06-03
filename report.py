@@ -22,6 +22,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 VERSION = 'v0.1'
 
+ONE_MEBI = 1024**2
+
 FACTORS = {
     'm': 1 / 1000,
     'K': 1000,
@@ -284,7 +286,9 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
             app['cost'] += pod['cost']
             app['pods'] += 1
             app['clusters'].add(cluster_id)
-            app['slack_cost'] = max((app['requests']['cpu'] - app['usage']['cpu']) * cost_per_cpu, (app['requests']['memory'] - app['usage']['memory']) * cost_per_memory)
+            app['slack_cost'] = max(
+                (app['requests']['cpu'] - app['usage']['cpu']) * cost_per_cpu,
+                (app['requests']['memory'] - app['usage']['memory']) * cost_per_memory)
             applications[pod['application']] = app
 
     if application_registry:
@@ -335,9 +339,10 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                 if node['role'] == 'worker':
                     worker_instance_type.add(node['instance_type'])
                 kubelet_version.add(node['kubelet_version'])
-            fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type), ','.join(kubelet_version)]
+            fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'],
+                      ','.join(worker_instance_type), ','.join(kubelet_version)]
             for x in ['capacity', 'allocatable', 'requests', 'usage']:
-                fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024 * 1024))]
+                fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / ONE_MEBI)]
             fields += [round(summary['cost'], 2)]
             writer.writerow(fields)
 
@@ -363,15 +368,18 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                     usage = pod.get('usage', collections.defaultdict(float))
                     cpu_slack[(namespace, application)] += requests['cpu'] - usage['cpu']
                     memory_slack[(namespace, application)] += requests['memory'] - usage['memory']
-                    writer.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, pod['application'], requests['cpu'], requests['memory'], usage['cpu'], usage['memory']])
+                    writer.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, pod['application'],
+                                     requests['cpu'], requests['memory'], usage['cpu'], usage['memory']])
                 cost_per_cpu = summary['cost'] / summary['allocatable']['cpu']
                 cost_per_memory = summary['cost'] / summary['allocatable']['memory']
                 for namespace_name, slack in cpu_slack.most_common(20):
                     namespace, name = namespace_name
-                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'cpu', '{:3.2f}'.format(slack), '${:.2f} potential monthly savings'.format(slack * cost_per_cpu)])
+                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name,
+                                          'cpu', '{:3.2f}'.format(slack), '${:.2f} potential monthly savings'.format(slack * cost_per_cpu)])
                 for namespace_name, slack in memory_slack.most_common(20):
                     namespace, name = namespace_name
-                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'memory', '{:6.0f}Mi'.format(slack / (1024 * 1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory)])
+                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name,
+                                          'memory', '{:6.0f}Mi'.format(slack / ONE_MEBI), '${:.2f} potential monthly savings'.format(slack * cost_per_memory)])
 
     templates_path = Path(__file__).parent / 'templates'
     env = Environment(
