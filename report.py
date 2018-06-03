@@ -205,18 +205,18 @@ def query_cluster(cluster, executor):
             labels = item['metadata'].get('labels', {})
             application = labels.get('application', labels.get('app', ''))
             for rule in item['spec']['rules']:
-                l = [namespace, name, application, rule['host'], 0]
-                futures[futures_session.get('https://{}/'.format(rule['host']), timeout=5)] = l
-                cluster_summary['ingresses'].append(l)
+                ingress = [namespace, name, application, rule['host'], 0]
+                futures[futures_session.get('https://{}/'.format(rule['host']), timeout=5)] = ingress
+                cluster_summary['ingresses'].append(ingress)
 
         logger.info('Waiting for ingress status..')
         for future in concurrent.futures.as_completed(futures):
-            l = futures[future]
+            ingress = futures[future]
             try:
                 status = future.result().status_code
             except:
                 status = 999
-            l[4] = status
+            ingress[4] = status
 
     return cluster_summary
 
@@ -337,7 +337,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                 kubelet_version.add(node['kubelet_version'])
             fields = [cluster_id, summary['cluster'].api_server_url, summary['master_nodes'], summary['worker_nodes'], ','.join(worker_instance_type), ','.join(kubelet_version)]
             for x in ['capacity', 'allocatable', 'requests', 'usage']:
-                fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024*1024))]
+                fields += [round(summary[x]['cpu'], 2), int(summary[x]['memory'] / (1024 * 1024))]
             fields += [round(summary['cost'], 2)]
             writer.writerow(fields)
 
@@ -371,7 +371,7 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
                     slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'cpu', '{:3.2f}'.format(slack), '${:.2f} potential monthly savings'.format(slack * cost_per_cpu)])
                 for namespace_name, slack in memory_slack.most_common(20):
                     namespace, name = namespace_name
-                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'memory', '{:6.0f}Mi'.format(slack / (1024*1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory)])
+                    slackwriter.writerow([cluster_id, summary['cluster'].api_server_url, namespace, name, 'memory', '{:6.0f}Mi'.format(slack / (1024 * 1024)), '${:.2f} potential monthly savings'.format(slack * cost_per_memory)])
 
     templates_path = Path(__file__).parent / 'templates'
     env = Environment(
@@ -418,7 +418,6 @@ def main(cluster_registry, application_registry, use_cache, output_dir):
         context['team_id'] = team_id
         context['team'] = team
         template.stream(**context).dump(str(output_path / file_name))
-
 
     for path in templates_path.iterdir():
         if path.match('*.js') or path.match('*.css'):

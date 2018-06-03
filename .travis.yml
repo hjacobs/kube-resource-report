@@ -1,0 +1,9 @@
+language: python
+python:
+  - "3.6"
+install:
+  - pip install pipenv
+  - pipenv install --dev
+script:
+  - flake8
+  - py.test
