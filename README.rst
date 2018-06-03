@@ -9,6 +9,7 @@ Script to generate a report of CPU/memory requests vs. usage (collected via Heap
 * Collect all cluster nodes and their estimated costs (AWS only)
 * Collect all pods and use the ``application`` or ``app`` label as application ID
 * Get additional information for each app from the application registry (``team_id`` and ``active`` field)
+* Group and aggregate resource usage and slack costs per cluster, team and application
 
 Usage (requires `Pipenv <https://docs.pipenv.org/>`_):
 
@@ -22,6 +23,8 @@ Usage (requires `Pipenv <https://docs.pipenv.org/>`_):
 
 The output will be HTML files plus multiple tab-separated files:
 
+``output/index.html``
+    Main HTML overview page, links to all other HTML pages.
 ``output/clusters.tsv``
     List of cluster summaries with number of nodes and overall costs.
 ``output/slack.tsv``
