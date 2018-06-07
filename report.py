@@ -234,12 +234,14 @@ def query_cluster(cluster, executor, system_namespaces):
 @click.option('--application-registry')
 @click.option('--use-cache', is_flag=True)
 @click.option('--system-namespaces', default='kube-system')
+@click.option('--include-clusters')
+@click.option('--exclude-clusters')
 @click.argument('output_dir', type=click.Path(exists=True))
-def main(cluster_registry, application_registry, use_cache, output_dir, system_namespaces):
-    generate_report(cluster_registry, application_registry, use_cache, output_dir, set(system_namespaces.split(',')))
+def main(cluster_registry, application_registry, use_cache, output_dir, system_namespaces, include_clusters, exclude_clusters):
+    generate_report(cluster_registry, application_registry, use_cache, output_dir, set(system_namespaces.split(',')), include_clusters, exclude_clusters)
 
 
-def generate_report(cluster_registry, application_registry, use_cache, output_dir, system_namespaces):
+def generate_report(cluster_registry, application_registry, use_cache, output_dir, system_namespaces, include_clusters, exclude_clusters):
     cluster_summaries = {}
 
     notifications = []
@@ -259,10 +261,14 @@ def generate_report(cluster_registry, application_registry, use_cache, output_di
         else:
             discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
 
+        include_pattern = include_clusters and re.compile(include_clusters)
+        exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
+
         with ThreadPoolExecutor(max_workers=4) as executor:
             future_to_cluster = {}
             for cluster in discoverer.get_clusters():
-                future_to_cluster[executor.submit(query_cluster, cluster, executor, system_namespaces)] = cluster
+                if (not include_pattern or include_pattern.match(cluster.id)) and (not exclude_pattern or not exclude_pattern.match(cluster.id)):
+                    future_to_cluster[executor.submit(query_cluster, cluster, executor, system_namespaces)] = cluster
 
             for future in concurrent.futures.as_completed(future_to_cluster):
                 cluster = future_to_cluster[future]
