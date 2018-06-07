@@ -230,14 +230,20 @@ def query_cluster(cluster, executor, system_namespaces):
 
 
 @click.command()
-@click.option('--cluster-registry')
-@click.option('--application-registry')
-@click.option('--use-cache', is_flag=True)
-@click.option('--system-namespaces', default='kube-system')
-@click.option('--include-clusters')
-@click.option('--exclude-clusters')
+@click.option('--cluster-registry', metavar='URL', help='URL of Cluster Registry to discover clusters to report on')
+@click.option('--application-registry', metavar='URL', help='URL of Application Registry to look up team by application ID')
+@click.option('--use-cache', is_flag=True, help='Use cached data (mostly for development)')
+@click.option('--system-namespaces', metavar='NS1,NS2', default='kube-system',
+              help='Comma separated list of system/infrastructure namespaces (default: kube-system)')
+@click.option('--include-clusters', metavar='PATTERN', help='Include clusters matching the regex')
+@click.option('--exclude-clusters', metavar='PATTERN', help='Exclude clusters matching the regex')
 @click.argument('output_dir', type=click.Path(exists=True))
 def main(cluster_registry, application_registry, use_cache, output_dir, system_namespaces, include_clusters, exclude_clusters):
+    '''Kubernetes Resource Report
+
+    Generate a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry.
+    '''
+
     generate_report(cluster_registry, application_registry, use_cache, output_dir, set(system_namespaces.split(',')), include_clusters, exclude_clusters)
 
 
