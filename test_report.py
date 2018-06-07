@@ -33,6 +33,6 @@ def test_generate_report(tmpdir, monkeypatch):
         lambda cluster, path: MagicMock(json=lambda: responses.get(path)),
     )
     cluster_summaries = generate_report(
-        "https://cluster-registry", None, False, str(output_dir)
+        "https://cluster-registry", None, False, str(output_dir), set(['kube-system'])
     )
     assert len(cluster_summaries) == 1

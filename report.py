@@ -89,7 +89,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def query_cluster(cluster, executor):
+def query_cluster(cluster, executor, system_namespaces):
     logger.info('Querying cluster {} ({})..'.format(cluster.id, cluster.api_server_url))
     pods = {}
     nodes = {}
@@ -165,7 +165,7 @@ def query_cluster(cluster, executor):
         'cluster': cluster,
         'nodes': nodes,
         'pods': pods,
-        'user_pods': len([p for ns, p in pods if ns not in ('kube-system', 'visibility')]),
+        'user_pods': len([p for ns, p in pods if ns not in system_namespaces]),
         'master_nodes': node_count['master'],
         'worker_nodes': node_count['worker'],
         'kubelet_versions': set([n['kubelet_version'] for n in nodes.values() if n['role'] == 'worker']),
@@ -233,12 +233,13 @@ def query_cluster(cluster, executor):
 @click.option('--cluster-registry')
 @click.option('--application-registry')
 @click.option('--use-cache', is_flag=True)
+@click.option('--system-namespaces', default='kube-system')
 @click.argument('output_dir', type=click.Path(exists=True))
-def main(cluster_registry, application_registry, use_cache, output_dir):
-    generate_report(cluster_registry, application_registry, use_cache, output_dir)
+def main(cluster_registry, application_registry, use_cache, output_dir, system_namespaces):
+    generate_report(cluster_registry, application_registry, use_cache, output_dir, set(system_namespaces.split(',')))
 
 
-def generate_report(cluster_registry, application_registry, use_cache, output_dir):
+def generate_report(cluster_registry, application_registry, use_cache, output_dir, system_namespaces):
     cluster_summaries = {}
 
     notifications = []
@@ -261,7 +262,7 @@ def generate_report(cluster_registry, application_registry, use_cache, output_di
         with ThreadPoolExecutor(max_workers=4) as executor:
             future_to_cluster = {}
             for cluster in discoverer.get_clusters():
-                future_to_cluster[executor.submit(query_cluster, cluster, executor)] = cluster
+                future_to_cluster[executor.submit(query_cluster, cluster, executor, system_namespaces)] = cluster
 
             for future in concurrent.futures.as_completed(future_to_cluster):
                 cluster = future_to_cluster[future]
