@@ -193,16 +193,6 @@ def query_cluster(cluster, executor, system_namespaces):
     except Exception as e:
         logger.exception('Failed to query Heapster metrics')
 
-    cpu_slack = collections.Counter()
-    memory_slack = collections.Counter()
-
-    for k, pod in sorted(pods.items()):
-        namespace, name = k
-        requests = pod['requests']
-        usage = pod.get('usage', collections.defaultdict(float))
-        cpu_slack[(namespace, name.rsplit('-', 1)[0])] += requests['cpu'] - usage['cpu']
-        memory_slack[(namespace, name.rsplit('-', 1)[0])] += requests['memory'] - usage['memory']
-
     response = request(cluster, '/apis/extensions/v1beta1/ingresses')
     response.raise_for_status()
 
@@ -247,9 +237,35 @@ def main(cluster_registry, application_registry, use_cache, output_dir, system_n
     generate_report(cluster_registry, application_registry, use_cache, output_dir, set(system_namespaces.split(',')), include_clusters, exclude_clusters)
 
 
-def generate_report(cluster_registry, application_registry, use_cache, output_dir, system_namespaces, include_clusters, exclude_clusters):
+def get_cluster_summaries(cluster_registry: str, include_clusters: str, exclude_clusters: str, system_namespaces: set, notifications: list):
     cluster_summaries = {}
 
+    if cluster_registry:
+        discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
+    else:
+        discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
+
+    include_pattern = include_clusters and re.compile(include_clusters)
+    exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future_to_cluster = {}
+        for cluster in discoverer.get_clusters():
+            if (not include_pattern or include_pattern.match(cluster.id)) and (not exclude_pattern or not exclude_pattern.match(cluster.id)):
+                future_to_cluster[executor.submit(query_cluster, cluster, executor, system_namespaces)] = cluster
+
+        for future in concurrent.futures.as_completed(future_to_cluster):
+            cluster = future_to_cluster[future]
+            try:
+                summary = future.result()
+                cluster_summaries[cluster.id] = summary
+            except Exception as e:
+                notifications.append(['error', 'Failed to query cluster {}: {}'.format(cluster.id, e)])
+                logger.exception(e)
+    return cluster_summaries
+
+
+def generate_report(cluster_registry, application_registry, use_cache, output_dir, system_namespaces, include_clusters, exclude_clusters):
     notifications = []
 
     output_path = Path(output_dir)
@@ -261,29 +277,7 @@ def generate_report(cluster_registry, application_registry, use_cache, output_di
             cluster_summaries = pickle.load(fd)
 
     else:
-
-        if cluster_registry:
-            discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
-        else:
-            discoverer = cluster_discovery.KubeconfigDiscoverer(Path(os.path.expanduser('~/.kube/config')), set())
-
-        include_pattern = include_clusters and re.compile(include_clusters)
-        exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
-
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            future_to_cluster = {}
-            for cluster in discoverer.get_clusters():
-                if (not include_pattern or include_pattern.match(cluster.id)) and (not exclude_pattern or not exclude_pattern.match(cluster.id)):
-                    future_to_cluster[executor.submit(query_cluster, cluster, executor, system_namespaces)] = cluster
-
-            for future in concurrent.futures.as_completed(future_to_cluster):
-                cluster = future_to_cluster[future]
-                try:
-                    summary = future.result()
-                    cluster_summaries[cluster.id] = summary
-                except Exception as e:
-                    notifications.append(['error', 'Failed to query cluster {}: {}'.format(cluster.id, e)])
-                    logger.exception(e)
+        cluster_summaries = get_cluster_summaries(cluster_registry, include_clusters, exclude_clusters, system_namespaces, notifications)
 
     with pickle_path.open('wb') as fd:
         pickle.dump(cluster_summaries, fd)
