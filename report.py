@@ -447,7 +447,7 @@ def generate_report(cluster_registry, application_registry, use_cache, output_di
         template.stream(**context).dump(str(output_path / file_name))
 
     for path in templates_path.iterdir():
-        if path.match('*.js') or path.match('*.css'):
+        if path.match('*.js') or path.match('*.css') or path.match('*.png'):
             shutil.copy(str(path), str(output_path / path.name))
 
     return cluster_summaries
