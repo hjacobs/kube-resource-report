@@ -26,6 +26,11 @@ VERSION = "v0.1"
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
 
 ONE_MEBI = 1024 ** 2
+ONE_GIBI = 1024 ** 3
+
+AVG_DAYS_PER_MONTH = 30.4375
+HOURS_PER_DAY = 24
+HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
 
 FACTORS = {
     "m": 1 / 1000,
@@ -190,6 +195,8 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
             "cost": cost,
         }
 
+    hourly_cost = cluster_cost / HOURS_PER_MONTH
+
     cluster_summary = {
         "cluster": cluster,
         "nodes": nodes,
@@ -211,6 +218,14 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         "requests": cluster_requests,
         "usage": cluster_usage,
         "cost": cluster_cost,
+        "cost_per_usage_hour": {
+            "cpu": hourly_cost / max(cluster_usage["cpu"], 1),
+            "memory": hourly_cost / max(cluster_usage["memory"] / ONE_GIBI, 1),
+        },
+        "cost_per_request_hour": {
+            "cpu": hourly_cost / max(cluster_requests["cpu"], 1),
+            "memory": hourly_cost / max(cluster_requests["memory"] / ONE_GIBI, 1),
+        },
         "ingresses": [],
     }
 
