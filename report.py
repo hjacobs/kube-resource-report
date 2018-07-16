@@ -128,7 +128,8 @@ def query_cluster(cluster, executor, system_namespaces):
         cluster_cost += node['cost']
 
     try:
-        response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes')
+        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+        response = request(cluster, '/apis/metrics.k8s.io/v1beta1/nodes')
         response.raise_for_status()
         for item in response.json()['items']:
             key = item['metadata']['name']
@@ -179,7 +180,8 @@ def query_cluster(cluster, executor, system_namespaces):
     }
 
     try:
-        response = request(cluster, '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods')
+        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+        response = request(cluster, '/apis/metrics.k8s.io/v1beta1/pods')
         response.raise_for_status()
         for item in response.json()['items']:
             key = (item['metadata']['namespace'], item['metadata']['name'])
