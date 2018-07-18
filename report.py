@@ -631,6 +631,8 @@ def generate_report(
         loader=FileSystemLoader(str(templates_path)),
         autoescape=select_autoescape(["html", "xml"]),
     )
+    total_cost = sum([s["cost"] for s in cluster_summaries.values()])
+    total_hourly_cost = total_cost / HOURS_PER_MONTH
     context = {
         "notifications": notifications,
         "cluster_summaries": cluster_summaries,
@@ -642,7 +644,11 @@ def generate_report(
         "total_allocatable": total_allocatable,
         "total_requests": total_requests,
         "total_pods": sum([len(s["pods"]) for s in cluster_summaries.values()]),
-        "total_cost": sum([s["cost"] for s in cluster_summaries.values()]),
+        "total_cost": total_cost,
+        "total_cost_per_request_hour": {
+            "cpu": total_hourly_cost / max(total_requests["cpu"], 1),
+            "memory": total_hourly_cost / max(total_requests["memory"] / ONE_GIBI, 1),
+        },
         "total_slack_cost": sum([a["slack_cost"] for a in applications.values()]),
         "now": datetime.datetime.utcnow(),
         "version": VERSION,
