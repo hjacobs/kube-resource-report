@@ -43,11 +43,7 @@
   </div>
 </nav>
 
-{{ '{:,.04f}'.format(summary.cost_per_usage_hour.cpu) }} USD per hour
-{{ '{:,.04f}'.format(summary.cost_per_usage_hour.memory) }} USD per hour
-
-{{ '{:,.04f}'.format(summary.cost_per_request_hour.cpu) }} USD per hour
-{{ '{:,.04f}'.format(summary.cost_per_request_hour.memory) }} USD per hour
+<p class="content">Price per requested vCPU is {{ '{:,.04f}'.format(summary.cost_per_request_hour.cpu) }} USD per hour and per requested GiB memory is {{ '{:,.04f}'.format(summary.cost_per_request_hour.memory) }} USD per hour.</p>
 
     <h2 class="title is-5">Nodes</h2>
 
