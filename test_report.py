@@ -35,6 +35,7 @@ def test_generate_report(tmpdir, monkeypatch):
     cluster_summaries = generate_report(
         "https://cluster-registry",
         None,
+        None,
         False,
         str(output_dir),
         set(["kube-system"]),

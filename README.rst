@@ -20,7 +20,7 @@ What the script does:
 Usage
 -----
 
-The usage requires `Pipenv <https://docs.pipenv.org/>`_:
+The usage requires `Pipenv <https://docs.pipenv.org/>`_ (see below for alternative with Docker):
 
 .. code-block::
 
@@ -42,6 +42,15 @@ The output will be HTML files plus multiple tab-separated files:
     List of ingress host rules (informational).
 ``output/pods.tsv``
     List of all pods and their CPU/memory requests and usages.
+
+---------------------------
+Running as Docker container
+---------------------------
+
+.. code-block::
+
+    $ docker build -t kube-resource-report .
+    $ docker run -it --net=host -v ~/.kube:/kube -v $(pwd)/output:/out kube-resource-report --kubeconfig-path=/kube/config /out
 
 --------------------
 Application Registry

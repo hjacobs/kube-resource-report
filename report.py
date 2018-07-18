@@ -250,6 +250,7 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
     metavar="URL",
     help="URL of Cluster Registry to discover clusters to report on",
 )
+@click.option('--kubeconfig-path', type=click.Path(exists=True), help='Path to kubeconfig file')
 @click.option(
     "--application-registry",
     metavar="URL",
@@ -279,6 +280,7 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
     cluster_registry,
+    kubeconfig_path,
     application_registry,
     use_cache,
     output_dir,
@@ -292,8 +294,14 @@ def main(
     Generate a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry.
     """
 
+    if kubeconfig_path:
+        kubeconfig_path = Path(kubeconfig_path)
+    else:
+        kubeconfig_path = Path(os.path.expanduser("~/.kube/config"))
+
     generate_report(
         cluster_registry,
+        kubeconfig_path,
         application_registry,
         use_cache,
         output_dir,
@@ -306,6 +314,7 @@ def main(
 
 def get_cluster_summaries(
     cluster_registry: str,
+    kubeconfig_path: Path,
     include_clusters: str,
     exclude_clusters: str,
     system_namespaces: set,
@@ -318,7 +327,7 @@ def get_cluster_summaries(
         discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
     else:
         discoverer = cluster_discovery.KubeconfigDiscoverer(
-            Path(os.path.expanduser("~/.kube/config")), set()
+            kubeconfig_path, set()
         )
 
     include_pattern = include_clusters and re.compile(include_clusters)
@@ -355,6 +364,7 @@ def get_cluster_summaries(
 
 def generate_report(
     cluster_registry,
+    kubeconfig_path,
     application_registry,
     use_cache,
     output_dir,
@@ -376,6 +386,7 @@ def generate_report(
     else:
         cluster_summaries = get_cluster_summaries(
             cluster_registry,
+            kubeconfig_path,
             include_clusters,
             exclude_clusters,
             system_namespaces,
