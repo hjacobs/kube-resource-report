@@ -26,6 +26,11 @@ VERSION = "v0.1"
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
 
 ONE_MEBI = 1024 ** 2
+ONE_GIBI = 1024 ** 3
+
+AVG_DAYS_PER_MONTH = 30.4375
+HOURS_PER_DAY = 24
+HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
 
 FACTORS = {
     "m": 1 / 1000,
@@ -107,6 +112,7 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
     cluster_capacity = collections.defaultdict(float)
     cluster_allocatable = collections.defaultdict(float)
     cluster_requests = collections.defaultdict(float)
+    user_requests = collections.defaultdict(float)
     cluster_usage = collections.defaultdict(float)
     node_count = collections.defaultdict(int)
     cluster_cost = additional_cost_per_cluster
@@ -179,16 +185,22 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         labels = pod["metadata"].get("labels", {})
         application = labels.get("application", labels.get("app", ""))
         requests = collections.defaultdict(float)
+        ns = pod["metadata"]["namespace"]
         for container in pod["spec"]["containers"]:
             for k, v in container["resources"].get("requests", {}).items():
-                requests[k] += parse_resource(v)
-                cluster_requests[k] += parse_resource(v)
+                pv = parse_resource(v)
+                requests[k] += pv
+                cluster_requests[k] += pv
+                if ns not in system_namespaces:
+                    user_requests[k] += pv
         cost = max(requests["cpu"] * cost_per_cpu, requests["memory"] * cost_per_memory)
-        pods[(pod["metadata"]["namespace"], pod["metadata"]["name"])] = {
+        pods[(ns, pod["metadata"]["name"])] = {
             "requests": requests,
             "application": application,
             "cost": cost,
         }
+
+    hourly_cost = cluster_cost / HOURS_PER_MONTH
 
     cluster_summary = {
         "cluster": cluster,
@@ -209,8 +221,13 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         "capacity": cluster_capacity,
         "allocatable": cluster_allocatable,
         "requests": cluster_requests,
+        "user_requests": user_requests,
         "usage": cluster_usage,
         "cost": cluster_cost,
+        "cost_per_user_request_hour": {
+            "cpu": 0.5 * hourly_cost / max(user_requests["cpu"], 1),
+            "memory": 0.5 * hourly_cost / max(user_requests["memory"] / ONE_GIBI, 1),
+        },
         "ingresses": [],
     }
 
@@ -415,11 +432,13 @@ def generate_report(
     applications = {}
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
+    total_user_requests = collections.defaultdict(int)
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for r in "cpu", "memory":
             total_allocatable[r] += summary["allocatable"][r]
             total_requests[r] += summary["requests"][r]
+            total_user_requests[r] += summary["user_requests"][r]
 
         cost_per_cpu = summary["cost"] / summary["allocatable"]["cpu"]
         cost_per_memory = summary["cost"] / summary["allocatable"]["memory"]
@@ -616,6 +635,8 @@ def generate_report(
         loader=FileSystemLoader(str(templates_path)),
         autoescape=select_autoescape(["html", "xml"]),
     )
+    total_cost = sum([s["cost"] for s in cluster_summaries.values()])
+    total_hourly_cost = total_cost / HOURS_PER_MONTH
     context = {
         "notifications": notifications,
         "cluster_summaries": cluster_summaries,
@@ -626,8 +647,13 @@ def generate_report(
         ),
         "total_allocatable": total_allocatable,
         "total_requests": total_requests,
+        "total_user_requests": total_user_requests,
         "total_pods": sum([len(s["pods"]) for s in cluster_summaries.values()]),
-        "total_cost": sum([s["cost"] for s in cluster_summaries.values()]),
+        "total_cost": total_cost,
+        "total_cost_per_user_request_hour": {
+            "cpu": 0.5 * total_hourly_cost / max(total_user_requests["cpu"], 1),
+            "memory": 0.5 * total_hourly_cost / max(total_user_requests["memory"] / ONE_GIBI, 1),
+        },
         "total_slack_cost": sum([a["slack_cost"] for a in applications.values()]),
         "now": datetime.datetime.utcnow(),
         "version": VERSION,

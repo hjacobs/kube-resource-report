@@ -23,7 +23,7 @@ def generate_cluster_id(url: str):
     """Generate some "cluster ID" from given API server URL"""
     for prefix in ("https://", "http://"):
         if url.startswith(prefix):
-            url = url[len(prefix) :]
+            url = url[len(prefix):]
     return CLUSTER_ID_INVALID_CHARS.sub("-", url.lower()).strip("-")
 
 

@@ -75,6 +75,10 @@
     </div>
 </nav>
 
+<h2 class="title is-5">Resource-based Pricing</h2>
+
+<p class="content">Price per vCPU is {{ '{:,.04f}'.format(total_cost_per_user_request_hour.cpu) }} USD per hour and per GiB memory is {{ '{:,.04f}'.format(total_cost_per_user_request_hour.memory) }} USD per hour.</p>
+
 <h2 class="title is-5">Notifications</h2>
 {% for notification in notifications: %}
 <div class="notification is-{{ 'danger' if notification[0] == 'error' }}">
@@ -83,5 +87,6 @@
 {% else %}
 <p>No warnings or errors to report.</p>
 {% endfor %}
+
 
 {% endblock %}
