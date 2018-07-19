@@ -51,6 +51,7 @@
                   <th>Name</th>
                   <th>Role</th>
                   <th>Instance Type</th>
+                  <th><abbr title="Spot Instance?">S?</abbr></th>
                   <th>Kubelet Version</th>
                   <th><abbr title="CPU Capacity">CC</abbr></th>
                   <th><abbr title="Memory Capacity">MC</abbr></th>
@@ -65,11 +66,15 @@
             <td>{{ node_name }}</td>
             <td>{{ node.role }}</td>
             <td>{{ node.instance_type }}</td>
+            <td>{% if node.spot: %}
+                <span class="icon"><i class="fas fa-percentage has-text-success"></i></span>
+                {% endif %}
+            </td>
             <td>{{ node.kubelet_version }}</td>
-            <td>{{ node.capacity.cpu|round(1) }}</td>
-            <td>{{ node.capacity.memory|filesizeformat(True) }}</td>
-            <td>{{ (node.usage|default({'cpu':0})).cpu|round(1) }}</td>
-            <td data-value="{{ (node.usage|default({'memory':0})).memory }}">{{ (node.usage|default({'memory':0})).memory|filesizeformat(True) }}</td>
+            <td class="has-text-right">{{ node.capacity.cpu|round(1) }}</td>
+            <td class="has-text-right">{{ node.capacity.memory|filesizeformat(True) }}</td>
+            <td class="has-text-right">{{ (node.usage|default({'cpu':0})).cpu|round(1) }}</td>
+            <td class="has-text-right" data-value="{{ (node.usage|default({'memory':0})).memory }}">{{ (node.usage|default({'memory':0})).memory|filesizeformat(True) }}</td>
             <td class="has-text-right">{{ '{:,.02f}'.format(node.cost) }}</td>
           </tr>
           {%endfor %}

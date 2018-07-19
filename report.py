@@ -22,6 +22,9 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 VERSION = "v0.1"
 
+# TODO: this should be configurable
+NODE_LABEL_SPOT = "aws.amazon.com/spot"
+
 ONE_MEBI = 1024 ** 2
 
 FACTORS = {
@@ -127,6 +130,13 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         instance_type = node["metadata"]["labels"].get(
             "beta.kubernetes.io/instance-type", "unknown"
         )
+        is_spot = node["metadata"]["labels"].get(NODE_LABEL_SPOT) == "true"
+        node["spot"] = is_spot
+        if is_spot:
+            # https://aws.amazon.com/ec2/spot/instance-advisor/
+            discount = 0.60
+        else:
+            discount = 0
         node["kubelet_version"] = (
             node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
         )
@@ -138,6 +148,7 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
                 "No cost information for {} in {}".format(instance_type, region)
             )
             node["cost"] = 0
+        node["cost"] *= 1 - discount
         cluster_cost += node["cost"]
 
     try:
@@ -191,6 +202,9 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         ),
         "worker_instance_types": set(
             [n["instance_type"] for n in nodes.values() if n["role"] == "worker"]
+        ),
+        "worker_instance_is_spot": any(
+            [n["spot"] for n in nodes.values() if n["role"] == "worker"]
         ),
         "capacity": cluster_capacity,
         "allocatable": cluster_allocatable,
@@ -250,7 +264,9 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
     metavar="URL",
     help="URL of Cluster Registry to discover clusters to report on",
 )
-@click.option('--kubeconfig-path', type=click.Path(exists=True), help='Path to kubeconfig file')
+@click.option(
+    "--kubeconfig-path", type=click.Path(exists=True), help="Path to kubeconfig file"
+)
 @click.option(
     "--application-registry",
     metavar="URL",
@@ -326,9 +342,7 @@ def get_cluster_summaries(
     if cluster_registry:
         discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
     else:
-        discoverer = cluster_discovery.KubeconfigDiscoverer(
-            kubeconfig_path, set()
-        )
+        discoverer = cluster_discovery.KubeconfigDiscoverer(kubeconfig_path, set())
 
     include_pattern = include_clusters and re.compile(include_clusters)
     exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
