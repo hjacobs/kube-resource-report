@@ -120,6 +120,7 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         nodes[node["metadata"]["name"]] = node
         node["capacity"] = {}
         node["allocatable"] = {}
+        node["requests"] = {'cpu': 0, 'memory': 0}
         for k, v in node["status"].get("capacity", {}).items():
             parsed = parse_resource(v)
             node["capacity"][k] = parsed
@@ -193,6 +194,9 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
                 cluster_requests[k] += pv
                 if ns not in system_namespaces:
                     user_requests[k] += pv
+        if 'nodeName' in pod['spec'] and pod['spec']['nodeName'] in nodes:
+            for k in ('cpu', 'memory'):
+                nodes[pod['spec']['nodeName']]['requests'][k] += requests.get(k, 0)
         cost = max(requests["cpu"] * cost_per_cpu, requests["memory"] * cost_per_memory)
         pods[(ns, pod["metadata"]["name"])] = {
             "requests": requests,
@@ -663,6 +667,10 @@ def generate_report(
         ),
         "total_allocatable": total_allocatable,
         "total_requests": total_requests,
+        "total_usage": {
+            "cpu": sum(s["usage"]["cpu"] for s in  cluster_summaries.values()),
+            "memory": sum(s["usage"]["memory"] for s in  cluster_summaries.values())
+            },
         "total_user_requests": total_user_requests,
         "total_pods": sum([len(s["pods"]) for s in cluster_summaries.values()]),
         "total_cost": total_cost,

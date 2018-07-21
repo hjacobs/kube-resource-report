@@ -58,11 +58,12 @@
                   <th>Role</th>
                   <th>Instance Type</th>
                   <th><abbr title="Spot Instance?">S?</abbr></th>
-                  <th>Kubelet Version</th>
+                  <th>Version</th>
                   <th><abbr title="CPU Capacity">CC</abbr></th>
                   <th><abbr title="Memory Capacity">MC</abbr></th>
                   <th><abbr title="CPU Used">CU</abbr></th>
                   <th><abbr title="Memory Used">MU</abbr></th>
+                  <th>Usage</th>
                   <th>Cost</th>
               </tr>
           </thead>
@@ -81,6 +82,16 @@
             <td class="has-text-right">{{ node.capacity.memory|filesizeformat(True) }}</td>
             <td class="has-text-right">{{ (node.usage|default({'cpu':0})).cpu|round(1) }}</td>
             <td class="has-text-right" data-value="{{ (node.usage|default({'memory':0})).memory }}">{{ (node.usage|default({'memory':0})).memory|filesizeformat(True) }}</td>
+            <td style="vertical-align:middle">
+                <div style="height: 0.6rem">
+                <progress class="progress" value="{{ node.requests.cpu }}" max="{{ node.allocatable.cpu }}" style="height: 0.4rem;margin:0"></progress>
+                <progress class="progress is-primary" value="{{ (node.usage|default({'cpu':0})).cpu }}" max="{{ node.allocatable.cpu }}" style="height: 0.4rem;position:relative; top:-0.4rem; background:transparent;margin:0"></progress>
+                </div>
+                <div style="height: 0.4rem">
+                <progress class="progress" value="{{ node.requests.memory }}" max="{{ node.allocatable.memory }}" style="height: 0.4rem;margin:0"></progress>
+                <progress class="progress is-primary" value="{{ (node.usage|default({'memory':0})).memory }}" max="{{ node.allocatable.memory }}" style="height: 0.4rem;position:relative; top:-0.4rem; background:transparent;margin:0"></progress>
+                </div>
+            </td>
             <td class="has-text-right">{{ '{:,.02f}'.format(node.cost) }}</td>
           </tr>
           {%endfor %}

@@ -46,10 +46,12 @@
 </div>
 
 <h2 class="title is-5">CPU</h2>
-<progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}" ></progress>
+<progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}" style="margin:0"></progress>
+<progress class="progress is-primary" value="{{ total_usage['cpu'] }}" max="{{ total_allocatable['cpu'] }}" style="position:relative; top:-1rem; background: transparent; margin:0"></progress>
 <nav class="level">
     <div class="level-left">
         <div class="level-item">
+            {{ total_usage['cpu']|round(2) }} used /
             {{ total_requests['cpu']|round(2) }} requested
         </div>
     </div>
@@ -61,10 +63,12 @@
 </nav>
 
 <h2 class="title is-5">Memory</h2>
-<progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}" ></progress>
+<progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}" style="margin:0"></progress>
+<progress class="progress is-primary" value="{{ total_usage['memory'] }}" max="{{ total_allocatable['memory'] }}" style="position:relative; top:-1rem; background: transparent; margin:0" ></progress>
 <nav class="level">
     <div class="level-left">
         <div class="level-item">
+            {{ total_usage['memory']|filesizeformat(True) }} used /
             {{ total_requests['memory']|filesizeformat(True) }} requested
         </div>
     </div>
