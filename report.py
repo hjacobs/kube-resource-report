@@ -102,7 +102,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def query_cluster(cluster, executor, system_namespaces, additional_cost_per_cluster):
+def query_cluster(cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status):
     logger.info("Querying cluster {} ({})..".format(cluster.id, cluster.api_server_url))
     pods = {}
     nodes = {}
@@ -258,19 +258,21 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
             application = labels.get("application", labels.get("app", ""))
             for rule in item["spec"]["rules"]:
                 ingress = [namespace, name, application, rule["host"], 0]
-                futures[
-                    futures_session.get("https://{}/".format(rule["host"]), timeout=5)
-                ] = ingress
+                if not no_ingress_status:
+                    futures[
+                        futures_session.get("https://{}/".format(rule["host"]), timeout=5)
+                    ] = ingress
                 cluster_summary["ingresses"].append(ingress)
 
-        logger.info("Waiting for ingress status..")
-        for future in concurrent.futures.as_completed(futures):
-            ingress = futures[future]
-            try:
-                status = future.result().status_code
-            except:
-                status = 999
-            ingress[4] = status
+        if not no_ingress_status:
+            logger.info("Waiting for ingress status..")
+            for future in concurrent.futures.as_completed(futures):
+                ingress = futures[future]
+                try:
+                    status = future.result().status_code
+                except:
+                    status = 999
+                ingress[4] = status
 
     return cluster_summary
 
@@ -291,6 +293,9 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
 )
 @click.option(
     "--use-cache", is_flag=True, help="Use cached data (mostly for development)"
+)
+@click.option(
+    "--no-ingress-status", is_flag=True, help="Do not check Ingress HTTP status"
 )
 @click.option(
     "--system-namespaces",
@@ -316,6 +321,7 @@ def main(
     kubeconfig_path,
     application_registry,
     use_cache,
+    no_ingress_status,
     output_dir,
     system_namespaces,
     include_clusters,
@@ -337,6 +343,7 @@ def main(
         kubeconfig_path,
         application_registry,
         use_cache,
+        no_ingress_status,
         output_dir,
         set(system_namespaces.split(",")),
         include_clusters,
@@ -353,6 +360,7 @@ def get_cluster_summaries(
     system_namespaces: set,
     notifications: list,
     additional_cost_per_cluster: float,
+    no_ingress_status: bool
 ):
     cluster_summaries = {}
 
@@ -377,6 +385,7 @@ def get_cluster_summaries(
                         executor,
                         system_namespaces,
                         additional_cost_per_cluster,
+                        no_ingress_status
                     )
                 ] = cluster
 
@@ -398,6 +407,7 @@ def generate_report(
     kubeconfig_path,
     application_registry,
     use_cache,
+    no_ingress_status,
     output_dir,
     system_namespaces,
     include_clusters,
@@ -423,6 +433,7 @@ def generate_report(
             system_namespaces,
             notifications,
             additional_cost_per_cluster,
+            no_ingress_status,
         )
 
     with pickle_path.open("wb") as fd:
