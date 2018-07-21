@@ -122,7 +122,7 @@ class ClusterRegistryDiscoverer:
     def refresh(self):
         try:
             response = self._session.get(
-                urljoin(self._url, "/kubernetes-clusters"), timeout=10
+                urljoin(self._url, "/kubernetes-clusters?verbose=false"), timeout=10
             )
             response.raise_for_status()
             clusters = []
