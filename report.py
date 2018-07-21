@@ -231,6 +231,8 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         "ingresses": [],
     }
 
+    cluster_slack_cost = 0
+
     try:
         # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
         response = request(cluster, "/apis/metrics.k8s.io/v1beta1/pods")
@@ -244,8 +246,13 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
                     for k, v in container.get("usage", {}).items():
                         usage[k] += parse_resource(v)
                 pod["usage"] = usage
+                usage_cost = max(pod["usage"]["cpu"] * cost_per_cpu, pod["usage"]["memory"] * cost_per_memory)
+                pod["slack_cost"] = pod['cost'] - usage_cost
+                cluster_slack_cost += pod["slack_cost"]
     except Exception as e:
         logger.exception("Failed to query Heapster metrics")
+
+    cluster_summary['slack_cost'] = min(cluster_cost, cluster_slack_cost)
 
     response = request(cluster, "/apis/extensions/v1beta1/ingresses")
     response.raise_for_status()
@@ -459,6 +466,7 @@ def generate_report(
                 {
                     "id": pod["application"],
                     "cost": 0,
+                    "slack_cost": 0,
                     "pods": 0,
                     "requests": {},
                     "usage": {},
@@ -473,12 +481,9 @@ def generate_report(
             app["team"] = ""
             app["active"] = None
             app["cost"] += pod["cost"]
+            app["slack_cost"] += pod.get("slack_cost", 0)
             app["pods"] += 1
             app["clusters"].add(cluster_id)
-            app["slack_cost"] = max(
-                (app["requests"]["cpu"] - app["usage"]["cpu"]) * cost_per_cpu,
-                (app["requests"]["memory"] - app["usage"]["memory"]) * cost_per_memory,
-            )
             applications[pod["application"]] = app
 
     if application_registry:

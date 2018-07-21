@@ -43,6 +43,10 @@
   </div>
 </nav>
 
+    <div class="notification is-warning">
+        You can potentially save <strong>{{ '{:,.02f}'.format(summary.slack_cost) }} USD</strong> every month by optimizing resource requests and reducing slack.
+    </div>
+
 <p class="content">Price per requested vCPU is {{ '{:,.04f}'.format(summary.cost_per_user_request_hour.cpu) }} USD per hour and per requested GiB memory is {{ '{:,.04f}'.format(summary.cost_per_user_request_hour.memory) }} USD per hour.</p>
 
     <h2 class="title is-5">Nodes</h2>
