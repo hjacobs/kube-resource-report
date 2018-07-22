@@ -11,6 +11,7 @@ import re
 import requests
 import cluster_discovery
 import shutil
+import time
 from urllib.parse import urljoin
 from pathlib import Path
 
@@ -21,7 +22,7 @@ from requests_futures.sessions import FuturesSession
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import filters
 
-VERSION = "v0.1"
+__version__ = "v0.1"
 
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
@@ -164,8 +165,15 @@ def query_cluster(
 
     try:
         # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        response = request(cluster, "/apis/metrics.k8s.io/v1beta1/nodes")
-        response.raise_for_status()
+        for i, url in enumerate(["/apis/metrics.k8s.io/v1beta1/nodes", '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes']):
+            try:
+                response = request(cluster, url)
+                response.raise_for_status()
+            except Exception as e:
+                if i == 0:
+                    logger.warning('Failed to query metrics: %s', e)
+                else:
+                    raise
         for item in response.json()["items"]:
             key = item["metadata"]["name"]
             node = nodes.get(key)
@@ -244,8 +252,15 @@ def query_cluster(
 
     try:
         # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        response = request(cluster, "/apis/metrics.k8s.io/v1beta1/pods")
-        response.raise_for_status()
+        for i, url in enumerate(["/apis/metrics.k8s.io/v1beta1/pods", '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods']):
+            try:
+                response = request(cluster, url)
+                response.raise_for_status()
+            except Exception as e:
+                if i == 0:
+                    logger.warning('Failed to query metrics: %s', e)
+                else:
+                    raise
         for item in response.json()["items"]:
             key = (item["metadata"]["namespace"], item["metadata"]["name"])
             pod = pods.get(key)
@@ -298,7 +313,20 @@ def query_cluster(
     return cluster_summary
 
 
+class CommaSeparatedValues(click.ParamType):
+    name = 'comma_separated_values'
+
+    def convert(self, value, param, ctx):
+        if isinstance(value, str):
+            values = filter(None, value.split(','))
+        else:
+            values = value
+        return values
+
+
 @click.command()
+@click.option('--clusters', type=CommaSeparatedValues(),
+              help='Comma separated list of Kubernetes API server URLs (default: {})'.format(cluster_discovery.DEFAULT_CLUSTERS), envvar='CLUSTERS')
 @click.option(
     "--cluster-registry",
     metavar="URL",
@@ -336,8 +364,10 @@ def query_cluster(
     help="Additional fixed costs per cluster (e.g. etcd nodes, ELBs, ..)",
     default=0,
 )
+@click.option('--update-interval-minutes', type=float, help='Update the report every X minutes (default: run once and exit)', default=0)
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
+    clusters,
     cluster_registry,
     kubeconfig_path,
     application_registry,
@@ -348,6 +378,7 @@ def main(
     include_clusters,
     exclude_clusters,
     additional_cost_per_cluster,
+    update_interval_minutes
 ):
     """Kubernetes Resource Report
 
@@ -359,21 +390,28 @@ def main(
     else:
         kubeconfig_path = Path(os.path.expanduser("~/.kube/config"))
 
-    generate_report(
-        cluster_registry,
-        kubeconfig_path,
-        application_registry,
-        use_cache,
-        no_ingress_status,
-        output_dir,
-        set(system_namespaces.split(",")),
-        include_clusters,
-        exclude_clusters,
-        additional_cost_per_cluster,
-    )
+    while True:
+        generate_report(
+            clusters,
+            cluster_registry,
+            kubeconfig_path,
+            application_registry,
+            use_cache,
+            no_ingress_status,
+            output_dir,
+            set(system_namespaces.split(",")),
+            include_clusters,
+            exclude_clusters,
+            additional_cost_per_cluster,
+        )
+        if update_interval_minutes > 0:
+            time.sleep(update_interval_minutes * 60)
+        else:
+            break
 
 
 def get_cluster_summaries(
+    clusters: list,
     cluster_registry: str,
     kubeconfig_path: Path,
     include_clusters: str,
@@ -387,6 +425,9 @@ def get_cluster_summaries(
 
     if cluster_registry:
         discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
+    elif clusters or not kubeconfig_path.exists():
+        api_server_urls = clusters or []
+        discoverer = cluster_discovery.StaticClusterDiscoverer(api_server_urls)
     else:
         discoverer = cluster_discovery.KubeconfigDiscoverer(kubeconfig_path, set())
 
@@ -478,6 +519,7 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
 
 
 def generate_report(
+    clusters,
     cluster_registry,
     kubeconfig_path,
     application_registry,
@@ -504,6 +546,7 @@ def generate_report(
 
     else:
         cluster_summaries = get_cluster_summaries(
+            clusters,
             cluster_registry,
             kubeconfig_path,
             include_clusters,
@@ -706,7 +749,7 @@ def generate_report(
         },
         "total_slack_cost": sum([a["slack_cost"] for a in applications.values()]),
         "now": datetime.datetime.utcnow(),
-        "version": VERSION,
+        "version": __version__,
     }
     for page in ["index", "clusters", "ingresses", "teams", "applications", "pods"]:
         file_name = "{}.html".format(page)

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application: kube-resource-report
+    version: v0.1
+  name: kube-resource-report
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application: kube-resource-report
+  template:
+    metadata:
+      labels:
+        application: kube-resource-report
+        version: v0.1
+    spec:
+      serviceAccount: kube-resource-report
+      containers:
+      - name: kube-resource-report
+        # see https://github.com/hjacobs/kube-resource-report/releases
+        image: hjacobs/kube-resource-report:1828a88-dirty
+        args:
+        - --update-interval-minutes=1
+        # this is just an example, e.g. for Minikube: assume 30 USD/month cluster costs
+        - --additional-cost-per-cluster=30.0
+        - /output
+        volumeMounts:
+        - mountPath: /output
+          name: report-data
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 5m
+            memory: 50Mi
+      - name: nginx
+        image: nginx:alpine
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: report-data
+          readOnly: true
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        resources:
+          limits:
+            memory: 50Mi
+          requests:
+            cpu: 5m
+            memory: 20Mi
+      volumes:
+          - name: report-data
+            emptyDir: {}
+            sizeLimit: 500Mi
+
+
+

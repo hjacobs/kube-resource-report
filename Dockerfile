@@ -11,4 +11,7 @@ RUN pipenv install --system --deploy --ignore-pipfile
 COPY *.py /
 COPY templates /templates
 
+ARG VERSION=dev
+RUN sed -i "s/__version__ = .*/__version__ = '${VERSION}'/" /report.py
+
 ENTRYPOINT ["/report.py"]
