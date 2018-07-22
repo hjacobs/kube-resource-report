@@ -35,6 +35,10 @@ spec:
           requests:
             cpu: 5m
             memory: 50Mi
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
       - name: nginx
         image: nginx:alpine
         volumeMounts:
