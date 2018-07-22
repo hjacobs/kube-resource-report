@@ -1,9 +1,13 @@
+sudo: required
 language: python
 python:
   - "3.6"
+services:
+  - docker
 install:
   - pip install pipenv
   - pipenv install --dev
 script:
   - flake8
   - py.test --doctest-modules
+  - make docker
