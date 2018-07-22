@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+import filters
 
 VERSION = "v0.1"
 
@@ -102,7 +103,9 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def query_cluster(cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status):
+def query_cluster(
+    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status
+):
     logger.info("Querying cluster {} ({})..".format(cluster.id, cluster.api_server_url))
     pods = {}
     nodes = {}
@@ -120,8 +123,8 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         nodes[node["metadata"]["name"]] = node
         node["capacity"] = {}
         node["allocatable"] = {}
-        node["requests"] = {'cpu': 0, 'memory': 0}
-        node["usage"] = {'cpu': 0, 'memory': 0}
+        node["requests"] = {"cpu": 0, "memory": 0}
+        node["usage"] = {"cpu": 0, "memory": 0}
         for k, v in node["status"].get("capacity", {}).items():
             parsed = parse_resource(v)
             node["capacity"][k] = parsed
@@ -195,14 +198,15 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
                 cluster_requests[k] += pv
                 if ns not in system_namespaces:
                     user_requests[k] += pv
-        if 'nodeName' in pod['spec'] and pod['spec']['nodeName'] in nodes:
-            for k in ('cpu', 'memory'):
-                nodes[pod['spec']['nodeName']]['requests'][k] += requests.get(k, 0)
+        if "nodeName" in pod["spec"] and pod["spec"]["nodeName"] in nodes:
+            for k in ("cpu", "memory"):
+                nodes[pod["spec"]["nodeName"]]["requests"][k] += requests.get(k, 0)
         cost = max(requests["cpu"] * cost_per_cpu, requests["memory"] * cost_per_memory)
         pods[(ns, pod["metadata"]["name"])] = {
             "requests": requests,
             "application": application,
             "cost": cost,
+            "usage": {"cpu": 0, "memory": 0},
         }
 
     hourly_cost = cluster_cost / HOURS_PER_MONTH
@@ -251,13 +255,16 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
                     for k, v in container.get("usage", {}).items():
                         usage[k] += parse_resource(v)
                 pod["usage"] = usage
-                usage_cost = max(pod["usage"]["cpu"] * cost_per_cpu, pod["usage"]["memory"] * cost_per_memory)
-                pod["slack_cost"] = pod['cost'] - usage_cost
+                usage_cost = max(
+                    pod["usage"]["cpu"] * cost_per_cpu,
+                    pod["usage"]["memory"] * cost_per_memory,
+                )
+                pod["slack_cost"] = pod["cost"] - usage_cost
                 cluster_slack_cost += pod["slack_cost"]
     except Exception as e:
         logger.exception("Failed to query Heapster metrics")
 
-    cluster_summary['slack_cost'] = min(cluster_cost, cluster_slack_cost)
+    cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
 
     response = request(cluster, "/apis/extensions/v1beta1/ingresses")
     response.raise_for_status()
@@ -272,7 +279,9 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
                 ingress = [namespace, name, application, rule["host"], 0]
                 if not no_ingress_status:
                     futures[
-                        futures_session.get("https://{}/".format(rule["host"]), timeout=5)
+                        futures_session.get(
+                            "https://{}/".format(rule["host"]), timeout=5
+                        )
                     ] = ingress
                 cluster_summary["ingresses"].append(ingress)
 
@@ -372,7 +381,7 @@ def get_cluster_summaries(
     system_namespaces: set,
     notifications: list,
     additional_cost_per_cluster: float,
-    no_ingress_status: bool
+    no_ingress_status: bool,
 ):
     cluster_summaries = {}
 
@@ -397,7 +406,7 @@ def get_cluster_summaries(
                         executor,
                         system_namespaces,
                         additional_cost_per_cluster,
-                        no_ingress_status
+                        no_ingress_status,
                     )
                 ] = cluster
 
@@ -459,16 +468,14 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
             team["clusters"] |= app["clusters"]
             team["pods"] += app["pods"]
             for r in "cpu", "memory":
-                team["requests"][r] = (
-                    team["requests"].get(r, 0) + app["requests"][r]
+                team["requests"][r] = team["requests"].get(r, 0) + app["requests"][r]
+                team["usage"][r] = team["usage"].get(r, 0) + app.get("usage", {}).get(
+                    r, 0
                 )
-                team["usage"][r] = team["usage"].get(r, 0) + app.get(
-                    "usage", {}
-                ).get(r, 0)
             team["cost"] += app["cost"]
             team["slack_cost"] += app["slack_cost"]
             teams[team_id] = team
-    return teams
+
 
 def generate_report(
     cluster_registry,
@@ -490,7 +497,10 @@ def generate_report(
 
     if use_cache and pickle_path.exists():
         with pickle_path.open("rb") as fd:
-            cluster_summaries = pickle.load(fd)
+            data = pickle.load(fd)
+        cluster_summaries = data["cluster_summaries"]
+        teams = data["teams"]
+        applications = data["applications"]
 
     else:
         cluster_summaries = get_cluster_summaries(
@@ -503,12 +513,9 @@ def generate_report(
             additional_cost_per_cluster,
             no_ingress_status,
         )
+        teams = {}
+        applications = {}
 
-    with pickle_path.open("wb") as fd:
-        pickle.dump(cluster_summaries, fd)
-
-    teams = {}
-    applications = {}
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
     total_user_requests = collections.defaultdict(int)
@@ -532,6 +539,8 @@ def generate_report(
                     "requests": {},
                     "usage": {},
                     "clusters": set(),
+                    "team": "",
+                    "active": None,
                 },
             )
             for r in "cpu", "memory":
@@ -539,8 +548,6 @@ def generate_report(
                 app["usage"][r] = app["usage"].get(r, 0) + pod.get("usage", {}).get(
                     r, 0
                 )
-            app["team"] = ""
-            app["active"] = None
             app["cost"] += pod["cost"]
             app["slack_cost"] += pod.get("slack_cost", 0)
             app["pods"] += 1
@@ -554,6 +561,17 @@ def generate_report(
         for k, pod in summary["pods"].items():
             app = applications.get(pod["application"])
             pod["team"] = app["team"]
+
+    if not use_cache:
+        with pickle_path.open("wb") as fd:
+            pickle.dump(
+                {
+                    "cluster_summaries": cluster_summaries,
+                    "teams": teams,
+                    "applications": applications,
+                },
+                fd,
+            )
 
     logger.info("Writing clusters.tsv..")
     with (output_path / "clusters.tsv").open("w") as csvfile:
@@ -660,6 +678,9 @@ def generate_report(
         loader=FileSystemLoader(str(templates_path)),
         autoescape=select_autoescape(["html", "xml"]),
     )
+    env.filters["money"] = filters.money
+    env.filters["cpu"] = filters.cpu
+    env.filters["memory"] = filters.memory
     total_cost = sum([s["cost"] for s in cluster_summaries.values()])
     total_hourly_cost = total_cost / HOURS_PER_MONTH
     context = {
@@ -673,9 +694,9 @@ def generate_report(
         "total_allocatable": total_allocatable,
         "total_requests": total_requests,
         "total_usage": {
-            "cpu": sum(s["usage"]["cpu"] for s in  cluster_summaries.values()),
-            "memory": sum(s["usage"]["memory"] for s in  cluster_summaries.values())
-            },
+            "cpu": sum(s["usage"]["cpu"] for s in cluster_summaries.values()),
+            "memory": sum(s["usage"]["memory"] for s in cluster_summaries.values()),
+        },
         "total_user_requests": total_user_requests,
         "total_pods": sum([len(s["pods"]) for s in cluster_summaries.values()]),
         "total_cost": total_cost,

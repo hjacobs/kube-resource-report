@@ -36,20 +36,20 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Monthly Cost</p>
-      <p class="title">{{ '{:,.02f}'.format(total_cost) }} USD</p>
+      <p class="title">{{ total_cost|money }} USD</p>
     </div>
   </div>
 </nav>
 
 <div class="notification is-warning">
-    You can potentially save <strong>{{ '{:,.02f}'.format(total_slack_cost) }} USD</strong> every month by optimizing resource requests and reducing slack.
+    You can potentially save <strong>{{ total_slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
 </div>
 
 <h2 class="title is-5">CPU</h2>
 <div class="resource-labels">
-    <span>{{ total_usage['cpu']|round(2) }} used</span>
-    <span>{{ total_requests['cpu']|round(2) }} requested</span>
-    <span>{{ total_allocatable['cpu']|round(2) }} allocatable</span>
+    <span>{{ total_usage['cpu']|cpu }} used</span>
+    <span>{{ total_requests['cpu']|cpu }} requested</span>
+    <span>{{ total_allocatable['cpu']|cpu }} allocatable</span>
 </div>
 <div class="resource-bar">
     <progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}"></progress>

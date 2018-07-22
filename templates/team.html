@@ -19,7 +19,7 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">CPU Requests</p>
-      <p class="title">{{ team.requests.cpu|round(1) }}</p>
+      <p class="title">{{ team.requests.cpu|cpu }}</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
@@ -31,12 +31,12 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Monthly Cost</p>
-      <p class="title">{{ '{:,.02f}'.format(team.cost) }} USD</p>
+      <p class="title">{{ team.cost|money }} USD</p>
     </div>
   </div>
 </nav>
     <div class="notification is-warning">
-        You can potentially save <strong>{{ '{:,.02f}'.format(team.slack_cost) }} USD</strong> every month by optimizing resource requests and reducing slack.
+        You can potentially save <strong>{{ team.slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
     </div>
     <h2 class="title is-5">Clusters</h2>
       <table class="table is-striped" data-sortable>
@@ -51,13 +51,9 @@
                   <th><abbr title="Ingresses">I</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="User Pods">UP</abbr></th>
-                  <th><abbr title="CPU Allocatable">CA</abbr></th>
-                  <th><abbr title="Memory Allocatable">MA</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (GiB)</th>
+                  <th class="has-text-right">Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -73,13 +69,26 @@
             <td>{{ summary.ingresses|count }}</td>
             <td>{{ summary.pods|count }}</td>
             <td>{{ summary.user_pods }}</td>
-            <td>{{ summary.allocatable.cpu|round(1) }}</td>
-            <td data-value="{{ summary.allocatable.memory }}">{{ summary.allocatable.memory|filesizeformat(True) }}</td>
-            <td>{{ summary.requests.cpu|round(1) }}</td>
-            <td data-value="{{ summary.requests.memory }}">{{ summary.requests.memory|filesizeformat(True) }}</td>
-            <td>{{ summary.usage.cpu|round(1) }}</td>
-            <td data-value="{{ summary.usage.memory }}">{{ summary.usage.memory|filesizeformat(True) }}</td>
-            <td class="has-text-right">{{ '{:,.02f}'.format(summary.cost) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ summary.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ summary.usage.cpu|cpu }}</span> <span>{{ summary.requests.cpu|cpu }}</span> <span>{{ summary.allocatable.cpu|cpu }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ summary.requests.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
+                    <progress class="progress is-primary" value="{{ summary.usage.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ summary.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ summary.usage.memory|memory('GiB') }}</span> <span>{{ summary.requests.memory|memory('GiB') }}</span> <span>{{ summary.allocatable.memory|memory('GiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ summary.requests.memory }}" max="{{ summary.allocatable.memory }}"></progress>
+                    <progress class="progress is-primary" value="{{ summary.usage.memory }}" max="{{ summary.allocatable.memory }}"></progress>
+                </div>
+            </td>
+            <td class="has-text-right">{{ summary.cost|money }}</td>
 
           </tr>
 
@@ -95,12 +104,12 @@
                   <th><abbr title="Active?">A?</abbr></th>
                   <th><abbr title="Clusters">C</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
-                  <th>CPU Requests</th>
-                  <th>Memory Requests</th>
-                  <th>CPU Usage</th>
-                  <th>Memory Usage</th>
-                  <th>Cost</th>
-                  <th>Slack Cost</th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -123,10 +132,28 @@
             <td>{{ app.pods }}</td>
             <td>{{ app.requests.cpu|round(3) }}</td>
             <td data-value="{{ app.requests.memory }}">{{ app.requests.memory|filesizeformat(True) }}</td>
-            <td>{{ (app.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
-            <td data-value="{{ (app.usage|default({'memory': 0})).memory }}">{{ (app.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
-            <td class="has-text-right">{{ '{:,.02f}'.format(app.cost) }}</td>
-            <td class="has-text-right">{{ '{:,.02f}'.format(app.slack_cost) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ app.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ app.usage.cpu|round(2) }}</span> <span>{{ app.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ app.requests.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if app.usage.cpu > app.requests.cpu else 'is-primary' }}" value="{{ app.usage.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ app.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ app.usage.memory|memory('MiB') }}</span> <span>{{ app.requests.memory|memory('MiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ app.requests.memory }}" max="{{ app.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if app.usage.memory > app.requests.memory else 'is-primary' }}" value="{{ app.usage.memory }}" max="{{ app.requests.memory }}"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">{{ app.cost|money }}</td>
+            <td class="has-text-right">{{ app.slack_cost|money }}</td>
 
           </tr>
             {% endif %}

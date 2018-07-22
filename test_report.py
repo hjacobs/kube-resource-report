@@ -37,6 +37,7 @@ def test_generate_report(tmpdir, monkeypatch):
         None,
         None,
         False,
+        False,
         str(output_dir),
         set(["kube-system"]),
         None,

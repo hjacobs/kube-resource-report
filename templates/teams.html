@@ -28,7 +28,7 @@
 
             <td style="font-size: 0.75rem" data-value="{{ team.usage.cpu }}">
                 <div class="resource-labels">
-                    <span>{{ team.usage.cpu|round(2) }}</span> <span></span> <span>{{ team.requests.cpu|round(2) }}</span>
+                    <span>{{ team.usage.cpu|round(2) }}</span> <span>{{ team.requests.cpu|round(2) }}</span>
                 </div>
                 <div class="resource-bar">
                     <progress class="progress" value="{{ team.requests.cpu }}" max="{{ team.requests.cpu }}"></progress>
@@ -37,7 +37,7 @@
             </td>
             <td style="font-size: 0.75rem" data-value="{{ team.usage.memory }}">
                 <div class="resource-labels">
-                    <span>{{ (team.usage.memory / (1024**2))|round|int }}</span> <span></span> <span>{{ (team.requests.memory / (1024**2))|round|int }}</span>
+                    <span>{{ team.usage.memory|memory('MiB') }}</span> <span>{{ team.requests.memory|memory('MiB') }}</span>
                 </div>
                 <div class="resource-bar">
                     <progress class="progress" value="{{ team.requests.memory }}" max="{{ team.requests.memory }}"></progress>
@@ -45,8 +45,8 @@
                 </div>
             </td>
 
-            <td class="has-text-right">{{ '{:,.02f}'.format(team.cost) }}</td>
-            <td class="has-text-right">{{ '{:,.02f}'.format(team.slack_cost) }}</td>
+            <td class="has-text-right">{{ team.cost|money }}</td>
+            <td class="has-text-right">{{ team.slack_cost|money }}</td>
 
           </tr>
 

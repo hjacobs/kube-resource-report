@@ -26,7 +26,7 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">CPU Requests / Allocatable</p>
-      <p class="title">{{ summary.requests.cpu|round(1) }} / {{ summary.allocatable.cpu|round(1) }}</p>
+      <p class="title">{{ summary.requests.cpu|cpu }} / {{ summary.allocatable.cpu|cpu }}</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
@@ -38,13 +38,13 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Monthly Cost</p>
-      <p class="title">{{ '{:,.02f}'.format(summary.cost) }} USD</p>
+      <p class="title">{{ summary.cost|money }} USD</p>
     </div>
   </div>
 </nav>
 
     <div class="notification is-warning">
-        You can potentially save <strong>{{ '{:,.02f}'.format(summary.slack_cost) }} USD</strong> every month by optimizing resource requests and reducing slack.
+        You can potentially save <strong>{{ summary.slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
     </div>
 
 <p class="content">Price per requested vCPU is {{ '{:,.04f}'.format(summary.cost_per_user_request_hour.cpu) }} USD per hour and per requested GiB memory is {{ '{:,.04f}'.format(summary.cost_per_user_request_hour.memory) }} USD per hour.</p>
@@ -91,14 +91,14 @@
             </td>
             <td style="font-size: 0.75rem" data-value="{{ node.usage.memory }}">
                 <div class="resource-labels">
-                    <span>{{ (node.usage.memory / (1024**3))|round(1) }}</span> <span>{{ (node.requests.memory / (1024**3))|round(1) }}</span> <span>{{ (node.allocatable.memory / (1024**3))|round(1) }}</span>
+                    <span>{{ node.usage.memory|memory('GiB') }}</span> <span>{{ node.requests.memory|memory('GiB') }}</span> <span>{{ node.allocatable.memory|memory('GiB') }}</span>
                 </div>
                 <div class="resource-bar">
                     <progress class="progress" value="{{ node.requests.memory }}" max="{{ node.allocatable.memory }}"></progress>
                     <progress class="progress is-primary" value="{{ node.usage.memory }}" max="{{ node.allocatable.memory }}"></progress>
                 </div>
             </td>
-            <td class="has-text-right">{{ '{:,.02f}'.format(node.cost) }}</td>
+            <td class="has-text-right">{{ node.cost|money }}</td>
           </tr>
           {%endfor %}
           </tbody>
@@ -150,9 +150,9 @@
                   <th>Team</th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -164,9 +164,27 @@
             <td><a href="team-{{ pod.team }}.html">{{ pod.team }}</a></td>
             <td>{{ pod.requests.cpu|round(3) }}</td>
             <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
-            <td>{{ (pod.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
-            <td data-value="{{ (pod.usage|default({'memory': 0})).memory }}">{{ (pod.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
-            <td class="has-text-right">{{ '{:,.02f}'.format(pod.cost) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ pod.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ pod.usage.cpu|round(2) }}</span> <span>{{ pod.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ pod.requests.cpu }}" max="{{ pod.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if pod.usage.cpu > pod.requests.cpu else 'is-primary' }}" value="{{ pod.usage.cpu }}" max="{{ pod.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ pod.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ pod.usage.memory|memory('MiB') }}</span> <span>{{ pod.requests.memory|memory('MiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ pod.requests.memory }}" max="{{ pod.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if pod.usage.memory > pod.requests.memory else 'is-primary' }}" value="{{ pod.usage.memory }}" max="{{ pod.requests.memory }}"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">{{ pod.cost|money }}</td>
           </tr>
           {%endfor %}
           </tbody>
