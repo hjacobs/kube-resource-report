@@ -17,7 +17,7 @@ from requests_futures.sessions import FuturesSession
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from kube_resource_report import cluster_discovery, filters, __version__
+from kube_resource_report import cluster_discovery, pricing, filters, __version__
 
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
@@ -58,24 +58,6 @@ def parse_resource(v):
     match = RESOURCE_PATTERN.match(v)
     factor = FACTORS.get(match.group(2), 1)
     return int(match.group(1)) * factor
-
-
-NODE_COSTS_MONTHLY = {}
-
-# CSVs downloaded from https://ec2instances.info/
-for path in Path(".").glob("aws-ec2-costs-hourly-*.csv"):
-    region = path.stem.split("-", 4)[4]
-    with path.open() as fd:
-        reader = csv.DictReader(fd)
-        for row in reader:
-            cost = row["Linux On Demand cost"]
-            if cost == "unavailable":
-                continue
-            elif cost.startswith("$") and cost.endswith(" hourly"):
-                monthly_cost = float(cost.split()[0].strip("$")) * 24 * 30
-                NODE_COSTS_MONTHLY[(region, row["API Name"])] = monthly_cost
-            else:
-                raise Exception("Invalid price data: {}".format(cost))
 
 
 session = requests.Session()
@@ -139,23 +121,12 @@ def query_cluster(
         )
         is_spot = node["metadata"]["labels"].get(NODE_LABEL_SPOT) == "true"
         node["spot"] = is_spot
-        if is_spot:
-            # https://aws.amazon.com/ec2/spot/instance-advisor/
-            discount = 0.60
-        else:
-            discount = 0
         node["kubelet_version"] = (
             node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
         )
         node["role"] = role
         node["instance_type"] = instance_type
-        node["cost"] = NODE_COSTS_MONTHLY.get((region, instance_type))
-        if node["cost"] is None:
-            logger.warning(
-                "No cost information for {} in {}".format(instance_type, region)
-            )
-            node["cost"] = 0
-        node["cost"] *= 1 - discount
+        node["cost"] = pricing.get_node_cost(region, instance_type, is_spot)
         cluster_cost += node["cost"]
 
     try:
