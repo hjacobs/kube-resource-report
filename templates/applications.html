@@ -11,10 +11,10 @@
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
-                  <th>Slack Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -37,8 +37,26 @@
             <td>{{ app.pods }}</td>
             <td>{{ app.requests.cpu|round(3) }}</td>
             <td data-value="{{ app.requests.memory }}">{{ app.requests.memory|filesizeformat(True) }}</td>
-            <td>{{ (app.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
-            <td data-value="{{ (app.usage|default({'memory': 0})).memory }}">{{ (app.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ app.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ app.usage.cpu|round(2) }}</span> <span></span> <span>{{ app.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ app.requests.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if app.usage.cpu > app.requests.cpu else 'is-primary' }}" value="{{ app.usage.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ app.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ (app.usage.memory / (1024**2))|round|int }}</span> <span></span> <span>{{ (app.requests.memory / (1024**2))|round|int }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ app.requests.memory }}" max="{{ app.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if app.usage.memory > app.requests.memory else 'is-primary' }}" value="{{ app.usage.memory }}" max="{{ app.requests.memory }}"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">{{ '{:,.02f}'.format(app.cost) }}</td>
             <td class="has-text-right">{{ '{:,.02f}'.format(app.slack_cost) }}</td>
 

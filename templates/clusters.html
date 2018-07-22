@@ -14,17 +14,9 @@
                   <th><abbr title="Ingresses">I</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="User Pods">UP</abbr></th>
-                  <!--
-                  <th><abbr title="CPU Capacity">CC</abbr></th>
-                  <th><abbr title="Memory Capacity">MC</abbr></th>
-                  -->
-                  <th><abbr title="CPU Allocatable">CA</abbr></th>
-                  <th><abbr title="Memory Allocatable">MA</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (GiB)</th>
+                  <th class="has-text-right">Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -43,16 +35,25 @@
             <td class="has-text-right">{{ summary.ingresses|count }}</td>
             <td class="has-text-right">{{ summary.pods|count }}</td>
             <td class="has-text-right">{{ summary.user_pods }}</td>
-            <!--
-            <td class="has-text-right">{{ summary.capacity.cpu|round(1) }}</td>
-            <td class="has-text-right">{{ summary.capacity.memory|filesizeformat(True) }}</td>
-            -->
-            <td class="has-text-right">{{ summary.allocatable.cpu|round(1) }}</td>
-            <td class="has-text-right" data-value="{{ summary.allocatable.memory }}">{{ summary.allocatable.memory|filesizeformat(True) }}</td>
-            <td class="has-text-right">{{ summary.requests.cpu|round(1) }}</td>
-            <td class="has-text-right" data-value="{{ summary.requests.memory }}">{{ summary.requests.memory|filesizeformat(True) }}</td>
-            <td class="has-text-right">{{ summary.usage.cpu|round(1) }}</td>
-            <td class="has-text-right" data-value="{{ summary.usage.memory }}">{{ summary.usage.memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ summary.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ summary.usage.cpu|round(1) }}</span> <span>{{ summary.requests.cpu|round(1) }}</span> <span>{{ summary.allocatable.cpu|round(1) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ summary.requests.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
+                    <progress class="progress is-primary" value="{{ summary.usage.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ summary.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ (summary.usage.memory / (1024**3))|round(1) }}</span> <span>{{ (summary.requests.memory / (1024**3))|round(1) }}</span> <span>{{ (summary.allocatable.memory / (1024**3))|round(1) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ summary.requests.memory }}" max="{{ summary.allocatable.memory }}"></progress>
+                    <progress class="progress is-primary" value="{{ summary.usage.memory }}" max="{{ summary.allocatable.memory }}"></progress>
+                </div>
+            </td>
             <td class="has-text-right">{{ '{:,.02f}'.format(summary.cost) }}</td>
 
           </tr>

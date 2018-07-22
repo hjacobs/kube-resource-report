@@ -61,9 +61,8 @@
                   <th>Version</th>
                   <th><abbr title="CPU Capacity">CC</abbr></th>
                   <th><abbr title="Memory Capacity">MC</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Usage</th>
+                  <th>CPU</th>
+                  <th>Memory (GiB)</th>
                   <th>Cost</th>
               </tr>
           </thead>
@@ -80,16 +79,23 @@
             <td>{{ node.kubelet_version }}</td>
             <td class="has-text-right">{{ node.capacity.cpu|round(1) }}</td>
             <td class="has-text-right">{{ node.capacity.memory|filesizeformat(True) }}</td>
-            <td class="has-text-right">{{ (node.usage|default({'cpu':0})).cpu|round(1) }}</td>
-            <td class="has-text-right" data-value="{{ (node.usage|default({'memory':0})).memory }}">{{ (node.usage|default({'memory':0})).memory|filesizeformat(True) }}</td>
-            <td style="vertical-align:middle">
-                <div style="height: 0.6rem">
-                <progress class="progress" value="{{ node.requests.cpu }}" max="{{ node.allocatable.cpu }}" style="height: 0.4rem;margin:0"></progress>
-                <progress class="progress is-primary" value="{{ (node.usage|default({'cpu':0})).cpu }}" max="{{ node.allocatable.cpu }}" style="height: 0.4rem;position:relative; top:-0.4rem; background:transparent;margin:0"></progress>
+
+            <td style="font-size: 0.75rem" data-value="{{ node.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ node.usage.cpu|round(1) }}</span> <span>{{ node.requests.cpu|round(1) }}</span> <span>{{ node.allocatable.cpu|round(1) }}</span>
                 </div>
-                <div style="height: 0.4rem">
-                <progress class="progress" value="{{ node.requests.memory }}" max="{{ node.allocatable.memory }}" style="height: 0.4rem;margin:0"></progress>
-                <progress class="progress is-primary" value="{{ (node.usage|default({'memory':0})).memory }}" max="{{ node.allocatable.memory }}" style="height: 0.4rem;position:relative; top:-0.4rem; background:transparent;margin:0"></progress>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ node.requests.cpu }}" max="{{ node.allocatable.cpu }}"></progress>
+                    <progress class="progress is-primary" value="{{ node.usage.cpu }}" max="{{ node.allocatable.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ node.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ (node.usage.memory / (1024**3))|round(1) }}</span> <span>{{ (node.requests.memory / (1024**3))|round(1) }}</span> <span>{{ (node.allocatable.memory / (1024**3))|round(1) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ node.requests.memory }}" max="{{ node.allocatable.memory }}"></progress>
+                    <progress class="progress is-primary" value="{{ node.usage.memory }}" max="{{ node.allocatable.memory }}"></progress>
                 </div>
             </td>
             <td class="has-text-right">{{ '{:,.02f}'.format(node.cost) }}</td>

@@ -10,10 +10,10 @@
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
-                  <th>Slack Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -25,8 +25,26 @@
             <td>{{ team.pods }}</td>
             <td>{{ team.requests.cpu|round(3) }}</td>
             <td data-value="{{ team.requests.memory }}">{{ team.requests.memory|filesizeformat(True) }}</td>
-            <td>{{ (team.usage|default({"cpu": 0})).cpu|default(0)|round(3) }}</td>
-            <td data-value="{{ (team.usage|default({'memory': 0})).memory }}">{{ (team.usage|default({"memory": 0})).memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ team.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ team.usage.cpu|round(2) }}</span> <span></span> <span>{{ team.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ team.requests.cpu }}" max="{{ team.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if team.usage.cpu > team.requests.cpu else 'is-primary' }}" value="{{ team.usage.cpu }}" max="{{ team.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ team.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ (team.usage.memory / (1024**2))|round|int }}</span> <span></span> <span>{{ (team.requests.memory / (1024**2))|round|int }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ team.requests.memory }}" max="{{ team.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if team.usage.memory > team.requests.memory else 'is-primary' }}" value="{{ team.usage.memory }}" max="{{ team.requests.memory }}"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">{{ '{:,.02f}'.format(team.cost) }}</td>
             <td class="has-text-right">{{ '{:,.02f}'.format(team.slack_cost) }}</td>
 

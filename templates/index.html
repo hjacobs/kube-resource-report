@@ -46,38 +46,26 @@
 </div>
 
 <h2 class="title is-5">CPU</h2>
-<progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}" style="margin:0"></progress>
-<progress class="progress is-primary" value="{{ total_usage['cpu'] }}" max="{{ total_allocatable['cpu'] }}" style="position:relative; top:-1rem; background: transparent; margin:0"></progress>
-<nav class="level">
-    <div class="level-left">
-        <div class="level-item">
-            {{ total_usage['cpu']|round(2) }} used /
-            {{ total_requests['cpu']|round(2) }} requested
-        </div>
-    </div>
-    <div class="level-right">
-        <div class="level-item">
-           {{ total_allocatable['cpu']|round(2) }} allocatable
-        </div>
-    </div>
-</nav>
+<div class="resource-labels">
+    <span>{{ total_usage['cpu']|round(2) }} used</span>
+    <span>{{ total_requests['cpu']|round(2) }} requested</span>
+    <span>{{ total_allocatable['cpu']|round(2) }} allocatable</span>
+</div>
+<div class="resource-bar">
+    <progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}"></progress>
+    <progress class="progress is-primary" value="{{ total_usage['cpu'] }}" max="{{ total_allocatable['cpu'] }}"></progress>
+</div>
 
 <h2 class="title is-5">Memory</h2>
-<progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}" style="margin:0"></progress>
-<progress class="progress is-primary" value="{{ total_usage['memory'] }}" max="{{ total_allocatable['memory'] }}" style="position:relative; top:-1rem; background: transparent; margin:0" ></progress>
-<nav class="level">
-    <div class="level-left">
-        <div class="level-item">
-            {{ total_usage['memory']|filesizeformat(True) }} used /
-            {{ total_requests['memory']|filesizeformat(True) }} requested
-        </div>
-    </div>
-    <div class="level-right">
-        <div class="level-item">
-           {{ total_allocatable['memory']|filesizeformat(True) }} allocatable
-        </div>
-    </div>
-</nav>
+<div class="resource-labels">
+    <span>{{ total_usage['memory']|filesizeformat(True) }} used</span>
+    <span>{{ total_requests['memory']|filesizeformat(True) }} requested</span>
+    <span>{{ total_allocatable['memory']|filesizeformat(True) }} allocatable</span>
+</div>
+<div class="resource-bar">
+    <progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}"></progress>
+    <progress class="progress is-primary" value="{{ total_usage['memory'] }}" max="{{ total_allocatable['memory'] }}"></progress>
+</div>
 
 <h2 class="title is-5">Resource-based Pricing</h2>
 

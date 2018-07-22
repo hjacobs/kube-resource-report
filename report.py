@@ -121,6 +121,7 @@ def query_cluster(cluster, executor, system_namespaces, additional_cost_per_clus
         node["capacity"] = {}
         node["allocatable"] = {}
         node["requests"] = {'cpu': 0, 'memory': 0}
+        node["usage"] = {'cpu': 0, 'memory': 0}
         for k, v in node["status"].get("capacity", {}).items():
             parsed = parse_resource(v)
             node["capacity"][k] = parsed
@@ -413,6 +414,62 @@ def get_cluster_summaries(
     return cluster_summaries
 
 
+def resolve_application_ids(applications: dict, teams: dict, application_registry: str):
+    with FuturesSession(max_workers=10) as futures_session:
+        futures_session.auth = cluster_discovery.OAuthTokenAuth("read-only")
+
+        future_to_app = {}
+        for app_id, app in applications.items():
+            if app_id:
+                future_to_app[
+                    futures_session.get(
+                        application_registry + "/apps/" + app_id, timeout=5
+                    )
+                ] = app
+
+        for future in concurrent.futures.as_completed(future_to_app):
+            app = future_to_app[future]
+            try:
+                response = future.result()
+                response.raise_for_status()
+                data = response.json()
+                if not isinstance(data, dict):
+                    data = {}
+            except Exception as e:
+                logger.warning(
+                    "Failed to look up application {}: {}".format(app["id"], e)
+                )
+                data = {}
+            team_id = data.get("team_id", "")
+            app["team"] = team_id
+            app["active"] = data.get("active")
+            team = teams.get(
+                team_id,
+                {
+                    "clusters": set(),
+                    "applications": set(),
+                    "cost": 0,
+                    "pods": 0,
+                    "requests": {},
+                    "usage": {},
+                    "slack_cost": 0,
+                },
+            )
+            team["applications"].add(app["id"])
+            team["clusters"] |= app["clusters"]
+            team["pods"] += app["pods"]
+            for r in "cpu", "memory":
+                team["requests"][r] = (
+                    team["requests"].get(r, 0) + app["requests"][r]
+                )
+                team["usage"][r] = team["usage"].get(r, 0) + app.get(
+                    "usage", {}
+                ).get(r, 0)
+            team["cost"] += app["cost"]
+            team["slack_cost"] += app["slack_cost"]
+            teams[team_id] = team
+    return teams
+
 def generate_report(
     cluster_registry,
     kubeconfig_path,
@@ -491,59 +548,7 @@ def generate_report(
             applications[pod["application"]] = app
 
     if application_registry:
-        with FuturesSession(max_workers=10) as futures_session:
-            futures_session.auth = cluster_discovery.OAuthTokenAuth("read-only")
-
-            future_to_app = {}
-            for app_id, app in applications.items():
-                if app_id:
-                    future_to_app[
-                        futures_session.get(
-                            application_registry + "/apps/" + app_id, timeout=5
-                        )
-                    ] = app
-
-            for future in concurrent.futures.as_completed(future_to_app):
-                app = future_to_app[future]
-                try:
-                    response = future.result()
-                    response.raise_for_status()
-                    data = response.json()
-                    if not isinstance(data, dict):
-                        data = {}
-                except Exception as e:
-                    logger.warning(
-                        "Failed to look up application {}: {}".format(app["id"], e)
-                    )
-                    data = {}
-                team_id = data.get("team_id", "")
-                app["team"] = team_id
-                app["active"] = data.get("active")
-                team = teams.get(
-                    team_id,
-                    {
-                        "clusters": set(),
-                        "applications": set(),
-                        "cost": 0,
-                        "pods": 0,
-                        "requests": {},
-                        "usage": {},
-                        "slack_cost": 0,
-                    },
-                )
-                team["applications"].add(app["id"])
-                team["clusters"] |= app["clusters"]
-                team["pods"] += app["pods"]
-                for r in "cpu", "memory":
-                    team["requests"][r] = (
-                        team["requests"].get(r, 0) + app["requests"][r]
-                    )
-                    team["usage"][r] = team["usage"].get(r, 0) + app.get(
-                        "usage", {}
-                    ).get(r, 0)
-                team["cost"] += app["cost"]
-                team["slack_cost"] += app["slack_cost"]
-                teams[team_id] = team
+        resolve_application_ids(applications, teams, application_registry)
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for k, pod in summary["pods"].items():

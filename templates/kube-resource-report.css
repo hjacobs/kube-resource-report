@@ -1,0 +1,50 @@
+.resource-labels {
+    display: flex;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+}
+.resource-labels span {
+    display: block;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+.resource-labels span:nth-child(2) {
+    text-align: center;
+}
+.resource-labels span:last-child {
+    text-align: right;
+}
+
+
+
+.resource-bar {
+    height: 0.4rem;
+}
+.resource-bar:not(:last-child) {
+    margin-bottom: 0.2rem;
+}
+.resource-bar progress {
+    height: 0.4rem;
+    margin: 0 !important;
+}
+.resource-bar progress:last-child {
+    position: relative;
+    top: -0.4rem;
+    background: transparent;
+}
+
+.container>.resource-labels {
+    margin-bottom: 0.5rem;
+}
+.container>.resource-bar {
+    height: 1rem;
+}
+.container>.resource-bar {
+    margin-bottom: 1.5rem;
+}
+.container>.resource-bar progress {
+    height: 1rem;
+}
+.container>.resource-bar progress:last-child {
+    top: -1rem;
+}
