@@ -1,12 +1,19 @@
 FROM python:3.7-alpine3.8
 
-RUN pip3 install pipenv
+WORKDIR /
 
-COPY Pipfile /
 COPY Pipfile.lock /
+COPY pipenv-install.py /
+
+RUN /pipenv-install.py && \
+    rm -fr /usr/local/lib/python3.7/site-packages/pip && \
+    rm -fr /usr/local/lib/python3.7/site-packages/setuptools
+
+FROM python:3.7-alpine3.8
 
 WORKDIR /
-RUN pipenv install --system --deploy --ignore-pipfile
+
+COPY --from=0 /usr/local/lib/python3.7/site-packages /usr/local/lib/python3.7/site-packages
 
 COPY kube_resource_report /kube_resource_report
 
