@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
-import click
 import collections
 import csv
 import pickle
 import datetime
 import logging
-import os
 import re
 import requests
 import shutil
-import time
 from urllib.parse import urljoin
 from pathlib import Path
 
@@ -309,8 +306,6 @@ def query_cluster(
                 ingress[4] = status
 
     return cluster_summary
-
-
 
 
 def get_cluster_summaries(
@@ -689,7 +684,3 @@ def generate_report(
             shutil.copy(str(path), str(output_path / path.name))
 
     return cluster_summaries
-
-
-if __name__ == "__main__":
-    main()

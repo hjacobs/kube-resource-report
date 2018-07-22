@@ -2,23 +2,31 @@ import click
 from .cluster_discovery import DEFAULT_CLUSTERS
 from pathlib import Path
 import os
+import time
 
 from .report import generate_report
 
+
 class CommaSeparatedValues(click.ParamType):
-    name = 'comma_separated_values'
+    name = "comma_separated_values"
 
     def convert(self, value, param, ctx):
         if isinstance(value, str):
-            values = filter(None, value.split(','))
+            values = filter(None, value.split(","))
         else:
             values = value
         return values
 
 
 @click.command()
-@click.option('--clusters', type=CommaSeparatedValues(),
-              help='Comma separated list of Kubernetes API server URLs (default: {})'.format(DEFAULT_CLUSTERS), envvar='CLUSTERS')
+@click.option(
+    "--clusters",
+    type=CommaSeparatedValues(),
+    help="Comma separated list of Kubernetes API server URLs (default: {})".format(
+        DEFAULT_CLUSTERS
+    ),
+    envvar="CLUSTERS",
+)
 @click.option(
     "--cluster-registry",
     metavar="URL",
@@ -27,8 +35,12 @@ class CommaSeparatedValues(click.ParamType):
 @click.option(
     "--kubeconfig-path", type=click.Path(exists=True), help="Path to kubeconfig file"
 )
-@click.option('--kubeconfig-contexts', type=CommaSeparatedValues(),
-              help='List of kubeconfig contexts to use (default: use all defined contexts)', envvar='KUBECONFIG_CONTEXTS')
+@click.option(
+    "--kubeconfig-contexts",
+    type=CommaSeparatedValues(),
+    help="List of kubeconfig contexts to use (default: use all defined contexts)",
+    envvar="KUBECONFIG_CONTEXTS",
+)
 @click.option(
     "--application-registry",
     metavar="URL",
@@ -59,7 +71,12 @@ class CommaSeparatedValues(click.ParamType):
     help="Additional fixed costs per cluster (e.g. etcd nodes, ELBs, ..)",
     default=0,
 )
-@click.option('--update-interval-minutes', type=float, help='Update the report every X minutes (default: run once and exit)', default=0)
+@click.option(
+    "--update-interval-minutes",
+    type=float,
+    help="Update the report every X minutes (default: run once and exit)",
+    default=0,
+)
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
     clusters,
@@ -74,7 +91,7 @@ def main(
     include_clusters,
     exclude_clusters,
     additional_cost_per_cluster,
-    update_interval_minutes
+    update_interval_minutes,
 ):
     """Kubernetes Resource Report
 

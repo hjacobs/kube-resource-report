@@ -7,7 +7,8 @@ TAG              ?= $(VERSION)
 default: docker
 
 test:
-	python3 -m pytest
+	pipenv run flake8
+	pipenv run python3 -m pytest
 
 docker: 
 	docker build --build-arg "VERSION=$(VERSION)" -t "$(IMAGE):$(TAG)" .
