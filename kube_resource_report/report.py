@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 
-import click
 import collections
 import csv
 import pickle
 import datetime
 import logging
-import os
 import re
 import requests
-import cluster_discovery
 import shutil
-import time
 from urllib.parse import urljoin
 from pathlib import Path
 
@@ -20,9 +16,8 @@ from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-import filters
 
-__version__ = '0.1-dirty'
+from kube_resource_report import cluster_discovery, pricing, filters, __version__
 
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
@@ -63,24 +58,6 @@ def parse_resource(v):
     match = RESOURCE_PATTERN.match(v)
     factor = FACTORS.get(match.group(2), 1)
     return int(match.group(1)) * factor
-
-
-NODE_COSTS_MONTHLY = {}
-
-# CSVs downloaded from https://ec2instances.info/
-for path in Path(".").glob("aws-ec2-costs-hourly-*.csv"):
-    region = path.stem.split("-", 4)[4]
-    with path.open() as fd:
-        reader = csv.DictReader(fd)
-        for row in reader:
-            cost = row["Linux On Demand cost"]
-            if cost == "unavailable":
-                continue
-            elif cost.startswith("$") and cost.endswith(" hourly"):
-                monthly_cost = float(cost.split()[0].strip("$")) * 24 * 30
-                NODE_COSTS_MONTHLY[(region, row["API Name"])] = monthly_cost
-            else:
-                raise Exception("Invalid price data: {}".format(cost))
 
 
 session = requests.Session()
@@ -144,23 +121,12 @@ def query_cluster(
         )
         is_spot = node["metadata"]["labels"].get(NODE_LABEL_SPOT) == "true"
         node["spot"] = is_spot
-        if is_spot:
-            # https://aws.amazon.com/ec2/spot/instance-advisor/
-            discount = 0.60
-        else:
-            discount = 0
         node["kubelet_version"] = (
             node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
         )
         node["role"] = role
         node["instance_type"] = instance_type
-        node["cost"] = NODE_COSTS_MONTHLY.get((region, instance_type))
-        if node["cost"] is None:
-            logger.warning(
-                "No cost information for {} in {}".format(instance_type, region)
-            )
-            node["cost"] = 0
-        node["cost"] *= 1 - discount
+        node["cost"] = pricing.get_node_cost(region, instance_type, is_spot)
         cluster_cost += node["cost"]
 
     try:
@@ -311,108 +277,6 @@ def query_cluster(
                 ingress[4] = status
 
     return cluster_summary
-
-
-class CommaSeparatedValues(click.ParamType):
-    name = 'comma_separated_values'
-
-    def convert(self, value, param, ctx):
-        if isinstance(value, str):
-            values = filter(None, value.split(','))
-        else:
-            values = value
-        return values
-
-
-@click.command()
-@click.option('--clusters', type=CommaSeparatedValues(),
-              help='Comma separated list of Kubernetes API server URLs (default: {})'.format(cluster_discovery.DEFAULT_CLUSTERS), envvar='CLUSTERS')
-@click.option(
-    "--cluster-registry",
-    metavar="URL",
-    help="URL of Cluster Registry to discover clusters to report on",
-)
-@click.option(
-    "--kubeconfig-path", type=click.Path(exists=True), help="Path to kubeconfig file"
-)
-@click.option('--kubeconfig-contexts', type=CommaSeparatedValues(),
-              help='List of kubeconfig contexts to use (default: use all defined contexts)', envvar='KUBECONFIG_CONTEXTS')
-@click.option(
-    "--application-registry",
-    metavar="URL",
-    help="URL of Application Registry to look up team by application ID",
-)
-@click.option(
-    "--use-cache", is_flag=True, help="Use cached data (mostly for development)"
-)
-@click.option(
-    "--no-ingress-status", is_flag=True, help="Do not check Ingress HTTP status"
-)
-@click.option(
-    "--system-namespaces",
-    type=CommaSeparatedValues(),
-    metavar="NS1,NS2",
-    default="kube-system",
-    help="Comma separated list of system/infrastructure namespaces (default: kube-system)",
-)
-@click.option(
-    "--include-clusters", metavar="PATTERN", help="Include clusters matching the regex"
-)
-@click.option(
-    "--exclude-clusters", metavar="PATTERN", help="Exclude clusters matching the regex"
-)
-@click.option(
-    "--additional-cost-per-cluster",
-    type=float,
-    help="Additional fixed costs per cluster (e.g. etcd nodes, ELBs, ..)",
-    default=0,
-)
-@click.option('--update-interval-minutes', type=float, help='Update the report every X minutes (default: run once and exit)', default=0)
-@click.argument("output_dir", type=click.Path(exists=True))
-def main(
-    clusters,
-    cluster_registry,
-    kubeconfig_path,
-    kubeconfig_contexts,
-    application_registry,
-    use_cache,
-    no_ingress_status,
-    output_dir,
-    system_namespaces,
-    include_clusters,
-    exclude_clusters,
-    additional_cost_per_cluster,
-    update_interval_minutes
-):
-    """Kubernetes Resource Report
-
-    Generate a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry.
-    """
-
-    if kubeconfig_path:
-        kubeconfig_path = Path(kubeconfig_path)
-    else:
-        kubeconfig_path = Path(os.path.expanduser("~/.kube/config"))
-
-    while True:
-        generate_report(
-            clusters,
-            cluster_registry,
-            kubeconfig_path,
-            set(kubeconfig_contexts or []),
-            application_registry,
-            use_cache,
-            no_ingress_status,
-            output_dir,
-            set(system_namespaces),
-            include_clusters,
-            exclude_clusters,
-            additional_cost_per_cluster,
-        )
-        if update_interval_minutes > 0:
-            time.sleep(update_interval_minutes * 60)
-        else:
-            break
 
 
 def get_cluster_summaries(
@@ -791,7 +655,3 @@ def generate_report(
             shutil.copy(str(path), str(output_path / path.name))
 
     return cluster_summaries
-
-
-if __name__ == "__main__":
-    main()

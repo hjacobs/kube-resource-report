@@ -1,14 +1,14 @@
-from cluster_discovery import Cluster
-from report import generate_report
+from kube_resource_report.cluster_discovery import Cluster
+from kube_resource_report.report import generate_report
 
 from unittest.mock import MagicMock
 
 
 def test_generate_report(tmpdir, monkeypatch):
     output_dir = tmpdir.mkdir("output")
-    monkeypatch.setattr("cluster_discovery.tokens.get", lambda x: "mytok")
+    monkeypatch.setattr("kube_resource_report.cluster_discovery.tokens.get", lambda x: "mytok")
     monkeypatch.setattr(
-        "cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
+        "kube_resource_report.cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
         lambda x: [Cluster("test-cluster-1", "https://test-cluster-1.example.org")],
     )
 
@@ -29,7 +29,7 @@ def test_generate_report(tmpdir, monkeypatch):
     }
 
     monkeypatch.setattr(
-        "report.request",
+        "kube_resource_report.report.request",
         lambda cluster, path: MagicMock(json=lambda: responses.get(path)),
     )
     cluster_summaries = generate_report(
