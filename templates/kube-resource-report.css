@@ -32,6 +32,10 @@
     top: -0.4rem;
     background: transparent;
 }
+/* for Chrome: */
+.resource-bar progress:last-child::-webkit-progress-bar {
+    background: transparent;
+}
 
 .container>.resource-labels {
     margin-bottom: 0.5rem;
