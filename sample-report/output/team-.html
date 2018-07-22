@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Team  - Kubernetes Resource Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script src="sortable.min.js"></script>
     <link rel="stylesheet" href="sortable-theme-minimal.css" />
+    <link rel="stylesheet" href="kube-resource-report.css" />
+    <link rel="shortcut icon" href="favicon.png">
   </head>
   <body class="has-navbar-fixed-top">
   <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
@@ -33,36 +35,36 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Applications</p>
-      <p class="title">2</p>
+      <p class="title">3</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Pods</p>
-      <p class="title">2</p>
+      <p class="title">3</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">CPU Requests</p>
-      <p class="title">0.1</p>
+      <p class="title">0.0</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Memory Requests</p>
-      <p class="title">50.0 MiB</p>
+      <p class="title">20.0 MiB</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
     <div>
-      <p class="heading">Cost</p>
-      <p class="title">0.00</p>
+      <p class="heading">Monthly Cost</p>
+      <p class="title">0.32 USD</p>
     </div>
   </div>
 </nav>
     <div class="notification is-warning">
-        You can potentially save <strong>0.00 USD</strong> every month by optimizing resource requests and reducing slack.
+        You can potentially save <strong>-0.89 USD</strong> every month by optimizing resource requests and reducing slack.
     </div>
     <h2 class="title is-5">Clusters</h2>
       <table class="table is-striped" data-sortable>
@@ -77,13 +79,9 @@
                   <th><abbr title="Ingresses">I</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="User Pods">UP</abbr></th>
-                  <th><abbr title="CPU Allocatable">CA</abbr></th>
-                  <th><abbr title="Memory Allocatable">MA</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (GiB)</th>
+                  <th class="has-text-right">Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -96,16 +94,29 @@
             <td>1</td>
             <td>unknown</td>
             <td>v1.10.0</td>
-            <td>1</td>
-            <td>18</td>
-            <td>7</td>
-            <td>2.0</td>
-            <td data-value="1992347648.0">1.9 GiB</td>
-            <td>1.3</td>
-            <td data-value="1111490560.0">1.0 GiB</td>
-            <td>0.2</td>
-            <td data-value="1754574848.0">1.6 GiB</td>
-            <td class="has-text-right">0.00</td>
+            <td>0</td>
+            <td>15</td>
+            <td>2</td>
+
+            <td style="font-size: 0.75rem" data-value="0.18">
+                <div class="resource-labels">
+                    <span>0.2</span> <span>0.8</span> <span>2.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.8360000000000001" max="2.0"></progress>
+                    <progress class="progress is-primary" value="0.18" max="2.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="1698344960.0">
+                <div class="resource-labels">
+                    <span>1.6</span> <span>0.3</span> <span>1.8</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="283115520.0" max="1982693376.0"></progress>
+                    <progress class="progress is-primary" value="1698344960.0" max="1982693376.0"></progress>
+                </div>
+            </td>
+            <td class="has-text-right">30.00</td>
 
           </tr>
 
@@ -121,12 +132,12 @@
                   <th><abbr title="Active?">A?</abbr></th>
                   <th><abbr title="Clusters">C</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
-                  <th>CPU Requests</th>
-                  <th>Memory Requests</th>
-                  <th>CPU Usage</th>
-                  <th>Memory Usage</th>
-                  <th>Cost</th>
-                  <th>Slack Cost</th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -139,13 +150,31 @@
 
                 </td>
             <td>1</td>
-            <td>11</td>
+            <td>10</td>
             <td>0.815</td>
             <td data-value="167772160.0">160.0 MiB</td>
-            <td>0.098</td>
-            <td data-value="615235584.0">586.7 MiB</td>
-            <td class="has-text-right">0.00</td>
-            <td class="has-text-right">0.00</td>
+
+            <td style="font-size: 0.75rem" data-value="0.10500000000000001">
+                <div class="resource-labels">
+                    <span>0.11</span> <span>0.82</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.8150000000000001" max="0.8150000000000001"></progress>
+                    <progress class="progress is-primary" value="0.10500000000000001" max="0.8150000000000001"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="501305344.0">
+                <div class="resource-labels">
+                    <span>478</span> <span>160</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="167772160.0" max="167772160.0"></progress>
+                    <progress class="progress is-danger" value="501305344.0" max="167772160.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">12.94</td>
+            <td class="has-text-right">5.16</td>
 
           </tr>
             
@@ -153,25 +182,43 @@
           
           
           
-          
-          
           <tr>
-            <td>kube-ops-view-redis</td>
+            <td>default-http-backend</td>
             <td>
                 
 
                 </td>
             <td>1</td>
             <td>1</td>
-            <td>0.05</td>
-            <td data-value="52428800.0">50.0 MiB</td>
-            <td>0.001</td>
-            <td data-value="2904064.0">2.8 MiB</td>
-            <td class="has-text-right">0.00</td>
-            <td class="has-text-right">0.00</td>
+            <td>0.01</td>
+            <td data-value="20971520.0">20.0 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.0">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.01</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.01" max="0.01"></progress>
+                    <progress class="progress is-primary" value="0.0" max="0.01"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="4079616.0">
+                <div class="resource-labels">
+                    <span>4</span> <span>20</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="20971520.0" max="20971520.0"></progress>
+                    <progress class="progress is-primary" value="4079616.0" max="20971520.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">0.32</td>
+            <td class="has-text-right">0.26</td>
 
           </tr>
             
+          
+          
           
           
           <tr>
@@ -184,15 +231,68 @@
             <td>1</td>
             <td>0.0</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.0</td>
-            <td data-value="17420288.0">16.6 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.0">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-primary" value="0.0" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="13770752.0">
+                <div class="resource-labels">
+                    <span>13</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="13770752.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
-            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">-0.21</td>
 
           </tr>
             
           
           
+          <tr>
+            <td>nginx-ingress-controller</td>
+            <td>
+                
+
+                </td>
+            <td>1</td>
+            <td>1</td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+
+            <td style="font-size: 0.75rem" data-value="0.003">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="0.003" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="61820928.0">
+                <div class="resource-labels">
+                    <span>59</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="61820928.0" max="0.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">-0.94</td>
+
+          </tr>
+            
           
           </tbody>
 
@@ -203,8 +303,8 @@
   <footer class="footer">
       <div class="container">
           <div class="content has-text-centered">
-              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
-              <p>Page generated 2018-06-03 19:24 UTC</p>
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> 0.1-dirty</p>
+              <p>Page generated 2018-07-22 16:59 UTC</p>
           </div>
       </div>
   </footer>

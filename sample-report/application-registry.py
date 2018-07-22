@@ -11,12 +11,19 @@ DATA = {
     "example-app": {"team_id": "example-team", "active": True},
     "legacy-service": {"team_id": "example-team", "active": False},
     "kube-ops-view": {"team_id": "hjacobs", "active": True},
+    "kube-resource-report": {"team_id": "hjacobs", "active": True},
+    "application-registry": {"team_id": "hjacobs", "active": True},
 }
 
 
 class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if not self.path.startswith("/apps/"):
+        if self.path == "/health":
+            self.send_response(200)
+            self.end_headers()
+            return
+
+        elif not self.path.startswith("/apps/"):
             self.send_response(404)
             self.end_headers()
             return
@@ -35,7 +42,7 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server_address = ("127.0.0.1", 8080)
+    server_address = ("0.0.0.0", 8080)
     httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
     print("Listening on {}:{}..".format(*server_address))
     httpd.serve_forever()

@@ -36,6 +36,7 @@ def test_generate_report(tmpdir, monkeypatch):
         [],
         "https://cluster-registry",
         None,
+        set(),
         None,
         False,
         False,

@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Teams - Kubernetes Resource Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script src="sortable.min.js"></script>
     <link rel="stylesheet" href="sortable-theme-minimal.css" />
+    <link rel="stylesheet" href="kube-resource-report.css" />
+    <link rel="shortcut icon" href="favicon.png">
   </head>
   <body class="has-navbar-fixed-top">
   <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
@@ -36,10 +38,10 @@
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
-                  <th>Slack Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -47,29 +49,32 @@
           <tr>
               <td><a href="team-.html" class="is-italic">?unknown?</a></td>
             <td>1</td>
-            <td>2</td>
-            <td>2</td>
-            <td>0.05</td>
-            <td data-value="52428800.0">50.0 MiB</td>
-            <td>0.001</td>
-            <td data-value="20324352.0">19.4 MiB</td>
-            <td class="has-text-right">0.00</td>
-            <td class="has-text-right">0.00</td>
+            <td>3</td>
+            <td>3</td>
+            <td>0.01</td>
+            <td data-value="20971520.0">20.0 MiB</td>
 
-          </tr>
+            <td style="font-size: 0.75rem" data-value="0.003">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.01</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.01" max="0.01"></progress>
+                    <progress class="progress is-primary" value="0.003" max="0.01"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="79671296.0">
+                <div class="resource-labels">
+                    <span>76</span> <span>20</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="20971520.0" max="20971520.0"></progress>
+                    <progress class="progress is-danger" value="79671296.0" max="20971520.0"></progress>
+                </div>
+            </td>
 
-          
-          <tr>
-              <td><a href="team-example-team.html" class="">example-team</a></td>
-            <td>1</td>
-            <td>2</td>
-            <td>4</td>
-            <td>0.4</td>
-            <td data-value="838860800.0">800.0 MiB</td>
-            <td>0.0</td>
-            <td data-value="9113600.0">8.7 MiB</td>
-            <td class="has-text-right">0.00</td>
-            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0.32</td>
+            <td class="has-text-right">-0.89</td>
 
           </tr>
 
@@ -77,14 +82,32 @@
           <tr>
               <td><a href="team-hjacobs.html" class="">hjacobs</a></td>
             <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>0.05</td>
-            <td data-value="52428800.0">50.0 MiB</td>
-            <td>0.007</td>
-            <td data-value="53284864.0">50.8 MiB</td>
-            <td class="has-text-right">0.00</td>
-            <td class="has-text-right">0.00</td>
+            <td>2</td>
+            <td>2</td>
+            <td>0.011</td>
+            <td data-value="94371840.0">90.0 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.003">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.01</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.011" max="0.011"></progress>
+                    <progress class="progress is-primary" value="0.003" max="0.011"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="55992320.0">
+                <div class="resource-labels">
+                    <span>53</span> <span>90</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="94371840.0" max="94371840.0"></progress>
+                    <progress class="progress is-primary" value="55992320.0" max="94371840.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">1.43</td>
+            <td class="has-text-right">0.58</td>
 
           </tr>
 
@@ -98,8 +121,8 @@
   <footer class="footer">
       <div class="container">
           <div class="content has-text-centered">
-              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
-              <p>Page generated 2018-06-03 19:24 UTC</p>
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> 0.1-dirty</p>
+              <p>Page generated 2018-07-22 16:59 UTC</p>
           </div>
       </div>
   </footer>

@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pods - Kubernetes Resource Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script src="sortable.min.js"></script>
     <link rel="stylesheet" href="sortable-theme-minimal.css" />
+    <link rel="stylesheet" href="kube-resource-report.css" />
+    <link rel="shortcut icon" href="favicon.png">
   </head>
   <body class="has-navbar-fixed-top">
   <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
@@ -37,9 +39,9 @@
                   <th>Application</th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -48,85 +50,91 @@
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>default</td>
-            <td>example-app-8db59d5d6-p5psv</td>
-            <td>example-app</td>
-            <td>0.1</td>
-            <td data-value="209715200.0">200.0 MiB</td>
-            <td>0.0</td>
-            <td data-value="2179072.0">2.1 MiB</td>
-            <td class="has-text-right">0.00</td>
-          </tr>
-          
-          <tr>
-            <td><a href="./cluster-minikube.html">minikube</a></td>
-            <td>default</td>
-            <td>kube-ops-view-5f859bf4d9-9jlwc</td>
-            <td>kube-ops-view</td>
-            <td>0.05</td>
-            <td data-value="52428800.0">50.0 MiB</td>
-            <td>0.007</td>
-            <td data-value="53284864.0">50.8 MiB</td>
-            <td class="has-text-right">0.00</td>
-          </tr>
-          
-          <tr>
-            <td><a href="./cluster-minikube.html">minikube</a></td>
-            <td>default</td>
-            <td>kube-ops-view-redis-5cb9899f5f-2jbll</td>
-            <td>kube-ops-view-redis</td>
-            <td>0.05</td>
-            <td data-value="52428800.0">50.0 MiB</td>
+            <td>application-registry-86cfd794f4-tvgg5</td>
+            <td>application-registry</td>
             <td>0.001</td>
-            <td data-value="2904064.0">2.8 MiB</td>
-            <td class="has-text-right">0.00</td>
+            <td data-value="20971520.0">20.0 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.0">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.001" max="0.001"></progress>
+                    <progress class="progress is-primary" value="0.0" max="0.001"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="10219520.0">
+                <div class="resource-labels">
+                    <span>10</span> <span>20</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="20971520.0" max="20971520.0"></progress>
+                    <progress class="progress is-primary" value="10219520.0" max="20971520.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">0.32</td>
           </tr>
           
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>default</td>
-            <td>legacy-service-54c4c4f55d-cpj9w</td>
-            <td>legacy-service</td>
-            <td>0.1</td>
-            <td data-value="209715200.0">200.0 MiB</td>
-            <td>0.0</td>
-            <td data-value="1949696.0">1.9 MiB</td>
-            <td class="has-text-right">0.00</td>
+            <td>kube-resource-report-6d844fb7c4-8nvmr</td>
+            <td>kube-resource-report</td>
+            <td>0.01</td>
+            <td data-value="73400320.0">70.0 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.003">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.01</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.01" max="0.01"></progress>
+                    <progress class="progress is-primary" value="0.003" max="0.01"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="45772800.0">
+                <div class="resource-labels">
+                    <span>44</span> <span>70</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="73400320.0" max="73400320.0"></progress>
+                    <progress class="progress is-primary" value="45772800.0" max="73400320.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">1.11</td>
           </tr>
           
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
-            <td>default</td>
-            <td>legacy-service-54c4c4f55d-cxcbx</td>
-            <td>legacy-service</td>
-            <td>0.1</td>
-            <td data-value="209715200.0">200.0 MiB</td>
-            <td>0.0</td>
-            <td data-value="2183168.0">2.1 MiB</td>
-            <td class="has-text-right">0.00</td>
-          </tr>
-          
-          <tr>
-            <td><a href="./cluster-minikube.html">minikube</a></td>
-            <td>default</td>
-            <td>legacy-service-54c4c4f55d-w5tld</td>
-            <td>legacy-service</td>
-            <td>0.1</td>
-            <td data-value="209715200.0">200.0 MiB</td>
-            <td>0.0</td>
-            <td data-value="2801664.0">2.7 MiB</td>
-            <td class="has-text-right">0.00</td>
-          </tr>
-          
-          <tr>
-            <td><a href="./cluster-minikube.html">minikube</a></td>
-            <td>default</td>
-            <td>nginx-65899c769f-cl8pg</td>
-            <td></td>
-            <td>0.0</td>
-            <td data-value="0.0">0 Bytes</td>
-            <td>0.0</td>
-            <td data-value="2228224.0">2.1 MiB</td>
-            <td class="has-text-right">0.00</td>
+            <td>kube-system</td>
+            <td>default-http-backend-59868b7dd6-5pxw5</td>
+            <td>default-http-backend</td>
+            <td>0.01</td>
+            <td data-value="20971520.0">20.0 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.0">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.01</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.01" max="0.01"></progress>
+                    <progress class="progress is-primary" value="0.0" max="0.01"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="4079616.0">
+                <div class="resource-labels">
+                    <span>4</span> <span>20</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="20971520.0" max="20971520.0"></progress>
+                    <progress class="progress is-primary" value="4079616.0" max="20971520.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">0.32</td>
           </tr>
           
           <tr>
@@ -136,32 +144,86 @@
             <td></td>
             <td>0.0</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.016</td>
-            <td data-value="62345216.0">59.5 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.016">
+                <div class="resource-labels">
+                    <span>0.02</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="0.016" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="51625984.0">
+                <div class="resource-labels">
+                    <span>49</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="51625984.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
           </tr>
           
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>kube-system</td>
-            <td>heapster-569j9</td>
+            <td>heapster-zr7fg</td>
             <td></td>
             <td>0.0</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.0</td>
-            <td data-value="27201536.0">25.9 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.0">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-primary" value="0.0" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="26230784.0">
+                <div class="resource-labels">
+                    <span>25</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="26230784.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
           </tr>
           
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>kube-system</td>
-            <td>influxdb-grafana-vdrsk</td>
+            <td>influxdb-grafana-xgtrp</td>
             <td></td>
             <td>0.0</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.0</td>
-            <td data-value="42430464.0">40.5 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.001">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="0.001" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="41951232.0">
+                <div class="resource-labels">
+                    <span>40</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="41951232.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
           </tr>
           
@@ -172,9 +234,27 @@
             <td></td>
             <td>0.005</td>
             <td data-value="52428800.0">50.0 MiB</td>
-            <td>0.015</td>
-            <td data-value="29847552.0">28.5 MiB</td>
-            <td class="has-text-right">0.00</td>
+
+            <td style="font-size: 0.75rem" data-value="0.017">
+                <div class="resource-labels">
+                    <span>0.02</span> <span>0.01</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.005" max="0.005"></progress>
+                    <progress class="progress is-danger" value="0.017" max="0.005"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="3928064.0">
+                <div class="resource-labels">
+                    <span>4</span> <span>50</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="52428800.0" max="52428800.0"></progress>
+                    <progress class="progress is-primary" value="3928064.0" max="52428800.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">0.79</td>
           </tr>
           
           <tr>
@@ -184,9 +264,27 @@
             <td></td>
             <td>0.25</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.026</td>
-            <td data-value="281268224.0">268.2 MiB</td>
-            <td class="has-text-right">0.00</td>
+
+            <td style="font-size: 0.75rem" data-value="0.026000000000000002">
+                <div class="resource-labels">
+                    <span>0.03</span> <span>0.25</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.25" max="0.25"></progress>
+                    <progress class="progress is-primary" value="0.026000000000000002" max="0.25"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="267743232.0">
+                <div class="resource-labels">
+                    <span>255</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="267743232.0" max="0.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">3.75</td>
           </tr>
           
           <tr>
@@ -196,32 +294,86 @@
             <td></td>
             <td>0.2</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.031</td>
-            <td data-value="71667712.0">68.3 MiB</td>
-            <td class="has-text-right">0.00</td>
+
+            <td style="font-size: 0.75rem" data-value="0.034">
+                <div class="resource-labels">
+                    <span>0.03</span> <span>0.2</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.2" max="0.2"></progress>
+                    <progress class="progress is-primary" value="0.034" max="0.2"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="43278336.0">
+                <div class="resource-labels">
+                    <span>41</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="43278336.0" max="0.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">3.00</td>
           </tr>
           
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>kube-system</td>
-            <td>kube-dns-86f4d74b45-s8lq8</td>
+            <td>kube-dns-86f4d74b45-2jv2q</td>
             <td></td>
             <td>0.26</td>
             <td data-value="115343360.0">110.0 MiB</td>
-            <td>0.001</td>
-            <td data-value="36454400.0">34.8 MiB</td>
-            <td class="has-text-right">0.00</td>
+
+            <td style="font-size: 0.75rem" data-value="0.001">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.26</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.26" max="0.26"></progress>
+                    <progress class="progress is-primary" value="0.001" max="0.26"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="27062272.0">
+                <div class="resource-labels">
+                    <span>26</span> <span>110</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="115343360.0" max="115343360.0"></progress>
+                    <progress class="progress is-primary" value="27062272.0" max="115343360.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">3.90</td>
           </tr>
           
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>kube-system</td>
-            <td>kube-proxy-qnpsc</td>
+            <td>kube-proxy-tprgh</td>
             <td></td>
             <td>0.0</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.002</td>
-            <td data-value="19472384.0">18.6 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.002">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="0.002" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="13205504.0">
+                <div class="resource-labels">
+                    <span>13</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="13205504.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
           </tr>
           
@@ -232,20 +384,86 @@
             <td></td>
             <td>0.1</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.007</td>
-            <td data-value="18034688.0">17.2 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.008">
+                <div class="resource-labels">
+                    <span>0.01</span> <span>0.1</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.1" max="0.1"></progress>
+                    <progress class="progress is-primary" value="0.008" max="0.1"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="13033472.0">
+                <div class="resource-labels">
+                    <span>12</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="13033472.0" max="0.0"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">1.50</td>
+          </tr>
+          
+          <tr>
+            <td><a href="./cluster-minikube.html">minikube</a></td>
+            <td>kube-system</td>
+            <td>kubernetes-dashboard-5498ccf677-qhttl</td>
+            <td>kubernetes-dashboard</td>
+            <td>0.0</td>
+            <td data-value="0.0">0 Bytes</td>
+
+            <td style="font-size: 0.75rem" data-value="0.0">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-primary" value="0.0" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="13770752.0">
+                <div class="resource-labels">
+                    <span>13</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="13770752.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
           </tr>
           
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>kube-system</td>
-            <td>kubernetes-dashboard-5498ccf677-8fv9v</td>
-            <td>kubernetes-dashboard</td>
+            <td>nginx-ingress-controller-5984b97644-rqkmn</td>
+            <td>nginx-ingress-controller</td>
             <td>0.0</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.0</td>
-            <td data-value="17420288.0">16.6 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.003">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="0.003" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="61820928.0">
+                <div class="resource-labels">
+                    <span>59</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="61820928.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
           </tr>
           
@@ -256,8 +474,26 @@
             <td></td>
             <td>0.0</td>
             <td data-value="0.0">0 Bytes</td>
-            <td>0.0</td>
-            <td data-value="24285184.0">23.2 MiB</td>
+
+            <td style="font-size: 0.75rem" data-value="0.0">
+                <div class="resource-labels">
+                    <span>0.0</span> <span>0.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-primary" value="0.0" max="0.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="13246464.0">
+                <div class="resource-labels">
+                    <span>13</span> <span>0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.0" max="0.0"></progress>
+                    <progress class="progress is-danger" value="13246464.0" max="0.0"></progress>
+                </div>
+            </td>
+
             <td class="has-text-right">0.00</td>
           </tr>
           
@@ -271,8 +507,8 @@
   <footer class="footer">
       <div class="container">
           <div class="content has-text-centered">
-              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
-              <p>Page generated 2018-06-03 19:24 UTC</p>
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> 0.1-dirty</p>
+              <p>Page generated 2018-07-22 16:59 UTC</p>
           </div>
       </div>
   </footer>

@@ -22,7 +22,7 @@ from requests_futures.sessions import FuturesSession
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import filters
 
-__version__ = "v0.1"
+__version__ = '0.1-dirty'
 
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
@@ -335,6 +335,8 @@ class CommaSeparatedValues(click.ParamType):
 @click.option(
     "--kubeconfig-path", type=click.Path(exists=True), help="Path to kubeconfig file"
 )
+@click.option('--kubeconfig-contexts', type=CommaSeparatedValues(),
+              help='List of kubeconfig contexts to use (default: use all defined contexts)', envvar='KUBECONFIG_CONTEXTS')
 @click.option(
     "--application-registry",
     metavar="URL",
@@ -348,6 +350,7 @@ class CommaSeparatedValues(click.ParamType):
 )
 @click.option(
     "--system-namespaces",
+    type=CommaSeparatedValues(),
     metavar="NS1,NS2",
     default="kube-system",
     help="Comma separated list of system/infrastructure namespaces (default: kube-system)",
@@ -370,6 +373,7 @@ def main(
     clusters,
     cluster_registry,
     kubeconfig_path,
+    kubeconfig_contexts,
     application_registry,
     use_cache,
     no_ingress_status,
@@ -395,11 +399,12 @@ def main(
             clusters,
             cluster_registry,
             kubeconfig_path,
+            set(kubeconfig_contexts or []),
             application_registry,
             use_cache,
             no_ingress_status,
             output_dir,
-            set(system_namespaces.split(",")),
+            set(system_namespaces),
             include_clusters,
             exclude_clusters,
             additional_cost_per_cluster,
@@ -414,6 +419,7 @@ def get_cluster_summaries(
     clusters: list,
     cluster_registry: str,
     kubeconfig_path: Path,
+    kubeconfig_contexts: set,
     include_clusters: str,
     exclude_clusters: str,
     system_namespaces: set,
@@ -429,7 +435,7 @@ def get_cluster_summaries(
         api_server_urls = clusters or []
         discoverer = cluster_discovery.StaticClusterDiscoverer(api_server_urls)
     else:
-        discoverer = cluster_discovery.KubeconfigDiscoverer(kubeconfig_path, set())
+        discoverer = cluster_discovery.KubeconfigDiscoverer(kubeconfig_path, kubeconfig_contexts)
 
     include_pattern = include_clusters and re.compile(include_clusters)
     exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
@@ -522,6 +528,7 @@ def generate_report(
     clusters,
     cluster_registry,
     kubeconfig_path,
+    kubeconfig_contexts: set,
     application_registry,
     use_cache,
     no_ingress_status,
@@ -549,6 +556,7 @@ def generate_report(
             clusters,
             cluster_registry,
             kubeconfig_path,
+            kubeconfig_contexts,
             include_clusters,
             exclude_clusters,
             system_namespaces,

@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Overview - Kubernetes Resource Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script src="sortable.min.js"></script>
     <link rel="stylesheet" href="sortable-theme-minimal.css" />
+    <link rel="stylesheet" href="kube-resource-report.css" />
+    <link rel="shortcut icon" href="favicon.png">
   </head>
   <body class="has-navbar-fixed-top">
   <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
@@ -44,7 +46,7 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Teams</p>
-      <p class="title">3</p>
+      <p class="title">2</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
@@ -56,54 +58,51 @@
   <div class="level-item has-text-centered">
     <div>
       <p class="heading">Pods</p>
-      <p class="title">18</p>
+      <p class="title">15</p>
     </div>
   </div>
   <div class="level-item has-text-centered">
     <div>
-      <p class="heading">Cost</p>
-      <p class="title">0.00</p>
+      <p class="heading">Monthly Cost</p>
+      <p class="title">30.00 USD</p>
     </div>
   </div>
 </nav>
 
 <div class="notification is-warning">
-    You can potentially save <strong>0.00 USD</strong> every month by optimizing resource requests and reducing slack.
+    You can potentially save <strong>4.86 USD</strong> every month by optimizing resource requests and reducing slack.
 </div>
 
 <h2 class="title is-5">CPU</h2>
-<progress class="progress" value="1.3150000000000002" max="2.0" ></progress>
-<nav class="level">
-    <div class="level-left">
-        <div class="level-item">
-            1.32 requested
-        </div>
-    </div>
-    <div class="level-right">
-        <div class="level-item">
-           2.0 allocatable
-        </div>
-    </div>
-</nav>
+<div class="resource-labels">
+    <span>0.2 used</span>
+    <span>0.8 requested</span>
+    <span>2.0 allocatable</span>
+</div>
+<div class="resource-bar">
+    <progress class="progress" value="0.8360000000000001" max="2.0"></progress>
+    <progress class="progress is-primary" value="0.18" max="2.0"></progress>
+</div>
 
 <h2 class="title is-5">Memory</h2>
-<progress class="progress" value="1111490560.0" max="1992347648.0" ></progress>
-<nav class="level">
-    <div class="level-left">
-        <div class="level-item">
-            1.0 GiB requested
-        </div>
-    </div>
-    <div class="level-right">
-        <div class="level-item">
-           1.9 GiB allocatable
-        </div>
-    </div>
-</nav>
+<div class="resource-labels">
+    <span>1.6 GiB used</span>
+    <span>270.0 MiB requested</span>
+    <span>1.8 GiB allocatable</span>
+</div>
+<div class="resource-bar">
+    <progress class="progress" value="283115520.0" max="1982693376.0"></progress>
+    <progress class="progress is-primary" value="1698344960.0" max="1982693376.0"></progress>
+</div>
+
+<h2 class="title is-5">Resource-based Pricing</h2>
+
+<p class="content">Price per vCPU is 0.0205 USD per hour and per GiB memory is 0.0205 USD per hour.</p>
 
 <h2 class="title is-5">Notifications</h2>
 
 <p>No warnings or errors to report.</p>
+
 
 
 
@@ -112,8 +111,8 @@
   <footer class="footer">
       <div class="container">
           <div class="content has-text-centered">
-              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
-              <p>Page generated 2018-06-03 19:24 UTC</p>
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> 0.1-dirty</p>
+              <p>Page generated 2018-07-22 16:59 UTC</p>
           </div>
       </div>
   </footer>

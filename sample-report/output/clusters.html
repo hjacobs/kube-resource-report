@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Clusters - Kubernetes Resource Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script src="sortable.min.js"></script>
     <link rel="stylesheet" href="sortable-theme-minimal.css" />
+    <link rel="stylesheet" href="kube-resource-report.css" />
+    <link rel="shortcut icon" href="favicon.png">
   </head>
   <body class="has-navbar-fixed-top">
   <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
@@ -35,19 +37,14 @@
                   <th><abbr title="Master Nodes">MN</abbr></th>
                   <th><abbr title="Worker Nodes">WN</abbr></th>
                   <th>Inst. Types</th>
+                  <th><abbr title="Spot Instances?">S?</abbr></th>
                   <th>Version</th>
                   <th><abbr title="Ingresses">I</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="User Pods">UP</abbr></th>
-                  <th><abbr title="CPU Capacity">CC</abbr></th>
-                  <th><abbr title="Memory Capacity">MC</abbr></th>
-                  <th><abbr title="CPU Allocatable">CA</abbr></th>
-                  <th><abbr title="Memory Allocatable">MA</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th><abbr title="CPU Used">CU</abbr></th>
-                  <th><abbr title="Memory Used">MU</abbr></th>
-                  <th>Cost</th>
+                  <th>CPU</th>
+                  <th>Memory (GiB)</th>
+                  <th class="has-text-right">Cost</th>
               </tr>
           </thead>
           <tbody>
@@ -55,22 +52,35 @@
           <tr>
             <td><a href="./cluster-minikube.html">minikube</a></td>
             <td>https://192.168.99.100:8443</td>
-            <td>0</td>
-            <td>1</td>
+            <td class="has-text-right">0</td>
+            <td class="has-text-right">1</td>
             <td>unknown</td>
+            <td>
+            </td>
             <td>v1.10.0</td>
-            <td>1</td>
-            <td>18</td>
-            <td>7</td>
-            <td>2.0</td>
-            <td>2.0 GiB</td>
-            <td>2.0</td>
-            <td data-value="1992347648.0">1.9 GiB</td>
-            <td>1.3</td>
-            <td data-value="1111490560.0">1.0 GiB</td>
-            <td>0.2</td>
-            <td data-value="1754574848.0">1.6 GiB</td>
-            <td class="has-text-right">0.00</td>
+            <td class="has-text-right">0</td>
+            <td class="has-text-right">15</td>
+            <td class="has-text-right">2</td>
+
+            <td style="font-size: 0.75rem" data-value="0.18">
+                <div class="resource-labels">
+                    <span>0.2</span> <span>0.8</span> <span>2.0</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="0.8360000000000001" max="2.0"></progress>
+                    <progress class="progress is-primary" value="0.18" max="2.0"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="1698344960.0">
+                <div class="resource-labels">
+                    <span>1.6</span> <span>0.3</span> <span>1.8</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="283115520.0" max="1982693376.0"></progress>
+                    <progress class="progress is-primary" value="1698344960.0" max="1982693376.0"></progress>
+                </div>
+            </td>
+            <td class="has-text-right">30.00</td>
 
           </tr>
 
@@ -84,8 +94,8 @@
   <footer class="footer">
       <div class="container">
           <div class="content has-text-centered">
-              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> v0.1</p>
-              <p>Page generated 2018-06-03 19:24 UTC</p>
+              <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> 0.1-dirty</p>
+              <p>Page generated 2018-07-22 16:59 UTC</p>
           </div>
       </div>
   </footer>
