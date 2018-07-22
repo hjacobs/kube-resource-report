@@ -33,6 +33,7 @@ def test_generate_report(tmpdir, monkeypatch):
         lambda cluster, path: MagicMock(json=lambda: responses.get(path)),
     )
     cluster_summaries = generate_report(
+        [],
         "https://cluster-registry",
         None,
         None,

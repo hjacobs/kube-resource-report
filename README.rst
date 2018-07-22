@@ -43,14 +43,32 @@ The output will be HTML files plus multiple tab-separated files:
 ``output/pods.tsv``
     List of all pods and their CPU/memory requests and usages.
 
+
+---------------------
+Deploying to Minikube
+---------------------
+
+This will deploy a single pod with kube-resource-report and nginx (to serve the static HTML):
+
+.. code-block::
+
+    $ minikube start
+    $ kubectl apply -f deploy/
+    $ pod=$(kubectl get pod -l application=kube-resource-report -o jsonpath='{.items[].metadata.name}')
+    $ kubectl port-forward $pod 8080:80
+
+Now open http://localhost:8080/ in your browser.
+
+
 ---------------------------
 Running as Docker container
 ---------------------------
 
 .. code-block::
 
-    $ docker build -t kube-resource-report .
-    $ docker run -it --net=host -v ~/.kube:/kube -v $(pwd)/output:/out kube-resource-report --kubeconfig-path=/kube/config /out
+    $ kubectl proxy & # start proxy to your cluster (e.g. Minikube)
+    $ # run kube-resource-report and generate static HTML to ./output (this trick does not work with Docker for Mac!)
+    $ docker run -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.1 /output
 
 --------------------
 Application Registry
