@@ -7,7 +7,7 @@ TAG              ?= $(VERSION)
 default: docker
 
 test:
-	pytest
+	python3 -m pytest
 
 docker: 
 	docker build --build-arg "VERSION=$(VERSION)" -t "$(IMAGE):$(TAG)" .

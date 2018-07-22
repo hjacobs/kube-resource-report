@@ -9,5 +9,4 @@ install:
   - pipenv install --dev
 script:
   - flake8
-  - py.test --doctest-modules
-  - make docker
+  - make test docker

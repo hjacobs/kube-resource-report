@@ -26,9 +26,9 @@ The usage requires `Pipenv <https://docs.pipenv.org/>`_ (see below for alternati
 
     $ pipenv install && pipenv shell
     $ mkdir output
-    $ ./report.py output/ # uses clusters defined in ~/.kube/config
-    $ OAUTH2_ACCESS_TOKENS=read-only=mytok ./report.py --cluster-registry=https://cluster-registry.example.org output/ # discover clusters via registry
-    $ OAUTH2_ACCESS_TOKENS=read-only=mytok ./report.py --cluster-registry=https://cluster-registry.example.org output/ --application-registry=https://app-registry.example.org # get team information
+    $ python3 -m kube_resource_report output/ # uses clusters defined in ~/.kube/config
+    $ OAUTH2_ACCESS_TOKENS=read-only=mytok python3 -m kube_resource_report --cluster-registry=https://cluster-registry.example.org output/ # discover clusters via registry
+    $ OAUTH2_ACCESS_TOKENS=read-only=mytok python3 -m kube_resource_report --cluster-registry=https://cluster-registry.example.org output/ --application-registry=https://app-registry.example.org # get team information
 
 The output will be HTML files plus multiple tab-separated files:
 
