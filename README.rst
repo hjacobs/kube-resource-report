@@ -2,6 +2,10 @@
 Kubernetes Resource Report
 ==========================
 
+.. image:: https://travis-ci.org/hjacobs/kube-resource-report.svg?branch=master
+   :target: https://travis-ci.org/hjacobs/kube-resource-report
+   :alt: Travis CI Build Status
+
 **This early version only supports the AWS eu-central-1 region for price/cost information**
 
 Script to generate a HTML report of CPU/memory requests vs. usage (collected via Metrics API/Heapster) for one or more Kubernetes clusters.
