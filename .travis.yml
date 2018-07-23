@@ -8,5 +8,4 @@ install:
   - pip install pipenv
   - pipenv install --dev
 script:
-  - flake8
   - make test docker
