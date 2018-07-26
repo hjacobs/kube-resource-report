@@ -61,6 +61,8 @@ def parse_resource(v):
 
 
 session = requests.Session()
+# set a friendly user agent for outgoing HTTP requests
+session.headers['User-Agent'] = 'kube-resource-report/{}'.format(__version__)
 
 
 def request(cluster, path, **kwargs):
@@ -250,7 +252,7 @@ def query_cluster(
     response = request(cluster, "/apis/extensions/v1beta1/ingresses")
     response.raise_for_status()
 
-    with FuturesSession(max_workers=10) as futures_session:
+    with FuturesSession(max_workers=10, session=session) as futures_session:
         futures = {}
         for item in response.json()["items"]:
             namespace, name = item["metadata"]["namespace"], item["metadata"]["name"]
@@ -271,7 +273,9 @@ def query_cluster(
             for future in concurrent.futures.as_completed(futures):
                 ingress = futures[future]
                 try:
-                    status = future.result().status_code
+                    response = future.result()
+                    print(response.request.headers)
+                    status = response.status_code
                 except:
                     status = 999
                 ingress[4] = status
@@ -335,7 +339,7 @@ def get_cluster_summaries(
 
 
 def resolve_application_ids(applications: dict, teams: dict, application_registry: str):
-    with FuturesSession(max_workers=10) as futures_session:
+    with FuturesSession(max_workers=10, session=session) as futures_session:
         futures_session.auth = cluster_discovery.OAuthTokenAuth("read-only")
 
         future_to_app = {}
