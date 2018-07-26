@@ -274,7 +274,6 @@ def query_cluster(
                 ingress = futures[future]
                 try:
                     response = future.result()
-                    print(response.request.headers)
                     status = response.status_code
                 except:
                     status = 999
