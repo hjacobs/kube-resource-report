@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     application: kube-resource-report
-    version: v0.2
+    version: v0.2.1
   name: kube-resource-report
 spec:
   replicas: 1
@@ -14,7 +14,7 @@ spec:
     metadata:
       labels:
         application: kube-resource-report
-        version: v0.2
+        version: v0.2.1
     spec:
       serviceAccount: kube-resource-report
       containers:
