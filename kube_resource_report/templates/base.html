@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
     <script src="sortable.min.js"></script>
+    <script src="navbar.js"></script>
     <link rel="stylesheet" href="sortable-theme-minimal.css" />
     <link rel="stylesheet" href="kube-resource-report.css" />
     <link rel="shortcut icon" href="favicon.png">
@@ -14,8 +15,13 @@
   <body class="has-navbar-fixed-top">
   <nav class="navbar is-fixed-top is-dark" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
+        <a role="button" class="navbar-burger" data-target="nav-menu" aria-label="menu" aria-expanded="false">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
     </div>
-    <div class="navbar-menu">
+    <div class="navbar-menu" id="nav-menu">
         <div class="navbar-start">
             <a class="navbar-item {{ 'is-active' if page == 'index' }}" href="index.html">Overview</a>
             <a class="navbar-item {{ 'is-active' if page == 'clusters' }}" href="clusters.html">Clusters</a>
