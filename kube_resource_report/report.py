@@ -653,8 +653,13 @@ def generate_report(
         context["team"] = team
         template.stream(**context).dump(str(output_path / file_name))
 
-    for path in templates_path.iterdir():
+    assets_path = output_path / "assets"
+    assets_path.mkdir(exist_ok=True)
+
+    assets_source_path = templates_path / "assets"
+
+    for path in assets_source_path.iterdir():
         if path.match("*.js") or path.match("*.css") or path.match("*.png"):
-            shutil.copy(str(path), str(output_path / path.name))
+            shutil.copy(str(path), str(assets_path / path.name))
 
     return cluster_summaries
