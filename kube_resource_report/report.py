@@ -339,14 +339,16 @@ def get_cluster_summaries(
 
 def resolve_application_ids(applications: dict, teams: dict, application_registry: str):
     with FuturesSession(max_workers=10, session=session) as futures_session:
-        futures_session.auth = cluster_discovery.OAuthTokenAuth("read-only")
+        auth = cluster_discovery.OAuthTokenAuth("read-only")
 
         future_to_app = {}
         for app_id, app in applications.items():
             if app_id:
                 future_to_app[
                     futures_session.get(
-                        application_registry + "/apps/" + app_id, timeout=5
+                        application_registry + "/apps/" + app_id,
+                        auth=auth,
+                        timeout=5
                     )
                 ] = app
 
