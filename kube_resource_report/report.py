@@ -4,6 +4,7 @@ import collections
 import csv
 import pickle
 import datetime
+import json
 import logging
 import re
 import requests
@@ -62,7 +63,7 @@ def parse_resource(v):
 
 session = requests.Session()
 # set a friendly user agent for outgoing HTTP requests
-session.headers['User-Agent'] = 'kube-resource-report/{}'.format(__version__)
+session.headers["User-Agent"] = "kube-resource-report/{}".format(__version__)
 
 
 def request(cluster, path, **kwargs):
@@ -133,13 +134,18 @@ def query_cluster(
 
     try:
         # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        for i, url in enumerate(["/apis/metrics.k8s.io/v1beta1/nodes", '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes']):
+        for i, url in enumerate(
+            [
+                "/apis/metrics.k8s.io/v1beta1/nodes",
+                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes",
+            ]
+        ):
             try:
                 response = request(cluster, url)
                 response.raise_for_status()
             except Exception as e:
                 if i == 0:
-                    logger.warning('Failed to query metrics: %s', e)
+                    logger.warning("Failed to query metrics: %s", e)
                 else:
                     raise
         for item in response.json()["items"]:
@@ -220,13 +226,18 @@ def query_cluster(
 
     try:
         # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        for i, url in enumerate(["/apis/metrics.k8s.io/v1beta1/pods", '/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods']):
+        for i, url in enumerate(
+            [
+                "/apis/metrics.k8s.io/v1beta1/pods",
+                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods",
+            ]
+        ):
             try:
                 response = request(cluster, url)
                 response.raise_for_status()
             except Exception as e:
                 if i == 0:
-                    logger.warning('Failed to query metrics: %s', e)
+                    logger.warning("Failed to query metrics: %s", e)
                 else:
                     raise
         for item in response.json()["items"]:
@@ -302,7 +313,9 @@ def get_cluster_summaries(
         api_server_urls = clusters or []
         discoverer = cluster_discovery.StaticClusterDiscoverer(api_server_urls)
     else:
-        discoverer = cluster_discovery.KubeconfigDiscoverer(kubeconfig_path, kubeconfig_contexts)
+        discoverer = cluster_discovery.KubeconfigDiscoverer(
+            kubeconfig_path, kubeconfig_contexts
+        )
 
     include_pattern = include_clusters and re.compile(include_clusters)
     exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
@@ -346,9 +359,7 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
             if app_id:
                 future_to_app[
                     futures_session.get(
-                        application_registry + "/apps/" + app_id,
-                        auth=auth,
-                        timeout=5
+                        application_registry + "/apps/" + app_id, auth=auth, timeout=5
                     )
                 ] = app
 
@@ -393,6 +404,34 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
             teams[team_id] = team
 
 
+def calculate_metrics(context: dict) -> dict:
+    metrics = {
+        "clusters": len(context["cluster_summaries"]),
+        "teams": len(context["teams"]),
+        "applications": len(context["applications"]),
+        "now": context["now"].isoformat(),
+    }
+    for k in (
+        "total_worker_nodes",
+        "total_allocatable",
+        "total_requests",
+        "total_usage",
+        "total_user_requests",
+        "total_pods",
+        "total_cost",
+        "total_cost_per_user_request_hour",
+        "total_slack_cost",
+        "duration",
+        "version",
+    ):
+        if k.startswith("total_"):
+            metrics_key = k[6:]
+        else:
+            metrics_key = k
+        metrics[metrics_key] = context[k]
+    return metrics
+
+
 def generate_report(
     clusters,
     cluster_registry,
@@ -410,6 +449,8 @@ def generate_report(
     notifications = []
 
     output_path = Path(output_dir)
+
+    start = datetime.datetime.utcnow()
 
     pickle_path = output_path / "dump.pickle"
 
@@ -603,6 +644,7 @@ def generate_report(
     env.filters["memory"] = filters.memory
     total_cost = sum([s["cost"] for s in cluster_summaries.values()])
     total_hourly_cost = total_cost / HOURS_PER_MONTH
+    now = datetime.datetime.utcnow()
     context = {
         "notifications": notifications,
         "cluster_summaries": cluster_summaries,
@@ -622,12 +664,20 @@ def generate_report(
         "total_cost": total_cost,
         "total_cost_per_user_request_hour": {
             "cpu": 0.5 * total_hourly_cost / max(total_user_requests["cpu"], 1),
-            "memory": 0.5 * total_hourly_cost / max(total_user_requests["memory"] / ONE_GIBI, 1),
+            "memory": 0.5 * total_hourly_cost / max(
+                total_user_requests["memory"] / ONE_GIBI, 1),
         },
         "total_slack_cost": sum([a["slack_cost"] for a in applications.values()]),
-        "now": datetime.datetime.utcnow(),
+        "now": now,
+        "duration": (now - start).total_seconds(),
         "version": __version__,
     }
+
+    metrics = calculate_metrics(context)
+
+    with (output_path / "metrics.json").open("w") as fd:
+        json.dump(metrics, fd)
+
     for page in ["index", "clusters", "ingresses", "teams", "applications", "pods"]:
         file_name = "{}.html".format(page)
         logger.info("Generating {}..".format(file_name))
