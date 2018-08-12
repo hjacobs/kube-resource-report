@@ -17,10 +17,11 @@ rules:
   resources: ["ingresses"]
   verbs:
     - list
-- apiGroups: ["metrics"]
+- apiGroups: ["metrics.k8s.io"]
   resources: ["nodes", "pods"]
   verbs:
     - get
+    - list
 - apiGroups: [""]
   resources: ["services/proxy"]
   resourceNames: ["heapster"]
