@@ -97,6 +97,17 @@ def query_cluster(
     logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
     pods = {}
     nodes = {}
+    namespaces ={}
+
+    response = request(cluster, "/api/v1/namespaces")
+    response.raise_for_status()
+
+    for item in response.json()["items"]:
+        namespace, status, email = item["metadata"]["name"], item["status"]["phase"], item["metadata"]["annotations"]["email"]
+        namespaces[namespace] = {
+            "status": status,
+            "email": email,
+        }
 
     response = request(cluster, "/api/v1/nodes")
     response.raise_for_status()
@@ -206,6 +217,7 @@ def query_cluster(
         "cluster": cluster,
         "nodes": nodes,
         "pods": pods,
+        "namespaces": namespaces,
         "user_pods": len([p for ns, p in pods if ns not in system_namespaces]),
         "master_nodes": node_count["master"],
         "worker_nodes": node_count[node_label],
@@ -493,6 +505,7 @@ def generate_report(
         )
         teams = {}
         applications = {}
+        namespace_usage = {}
 
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
@@ -532,6 +545,32 @@ def generate_report(
             app["clusters"].add(cluster_id)
             applications[pod["application"]] = app
 
+        for ns_pod, pod in summary["pods"].items():
+            namespace = namespace_usage.get(
+                ns_pod[0],
+                {
+                    "id": ns_pod[0],
+                    "cost": 0,
+                    "slack_cost": 0,
+                    "pods": 0,
+                    "requests": {},
+                    "usage": {},
+                    "clusters": set(),
+                    "email": "",
+                    "status": "",
+                },
+            )
+            for r in "cpu", "memory":
+                namespace["requests"][r] = namespace["requests"].get(r, 0) + pod["requests"][r]
+                namespace["usage"][r] = namespace["usage"].get(r, 0) + pod.get("usage", {}).get(
+                    r, 0
+                )
+            namespace["cost"] += pod["cost"]
+            namespace["slack_cost"] += pod.get("slack_cost", 0)
+            namespace["pods"] += 1
+            namespace["clusters"].add(cluster_id)
+            namespace_usage[ns_pod[0]] = namespace
+
     if application_registry:
         resolve_application_ids(applications, teams, application_registry)
 
@@ -540,6 +579,13 @@ def generate_report(
             app = applications.get(pod["application"])
             pod["team"] = app["team"]
 
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        for ns, ns_values in summary["namespaces"].items():
+            namespace = namespace_usage.get(ns)
+            if namespace:
+                namespace["email"] = ns_values["email"]
+                namespace["status"] = ns_values["status"]
+
     if not use_cache:
         with pickle_path.open("wb") as fd:
             pickle.dump(
@@ -547,6 +593,7 @@ def generate_report(
                     "cluster_summaries": cluster_summaries,
                     "teams": teams,
                     "applications": applications,
+                    "namespace_usage": namespace_usage,
                 },
                 fd,
             )
@@ -667,6 +714,7 @@ def generate_report(
         "cluster_summaries": cluster_summaries,
         "teams": teams,
         "applications": applications,
+        "namespace_usage": namespace_usage,
         "total_worker_nodes": sum(
             [s["worker_nodes"] for s in cluster_summaries.values()]
         ),
@@ -695,7 +743,7 @@ def generate_report(
     with (output_path / "metrics.json").open("w") as fd:
         json.dump(metrics, fd)
 
-    for page in ["index", "clusters", "ingresses", "teams", "applications", "pods"]:
+    for page in ["index", "clusters", "ingresses", "teams", "applications", "namespace_usage", "pods"]:
         file_name = "{}.html".format(page)
         logger.info("Generating {}..".format(file_name))
         template = env.get_template(file_name)

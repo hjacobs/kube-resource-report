@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Namespaces{% endblock %}
+{% block content %}
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th><abbr title="Active?">A?</abbr></th>
+                  <!--<th><abbr title="Clusters">C</abbr></th>-->
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for namespace_id, namespace in namespace_usage.items()|sort: %}
+          <tr>
+            <td>{{ namespace_id }}</td>
+            <td>
+                {% if namespace.status is not none: %}
+                {% if namespace.status: %}
+                <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
+
+                {% else: %}
+                <span class="icon"><i class="fas fa-exclamation-triangle has-text-warning"></i></span>
+                {% endif %}
+                {% endif %}
+
+                </td>
+            <!--<td>{{ namespace.clusters|count }}</td>-->
+            <td>{{ namespace.pods }}</td>
+            <td>{{ namespace.requests.cpu|round(3) }}</td>
+            <td data-value="{{ namespace.requests.memory }}">{{ namespace.requests.memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ namespace.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ namespace.usage.cpu|round(2) }}</span> <span>{{ namespace.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ namespace.requests.cpu }}" max="{{ namespace.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if namespace.usage.cpu > namespace.requests.cpu else 'is-primary' }}" value="{{ namespace.usage.cpu }}" max="{{ namespace.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ namespace.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ namespace.usage.memory|memory('MiB') }}</span> <span>{{ namespace.requests.memory|memory('MiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ namespace.requests.memory }}" max="{{ namespace.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if namespace.usage.memory > namespace.requests.memory else 'is-primary' }}" value="{{ namespace.usage.memory }}" max="{{ namespace.requests.memory }}"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">{{ namespace.cost|money }}</td>
+            <td class="has-text-right">{{ namespace.slack_cost|money }}</td>
+
+          </tr>
+
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}
