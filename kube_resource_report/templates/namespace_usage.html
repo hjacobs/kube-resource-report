@@ -6,7 +6,7 @@
               <tr>
                   <th>ID</th>
                   <th><abbr title="Active?">A?</abbr></th>
-                  <!--<th><abbr title="Clusters">C</abbr></th>-->
+                  <th><abbr title="Cluster">Cluster</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
@@ -19,7 +19,7 @@
           <tbody>
           {% for namespace_id, namespace in namespace_usage.items()|sort: %}
           <tr>
-            <td>{{ namespace_id }}</td>
+            <td>{{ namespace_id[0] }}</td>
             <td>
                 {% if namespace.status is not none: %}
                 {% if namespace.status: %}
@@ -31,7 +31,7 @@
                 {% endif %}
 
                 </td>
-            <!--<td>{{ namespace.clusters|count }}</td>-->
+            <td><a href="./cluster-{{ namespace.cluster }}.html">{{ namespace.cluster }}</a></td>
             <td>{{ namespace.pods }}</td>
             <td>{{ namespace.requests.cpu|round(3) }}</td>
             <td data-value="{{ namespace.requests.memory }}">{{ namespace.requests.memory|filesizeformat(True) }}</td>
