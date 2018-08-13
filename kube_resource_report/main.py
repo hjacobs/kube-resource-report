@@ -78,7 +78,7 @@ class CommaSeparatedValues(click.ParamType):
     default=0,
 )
 @click.option(
-    "--alternate-pricing-file",
+    "--pricing-file",
     type=click.Path(exists=True),
     help="Path to alternate pricing file"
 )
@@ -97,7 +97,7 @@ def main(
     exclude_clusters,
     additional_cost_per_cluster,
     update_interval_minutes,
-    alternate_pricing_file,
+    pricing_file,
 ):
     """Kubernetes Resource Report
 
@@ -109,8 +109,8 @@ def main(
     else:
         kubeconfig_path = Path(os.path.expanduser("~/.kube/config"))
 
-    if alternate_pricing_file:
-        alternate_pricing_file = Path(alternate_pricing_file)
+    if pricing_file:
+        pricing_file = Path(pricing_file)
 
     while True:
         generate_report(
@@ -126,7 +126,7 @@ def main(
             include_clusters,
             exclude_clusters,
             additional_cost_per_cluster,
-            alternate_pricing_file,
+            pricing_file,
         )
         if update_interval_minutes > 0:
             time.sleep(update_interval_minutes * 60)

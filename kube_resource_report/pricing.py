@@ -27,7 +27,7 @@ with spot_path.open() as fd:
         NODE_SPOT_COSTS_MONTHLY[(region, instance_type)] = float(monthly_cost)
 
 
-def get_node_cost(alternate_pricing_file, region, instance_type, is_spot):
+def get_node_cost(pricing_file, region, instance_type, is_spot):
     if is_spot:
         cost = NODE_SPOT_COSTS_MONTHLY.get((region, instance_type))
         if cost is None:
