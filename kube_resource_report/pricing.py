@@ -118,7 +118,6 @@ if __name__ == "__main__":
         for loc_instance_type, price in sorted(max_price.items()):
             location, instance_type = loc_instance_type
             writer.writerow([location, instance_type, "{:.4f}".format(price)])
-    raise Exception("end")
 
     filters = [
         {"Type": "TERM_MATCH", "Field": "operatingSystem", "Value": "Linux"},
