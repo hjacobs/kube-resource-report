@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-kubernetes = "*"
+kubernetes = "==7.0.0a1"
 requests = "*"
 click = "*"
 stups-tokens = "*"
@@ -16,6 +16,7 @@ flake8 = "*"
 pytest = "*"
 pytest-watch = "*"
 black = "*"
+"boto3" = "*"
 
 [requires]
 python_version = "3.6"
