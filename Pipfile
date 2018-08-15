@@ -16,6 +16,7 @@ flake8 = "*"
 pytest = "*"
 pytest-watch = "*"
 black = "*"
+"boto3" = "*"
 
 [requires]
 python_version = "3.6"
