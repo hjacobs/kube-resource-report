@@ -148,6 +148,8 @@ def query_cluster(
                     logger.warning("Failed to query metrics: %s", e)
                 else:
                     raise
+            if response.ok:
+                break
         for item in response.json()["items"]:
             key = item["metadata"]["name"]
             node = nodes.get(key)
@@ -240,6 +242,8 @@ def query_cluster(
                     logger.warning("Failed to query metrics: %s", e)
                 else:
                     raise
+            if response.ok:
+                break
         for item in response.json()["items"]:
             key = (item["metadata"]["namespace"], item["metadata"]["name"])
             pod = pods.get(key)
