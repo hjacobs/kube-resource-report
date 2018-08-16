@@ -85,7 +85,7 @@ logger = logging.getLogger(__name__)
 
 
 def query_cluster(
-    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status, pricing_file
+    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status
 ):
     logger.info("Querying cluster {} ({})..".format(cluster.id, cluster.api_server_url))
     pods = {}
@@ -129,7 +129,7 @@ def query_cluster(
         )
         node["role"] = role
         node["instance_type"] = instance_type
-        node["cost"] = pricing.get_node_cost(pricing_file, region, instance_type, is_spot)
+        node["cost"] = pricing.get_node_cost(region, instance_type, is_spot)
         cluster_cost += node["cost"]
 
     try:
@@ -308,7 +308,6 @@ def get_cluster_summaries(
     notifications: list,
     additional_cost_per_cluster: float,
     no_ingress_status: bool,
-    pricing_file: Path,
 ):
     cluster_summaries = {}
 
@@ -339,7 +338,6 @@ def get_cluster_summaries(
                         system_namespaces,
                         additional_cost_per_cluster,
                         no_ingress_status,
-                        pricing_file,
                     )
                 ] = cluster
 
@@ -457,6 +455,9 @@ def generate_report(
 
     output_path = Path(output_dir)
 
+    if pricing_file:
+        pricing.NODE_COSTS_MONTHLY = pricing.regenerate_cost_dict(pricing_file)
+
     start = datetime.datetime.utcnow()
 
     pickle_path = output_path / "dump.pickle"
@@ -480,7 +481,6 @@ def generate_report(
             notifications,
             additional_cost_per_cluster,
             no_ingress_status,
-            pricing_file,
         )
         teams = {}
         applications = {}
