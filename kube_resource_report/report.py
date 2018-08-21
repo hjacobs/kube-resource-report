@@ -80,6 +80,12 @@ def request(cluster, path, **kwargs):
     )
 
 
+def json_default(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError(obj)
+
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -708,6 +714,23 @@ def generate_report(
         context["team_id"] = team_id
         context["team"] = team
         template.stream(**context).dump(str(output_path / file_name))
+
+    with (output_path / "team-metrics.json").open("w") as fd:
+        json.dump(
+            {
+                team_id: {
+                    **team,
+                    "application": {
+                        app_id: app
+                        for app_id, app in applications.items()
+                        if app["team"] == team_id
+                    }
+                }
+                for team_id, team in teams.items()
+            },
+            fd,
+            default=json_default
+        )
 
     assets_path = output_path / "assets"
     assets_path.mkdir(exist_ok=True)
