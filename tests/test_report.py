@@ -45,5 +45,6 @@ def test_generate_report(tmpdir, monkeypatch):
         None,
         None,
         0,
+        None,
     )
     assert len(cluster_summaries) == 1

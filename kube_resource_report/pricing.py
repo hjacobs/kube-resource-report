@@ -27,6 +27,18 @@ with spot_path.open() as fd:
         NODE_SPOT_COSTS_MONTHLY[(region, instance_type)] = float(monthly_cost)
 
 
+def regenerate_cost_dict(pricing_file):
+    # Reset the costs dict and fill it with data from the external pricing file
+    NODE_COSTS_MONTHLY = {}
+    path = pricing_file
+    with path.open() as fd:
+        reader = csv.reader(fd)
+        for row in reader:
+            region, instance_type, monthly_cost = row
+            NODE_COSTS_MONTHLY[(region, instance_type)] = float(monthly_cost)
+    return NODE_COSTS_MONTHLY
+
+
 def get_node_cost(region, instance_type, is_spot):
     if is_spot:
         cost = NODE_SPOT_COSTS_MONTHLY.get((region, instance_type))
