@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pricing-file
+  namespace: default
+data:
+  pricing.csv: |+
+    dc-1,master,30.000
+    dc-1,worker,500.000
