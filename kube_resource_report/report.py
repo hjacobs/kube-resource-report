@@ -705,6 +705,23 @@ def generate_report(
         context["summary"] = summary
         template.stream(**context).dump(str(output_path / file_name))
 
+    with (output_path / "cluster-metrics.json").open("w") as fd:
+        json.dump(
+            {
+                cluster_id: {
+                    key: {
+                        k if isinstance(k, str) else '/'.join(k): v
+                        for k, v in value.items()
+                    } if hasattr(value, 'items') else value
+                    for key, value in summary.items()
+                    if key != 'cluster'
+                }
+                for cluster_id, summary in cluster_summaries.items()
+            },
+            fd,
+            default=json_default
+        )
+
     for team_id, team in teams.items():
         page = "teams"
         file_name = "team-{}.html".format(team_id)
