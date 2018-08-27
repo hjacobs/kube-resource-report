@@ -749,6 +749,9 @@ def generate_report(
             default=json_default
         )
 
+    with (output_path / "application-metrics.json").open("w") as fd:
+        json.dump(applications, fd, default=json_default)
+
     assets_path = output_path / "assets"
     assets_path.mkdir(exist_ok=True)
 
