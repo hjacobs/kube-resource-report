@@ -82,7 +82,6 @@ class CommaSeparatedValues(click.ParamType):
     type=click.Path(exists=True),
     help="Path to alternate pricing file"
 )
-
 @click.option(
     "--node-label",
     help="The label used for worker nodes",
