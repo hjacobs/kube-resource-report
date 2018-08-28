@@ -85,7 +85,7 @@ logger = logging.getLogger(__name__)
 
 
 def query_cluster(
-    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status
+    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status, node_label
 ):
     logger.info("Querying cluster {} ({})..".format(cluster.id, cluster.api_server_url))
     pods = {}
@@ -201,15 +201,15 @@ def query_cluster(
         "pods": pods,
         "user_pods": len([p for ns, p in pods if ns not in system_namespaces]),
         "master_nodes": node_count["master"],
-        "worker_nodes": node_count["worker"],
+        "worker_nodes": node_count[node_label],
         "kubelet_versions": set(
-            [n["kubelet_version"] for n in nodes.values() if n["role"] == "worker"]
+            [n["kubelet_version"] for n in nodes.values() if n["role"] == node_label]
         ),
         "worker_instance_types": set(
-            [n["instance_type"] for n in nodes.values() if n["role"] == "worker"]
+            [n["instance_type"] for n in nodes.values() if n["role"] == node_label]
         ),
         "worker_instance_is_spot": any(
-            [n["spot"] for n in nodes.values() if n["role"] == "worker"]
+            [n["spot"] for n in nodes.values() if n["role"] == node_label]
         ),
         "capacity": cluster_capacity,
         "allocatable": cluster_allocatable,
@@ -308,6 +308,7 @@ def get_cluster_summaries(
     notifications: list,
     additional_cost_per_cluster: float,
     no_ingress_status: bool,
+    node_label: str,
 ):
     cluster_summaries = {}
 
@@ -338,6 +339,7 @@ def get_cluster_summaries(
                         system_namespaces,
                         additional_cost_per_cluster,
                         no_ingress_status,
+                        node_label,
                     )
                 ] = cluster
 
@@ -450,6 +452,7 @@ def generate_report(
     exclude_clusters,
     additional_cost_per_cluster,
     pricing_file,
+    node_label,
 ):
     notifications = []
 
@@ -481,6 +484,7 @@ def generate_report(
             notifications,
             additional_cost_per_cluster,
             no_ingress_status,
+            node_label,
         )
         teams = {}
         applications = {}
@@ -549,7 +553,7 @@ def generate_report(
             worker_instance_type = set()
             kubelet_version = set()
             for node in summary["nodes"].values():
-                if node["role"] == "worker":
+                if node["role"] == node_label:
                     worker_instance_type.add(node["instance_type"])
                 kubelet_version.add(node["kubelet_version"])
             fields = [
