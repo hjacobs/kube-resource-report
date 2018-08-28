@@ -82,6 +82,12 @@ class CommaSeparatedValues(click.ParamType):
     type=click.Path(exists=True),
     help="Path to alternate pricing file"
 )
+
+@click.option(
+    "--node-label",
+    help="The label used for worker nodes",
+    default="worker",
+)
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
     clusters,
@@ -98,6 +104,7 @@ def main(
     additional_cost_per_cluster,
     update_interval_minutes,
     pricing_file,
+    node_label,
 ):
     """Kubernetes Resource Report
 
@@ -127,6 +134,7 @@ def main(
             exclude_clusters,
             additional_cost_per_cluster,
             pricing_file,
+            node_label,
         )
         if update_interval_minutes > 0:
             time.sleep(update_interval_minutes * 60)
