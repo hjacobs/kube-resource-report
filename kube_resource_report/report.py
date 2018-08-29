@@ -26,6 +26,7 @@ NODE_LABEL_SPOT = "aws.amazon.com/spot"
 ONE_MEBI = 1024 ** 2
 ONE_GIBI = 1024 ** 3
 
+# we show costs per month by default as it leads to easily digestable numbers (for humans)
 AVG_DAYS_PER_MONTH = 30.4375
 HOURS_PER_DAY = 24
 HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
@@ -63,7 +64,7 @@ def parse_resource(v):
 
 session = requests.Session()
 # set a friendly user agent for outgoing HTTP requests
-session.headers["User-Agent"] = "kube-resource-report/{}".format(__version__)
+session.headers["User-Agent"] = f"kube-resource-report/{__version__}"
 
 
 def request(cluster, path, **kwargs):
@@ -93,7 +94,7 @@ logger = logging.getLogger(__name__)
 def query_cluster(
     cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status, node_label
 ):
-    logger.info("Querying cluster {} ({})..".format(cluster.id, cluster.api_server_url))
+    logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
     pods = {}
     nodes = {}
 
@@ -283,9 +284,7 @@ def query_cluster(
                 ingress = [namespace, name, application, rule["host"], 0]
                 if not no_ingress_status:
                     futures[
-                        futures_session.get(
-                            "https://{}/".format(rule["host"]), timeout=5
-                        )
+                        futures_session.get(f"https://{rule['host']}/", timeout=5)
                     ] = ingress
                 cluster_summary["ingresses"].append(ingress)
 
