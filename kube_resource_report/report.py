@@ -103,7 +103,11 @@ def query_cluster(
     response.raise_for_status()
 
     for item in response.json()["items"]:
-        namespace, status, email = item["metadata"]["name"], item["status"]["phase"], item["metadata"]["annotations"]["email"]
+        email = None
+        namespace, status = item["metadata"]["name"], item["status"]["phase"]
+        if 'annotations' in item["metadata"]:
+            if 'email' in item["metadata"]["annotations"]:
+                email = item["metadata"]["annotations"]["email"]
         namespaces[namespace] = {
             "status": status,
             "email": email,
