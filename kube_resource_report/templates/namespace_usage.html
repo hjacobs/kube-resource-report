@@ -17,12 +17,12 @@
               </tr>
           </thead>
           <tbody>
-          {% for namespace_id, namespace in namespace_usage.items()|sort: %}
+          {% for namespace_id, namespace_data in namespace_usage.items()|sort: %}
           <tr>
             <td>{{ namespace_id[0] }}</td>
             <td>
-                {% if namespace.status is not none: %}
-                {% if namespace.status: %}
+                {% if namespace_data.status is not none: %}
+                {% if namespace_data.status: %}
                 <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
 
                 {% else: %}
@@ -31,32 +31,32 @@
                 {% endif %}
 
                 </td>
-            <td><a href="./cluster-{{ namespace.cluster }}.html">{{ namespace.cluster }}</a></td>
-            <td>{{ namespace.pods }}</td>
-            <td>{{ namespace.requests.cpu|round(3) }}</td>
-            <td data-value="{{ namespace.requests.memory }}">{{ namespace.requests.memory|filesizeformat(True) }}</td>
+            <td><a href="./cluster-{{ namespace_data.cluster }}.html">{{ namespace_data.cluster }}</a></td>
+            <td>{{ namespace_data.pods }}</td>
+            <td>{{ namespace_data.requests.cpu|round(3) }}</td>
+            <td data-value="{{ namespace_data.requests.memory }}">{{ namespace_data.requests.memory|filesizeformat(True) }}</td>
 
-            <td style="font-size: 0.75rem" data-value="{{ namespace.usage.cpu }}">
+            <td style="font-size: 0.75rem" data-value="{{ namespace_data.usage.cpu }}">
                 <div class="resource-labels">
-                    <span>{{ namespace.usage.cpu|round(2) }}</span> <span>{{ namespace.requests.cpu|round(2) }}</span>
+                    <span>{{ namespace_data.usage.cpu|round(2) }}</span> <span>{{ namespace_data.requests.cpu|round(2) }}</span>
                 </div>
                 <div class="resource-bar">
-                    <progress class="progress" value="{{ namespace.requests.cpu }}" max="{{ namespace.requests.cpu }}"></progress>
-                    <progress class="progress {{ 'is-danger' if namespace.usage.cpu > namespace.requests.cpu else 'is-primary' }}" value="{{ namespace.usage.cpu }}" max="{{ namespace.requests.cpu }}"></progress>
+                    <progress class="progress" value="{{ namespace_data.requests.cpu }}" max="{{ namespace_data.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if namespace_data.usage.cpu > namespace_data.requests.cpu else 'is-primary' }}" value="{{ namespace_data.usage.cpu }}" max="{{ namespace_data.requests.cpu }}"></progress>
                 </div>
             </td>
-            <td style="font-size: 0.75rem" data-value="{{ namespace.usage.memory }}">
+            <td style="font-size: 0.75rem" data-value="{{ namespace_data.usage.memory }}">
                 <div class="resource-labels">
-                    <span>{{ namespace.usage.memory|memory('MiB') }}</span> <span>{{ namespace.requests.memory|memory('MiB') }}</span>
+                    <span>{{ namespace_data.usage.memory|memory('MiB') }}</span> <span>{{ namespace_data.requests.memory|memory('MiB') }}</span>
                 </div>
                 <div class="resource-bar">
-                    <progress class="progress" value="{{ namespace.requests.memory }}" max="{{ namespace.requests.memory }}"></progress>
-                    <progress class="progress {{ 'is-danger' if namespace.usage.memory > namespace.requests.memory else 'is-primary' }}" value="{{ namespace.usage.memory }}" max="{{ namespace.requests.memory }}"></progress>
+                    <progress class="progress" value="{{ namespace_data.requests.memory }}" max="{{ namespace_data.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if namespace_data.usage.memory > namespace_data.requests.memory else 'is-primary' }}" value="{{ namespace_data.usage.memory }}" max="{{ namespace_data.requests.memory }}"></progress>
                 </div>
             </td>
 
-            <td class="has-text-right">{{ namespace.cost|money }}</td>
-            <td class="has-text-right">{{ namespace.slack_cost|money }}</td>
+            <td class="has-text-right">{{ namespace_data.cost|money }}</td>
+            <td class="has-text-right">{{ namespace_data.slack_cost|money }}</td>
 
           </tr>
 
