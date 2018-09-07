@@ -22,7 +22,7 @@
             <td>{{ namespace_id[0] }}</td>
             <td>
                 {% if namespace_data.status is not none: %}
-                {% if namespace_data.status: %}
+                {% if namespace_data.status == "Active": %}
                 <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
 
                 {% else: %}
