@@ -97,7 +97,7 @@ def query_cluster(
     logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
     pods = {}
     nodes = {}
-    namespaces ={}
+    namespaces = {}
 
     response = request(cluster, "/api/v1/namespaces")
     response.raise_for_status()
