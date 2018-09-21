@@ -146,7 +146,6 @@
               <tr>
                   <th>ID</th>
                   <th><abbr title="Active?">A?</abbr></th>
-                  <th><abbr title="Cluster">Cluster</abbr></th>
                   <th><abbr title="Pods">P</abbr></th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
@@ -172,7 +171,6 @@
                 {% endif %}
 
                 </td>
-            <td>{{ namespace_data.cluster }}</td>
             <td>{{ namespace_data.pods }}</td>
             <td>{{ namespace_data.requests.cpu|round(3) }}</td>
             <td data-value="{{ namespace_data.requests.memory }}">{{ namespace_data.requests.memory|filesizeformat(True) }}</td>

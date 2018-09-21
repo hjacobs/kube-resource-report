@@ -747,7 +747,7 @@ def generate_report(
     with (output_path / "metrics.json").open("w") as fd:
         json.dump(metrics, fd)
 
-    for page in ["index", "clusters", "ingresses", "teams", "applications", "namespace_usage", "pods"]:
+    for page in ["index", "clusters", "ingresses", "teams", "applications", "namespaces", "pods"]:
         file_name = "{}.html".format(page)
         logger.info("Generating {}..".format(file_name))
         template = env.get_template(file_name)
