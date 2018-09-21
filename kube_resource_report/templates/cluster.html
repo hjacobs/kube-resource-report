@@ -140,6 +140,71 @@
           </tbody>
 
         </table>
+    <h2 class="title is-5">Namespaces</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th><abbr title="Active?">A?</abbr></th>
+                  <th><abbr title="Cluster">Cluster</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for namespace_id, namespace_data in namespace_usage.items()|sort: %}
+          {% if namespace_data.cluster == cluster_id %}
+          <tr>
+            <td>{{ namespace_id[0] }}</td>
+            <td>
+                {% if namespace_data.status is not none: %}
+                {% if namespace_data.status == "Active": %}
+                <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
+
+                {% else: %}
+                <span class="icon"><i class="fas fa-exclamation-triangle has-text-warning"></i></span>
+                {% endif %}
+                {% endif %}
+
+                </td>
+            <td>{{ namespace_data.cluster }}</td>
+            <td>{{ namespace_data.pods }}</td>
+            <td>{{ namespace_data.requests.cpu|round(3) }}</td>
+            <td data-value="{{ namespace_data.requests.memory }}">{{ namespace_data.requests.memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ namespace_data.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ namespace_data.usage.cpu|round(2) }}</span> <span>{{ namespace_data.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ namespace_data.requests.cpu }}" max="{{ namespace_data.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if namespace_data.usage.cpu > namespace_data.requests.cpu else 'is-primary' }}" value="{{ namespace_data.usage.cpu }}" max="{{ namespace_data.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ namespace_data.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ namespace_data.usage.memory|memory('MiB') }}</span> <span>{{ namespace_data.requests.memory|memory('MiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ namespace_data.requests.memory }}" max="{{ namespace_data.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if namespace_data.usage.memory > namespace_data.requests.memory else 'is-primary' }}" value="{{ namespace_data.usage.memory }}" max="{{ namespace_data.requests.memory }}"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">{{ namespace_data.cost|money }}</td>
+            <td class="has-text-right">{{ namespace_data.slack_cost|money }}</td>
+
+          </tr>
+          {% endif %}
+          {%endfor %}
+          </tbody>
+
+        </table>
     <h2 class="title is-5">Pods</h2>
       <table class="table is-striped" data-sortable>
           <thead>

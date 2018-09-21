@@ -10,7 +10,7 @@ metadata:
   name: kube-resource-report
 rules:
 - apiGroups: [""]
-  resources: ["nodes", "pods"]
+  resources: ["nodes", "pods", "namespaces"]
   verbs:
     - list
 - apiGroups: ["extensions"]

@@ -26,6 +26,7 @@ def test_generate_report(tmpdir, monkeypatch):
         },
         "/api/v1/pods": {"items": []},
         "/apis/extensions/v1beta1/ingresses": {"items": []},
+        "/api/v1/namespaces": {"items": []},
     }
 
     monkeypatch.setattr(
