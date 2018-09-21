@@ -371,7 +371,7 @@ def get_cluster_summaries(
                 cluster_summaries[cluster.id] = summary
             except Exception as e:
                 notifications.append(
-                    ["error", "Failed to query cluster {}: {}".format(cluster.id, e)]
+                    ["error", f"Failed to query cluster {cluster.id}: {e}"]
                 )
                 logger.exception(e)
     return cluster_summaries
@@ -748,16 +748,16 @@ def generate_report(
         json.dump(metrics, fd)
 
     for page in ["index", "clusters", "ingresses", "teams", "applications", "namespaces", "pods"]:
-        file_name = "{}.html".format(page)
-        logger.info("Generating {}..".format(file_name))
+        file_name = f"{page}.html"
+        logger.info(f"Generating {file_name}..")
         template = env.get_template(file_name)
         context["page"] = page
         template.stream(**context).dump(str(output_path / file_name))
 
     for cluster_id, summary in cluster_summaries.items():
         page = "clusters"
-        file_name = "cluster-{}.html".format(cluster_id)
-        logger.info("Generating {}..".format(file_name))
+        file_name = f"cluster-{cluster_id}.html"
+        logger.info(f"Generating {file_name}..")
         template = env.get_template("cluster.html")
         context["page"] = page
         context["cluster_id"] = cluster_id
@@ -783,8 +783,8 @@ def generate_report(
 
     for team_id, team in teams.items():
         page = "teams"
-        file_name = "team-{}.html".format(team_id)
-        logger.info("Generating {}..".format(file_name))
+        file_name = f"team-{team_id}.html"
+        logger.info(f"Generating {file_name}..")
         template = env.get_template("team.html")
         context["page"] = page
         context["team_id"] = team_id

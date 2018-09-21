@@ -52,7 +52,7 @@ def get_node_cost(region, instance_type, is_spot):
         cost = NODE_COSTS_MONTHLY.get((region, instance_type))
 
     if cost is None:
-        logger.warning("No cost information for {} in {}".format(instance_type, region))
+        logger.warning(f"No cost information for {instance_type} in {region}")
         cost = 0
     return cost
 

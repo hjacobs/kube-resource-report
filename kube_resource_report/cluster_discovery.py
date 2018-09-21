@@ -48,7 +48,7 @@ class OAuthTokenAuth(AuthBase):
 
     def __call__(self, request):
         token = tokens.get(self.token_name)
-        request.headers["Authorization"] = "Bearer {}".format(token)
+        request.headers["Authorization"] = f"Bearer {token}"
         return request
 
 
@@ -141,7 +141,7 @@ class ClusterRegistryDiscoverer:
             self._last_cache_refresh = time.time()
         except:
             logger.exception(
-                "Failed to refresh from cluster registry {}".format(self._url)
+                f"Failed to refresh from cluster registry {self._url}"
             )
 
     def get_clusters(self):
@@ -190,6 +190,6 @@ class MockDiscoverer:
     def get_clusters(self):
         for i in range(3):
             yield Cluster(
-                "mock-cluster-{}".format(i),
+                f"mock-cluster-{i}",
                 api_server_url="https://kube-{}.example.org".format(i),
             )
