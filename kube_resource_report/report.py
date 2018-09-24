@@ -32,6 +32,7 @@ HOURS_PER_DAY = 24
 HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
 
 FACTORS = {
+    "n": 1 / 1000000000,
     "m": 1 / 1000,
     "K": 1000,
     "M": 1000 ** 2,
