@@ -607,8 +607,6 @@ def generate_report(
     with (output_path / "namespaces.tsv").open("w") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         for cluster_id, namespace_item in sorted(namespace_usage.items()):
-            worker_instance_type = set()
-            kubelet_version = set()
             fields = [
                 namespace_item["id"],
                 namespace_item["status"],
@@ -622,7 +620,6 @@ def generate_report(
                 round(namespace_item["slack_cost"], 2)
             ]
             writer.writerow(fields)
-
 
     logger.info("Writing clusters.tsv..")
     with (output_path / "clusters.tsv").open("w") as csvfile:
