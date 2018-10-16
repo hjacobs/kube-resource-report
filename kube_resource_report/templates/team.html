@@ -42,8 +42,7 @@
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>
-                  <th>ID</th>
-                  <th>API URL</th>
+                  <th>Cluster</th>
                   <th><abbr title="Master Nodes">MN</abbr></th>
                   <th><abbr title="Worker Nodes">WN</abbr></th>
                   <th>Inst. Types</th>
@@ -57,11 +56,10 @@
               </tr>
           </thead>
           <tbody>
-              {% for cluster_id in team.clusters|sort: %}
+              {% for cluster_id in team.clusters: %}
           {% set summary = cluster_summaries[cluster_id] %}
           <tr>
-            <td><a href="./cluster-{{ cluster_id }}.html">{{ cluster_id }}</a></td>
-            <td>{{ summary.cluster.api_server_url }}</td>
+            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
             <td>{{ summary.master_nodes }}</td>
             <td>{{ summary.worker_nodes }}</td>
             <td>{{ summary.worker_instance_types|join(', ') }}</td>
