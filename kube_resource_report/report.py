@@ -603,6 +603,24 @@ def generate_report(
                 fd,
             )
 
+    logger.info("Writing namespaces.tsv..")
+    with (output_path / "namespaces.tsv").open("w") as csvfile:
+        writer = csv.writer(csvfile, delimiter="\t")
+        for cluster_id, namespace_item in sorted(namespace_usage.items()):
+            fields = [
+                namespace_item["id"],
+                namespace_item["status"],
+                namespace_item["cluster"],
+                namespace_item["pods"],
+                namespace_item["requests"]["cpu"],
+                namespace_item["requests"]["memory"],
+                round(namespace_item["usage"]["cpu"], 2),
+                round(namespace_item["usage"]["memory"], 2),
+                round(namespace_item["cost"], 2),
+                round(namespace_item["slack_cost"], 2)
+            ]
+            writer.writerow(fields)
+
     logger.info("Writing clusters.tsv..")
     with (output_path / "clusters.tsv").open("w") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
