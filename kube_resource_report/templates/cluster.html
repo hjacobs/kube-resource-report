@@ -2,7 +2,7 @@
 {% block title %}Cluster {{ summary.cluster.name }}{% endblock %}
 {% block content %}
 <h1 class="title">Cluster {{ summary.cluster.name }}</h1>
-<h2 class="subtitle">{{ summary.cluster.id }}</h1>
+<h2 class="subtitle">{{ summary.cluster.id if summary.cluster.id != summary.cluster.name else summary.cluster.api_server_url }}</h1>
 
 <nav class="level">
   <div class="level-item has-text-centered">
