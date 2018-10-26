@@ -31,7 +31,7 @@
                 {% endif %}
 
                 </td>
-            <td><a href="./cluster-{{ namespace_data.cluster }}.html">{{ namespace_data.cluster }}</a></td>
+            <td><a href="./cluster-{{ namespace_data.cluster.id }}.html">{{ namespace_data.cluster.name }}</a></td>
             <td>{{ namespace_data.pods }}</td>
             <td>{{ namespace_data.requests.cpu|round(3) }}</td>
             <td data-value="{{ namespace_data.requests.memory }}">{{ namespace_data.requests.memory|filesizeformat(True) }}</td>
