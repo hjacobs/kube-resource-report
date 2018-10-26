@@ -375,7 +375,9 @@ def get_cluster_summaries(
                     ["error", f"Failed to query cluster {cluster.id}: {e}"]
                 )
                 logger.exception(e)
-    return cluster_summaries
+
+    sorted_by_name = sorted(cluster_summaries.values(), key=lambda summary: summary["cluster"].name)
+    return {summary["cluster"].id: summary for summary in sorted_by_name}
 
 
 def resolve_application_ids(applications: dict, teams: dict, application_registry: str):
@@ -573,11 +575,19 @@ def generate_report(
             namespace["cost"] += pod["cost"]
             namespace["slack_cost"] += pod.get("slack_cost", 0)
             namespace["pods"] += 1
-            namespace["cluster"] = cluster_id
+            namespace["cluster"] = summary["cluster"]
             namespace_usage[(ns_pod[0], cluster_id)] = namespace
 
     if application_registry:
         resolve_application_ids(applications, teams, application_registry)
+
+    for team in teams.values():
+        def cluster_name(cluster_id):
+            try:
+                return cluster_summaries[cluster_id]["cluster"].name
+            except KeyError:
+                return None
+        team["clusters"] = sorted(team["clusters"], key=cluster_name)
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for k, pod in summary["pods"].items():

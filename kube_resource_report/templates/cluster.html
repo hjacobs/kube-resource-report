@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Cluster {{ cluster_id }}{% endblock %}
+{% block title %}Cluster {{ summary.cluster.name }}{% endblock %}
 {% block content %}
-<h1 class="title">Cluster {{ cluster_id }}</h1>
-<h2 class="subtitle">{{ summary.cluster.api_server_url }}</h1>
+<h1 class="title">Cluster {{ summary.cluster.name }}</h1>
+<h2 class="subtitle">{{ summary.cluster.id }}</h1>
 
 <nav class="level">
   <div class="level-item has-text-centered">
@@ -157,7 +157,7 @@
           </thead>
           <tbody>
           {% for namespace_id, namespace_data in namespace_usage.items()|sort: %}
-          {% if namespace_data.cluster == cluster_id %}
+          {% if namespace_data.cluster.id == cluster_id %}
           <tr>
             <td>{{ namespace_id[0] }}</td>
             <td>

@@ -9,7 +9,7 @@ def test_generate_report(tmpdir, monkeypatch):
     monkeypatch.setattr("kube_resource_report.cluster_discovery.tokens.get", lambda x: "mytok")
     monkeypatch.setattr(
         "kube_resource_report.cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
-        lambda x: [Cluster("test-cluster-1", "https://test-cluster-1.example.org")],
+        lambda x: [Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org")],
     )
 
     responses = {
