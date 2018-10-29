@@ -108,6 +108,7 @@
                   <th>Memory (MiB)</th>
                   <th class="has-text-right">Cost</th>
                   <th class="has-text-right">Slack Cost</th>
+                  <th class="has-text-right">Cost %</th>
               </tr>
           </thead>
           <tbody>
@@ -153,6 +154,21 @@
             <td class="has-text-right">{{ app.cost|money }}</td>
             <td class="has-text-right">{{ app.slack_cost|money }}</td>
 
+            {% if team.cost > 0 %}
+              {% with percentage=(app.cost / team.cost) * 100 %}
+              <td style="font-size: 0.75rem" data-value="{{ percentage|round(3) }}">
+                <div class="resource-labels">
+                    <span>{{ percentage|round(0)|int }}%</span> <span></span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="100" max="100"></progress>
+                    <progress class="progress is-primary" value="{{ percentage|round(3) }}" max="100"></progress>
+                </div>
+              </td>
+              {% endwith %}
+              {% else %}
+            <td class="has-text-right">-</td>
+            {% endif %}
           </tr>
             {% endif %}
           {%endfor %}
