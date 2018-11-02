@@ -191,8 +191,8 @@ def query_cluster(
     response = request(cluster, "/api/v1/pods")
     response.raise_for_status()
     for pod in response.json()["items"]:
-        if pod["status"].get("phase") in ("Succeeded", "Failed"):
-            # ignore completed pods
+        if pod["status"].get("phase") != "Running":
+            # ignore unschedulable/completed pods
             continue
         labels = pod["metadata"].get("labels", {})
         application = labels.get("application", labels.get("app", ""))
