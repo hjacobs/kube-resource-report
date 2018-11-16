@@ -50,7 +50,7 @@ FACTORS = {
     "Ei": 1024 ** 6,
 }
 
-RESOURCE_PATTERN = re.compile("^(\d*)(\D*)$")
+RESOURCE_PATTERN = re.compile(r"^(\d*)(\D*)$")
 
 
 def parse_resource(v):
@@ -188,7 +188,7 @@ def query_cluster(
                     usage[k] += parse_resource(v)
                     cluster_usage[k] += parse_resource(v)
                 node["usage"] = usage
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to query Heapster metrics")
 
     cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
@@ -289,7 +289,7 @@ def query_cluster(
                 )
                 pod["slack_cost"] = pod["cost"] - usage_cost
                 cluster_slack_cost += pod["slack_cost"]
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to query Heapster metrics")
 
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
