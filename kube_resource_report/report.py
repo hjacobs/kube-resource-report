@@ -33,8 +33,10 @@ HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
 
 FACTORS = {
     "n": 1 / 1000000000,
+    "u": 1 / 1000000,
     "m": 1 / 1000,
-    "K": 1000,
+    "": 1,
+    "k": 1000,
     "M": 1000 ** 2,
     "G": 1000 ** 3,
     "T": 1000 ** 4,
@@ -55,11 +57,15 @@ def parse_resource(v):
     """
     >>> parse_resource('100m')
     0.1
+    >>> parse_resource('100M')
+    1000000000
     >>> parse_resource('2Gi')
     2147483648
+    >>> parse_resource('2k')
+    2048
     """
     match = RESOURCE_PATTERN.match(v)
-    factor = FACTORS.get(match.group(2), 1)
+    factor = FACTORS[match.group(2)]
     return int(match.group(1)) * factor
 
 
