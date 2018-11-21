@@ -84,7 +84,7 @@ class CommaSeparatedValues(click.ParamType):
 )
 @click.option(
     "--node-label",
-    help="The label used for worker nodes",
+    help="Value for the kubernetes.io/role label (e.g. 'worker' if nodes are labeled kubernetes.io/role=worker)",
     default="worker",
 )
 @click.argument("output_dir", type=click.Path(exists=True))
