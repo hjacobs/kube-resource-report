@@ -303,7 +303,7 @@ def query_cluster(
             namespace, name = item["metadata"]["namespace"], item["metadata"]["name"]
             labels = item["metadata"].get("labels", {})
             application = labels.get("application", labels.get("app", ""))
-            for rule in item["spec"]["rules"]:
+            for rule in item["spec"].get("rules", []):
                 host = rule.get('host', '')
                 ingress = [namespace, name, application, host, 0]
                 if host and not no_ingress_status:
