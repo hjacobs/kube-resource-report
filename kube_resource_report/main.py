@@ -22,9 +22,7 @@ class CommaSeparatedValues(click.ParamType):
 @click.option(
     "--clusters",
     type=CommaSeparatedValues(),
-    help="Comma separated list of Kubernetes API server URLs (default: {})".format(
-        DEFAULT_CLUSTERS
-    ),
+    help=f"Comma separated list of Kubernetes API server URLs (default: {DEFAULT_CLUSTERS})",
     envvar="CLUSTERS",
 )
 @click.option(

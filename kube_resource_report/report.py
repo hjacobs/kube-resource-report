@@ -408,9 +408,7 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
                 if not isinstance(data, dict):
                     data = {}
             except Exception as e:
-                logger.warning(
-                    "Failed to look up application {}: {}".format(app["id"], e)
-                )
+                logger.warning(f"Failed to look up application {app['id']}: {e}")
                 data = {}
             team_id = data.get("team_id", "")
             app["team"] = team_id
