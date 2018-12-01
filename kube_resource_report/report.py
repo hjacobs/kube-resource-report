@@ -304,10 +304,11 @@ def query_cluster(
             labels = item["metadata"].get("labels", {})
             application = labels.get("application", labels.get("app", ""))
             for rule in item["spec"]["rules"]:
-                ingress = [namespace, name, application, rule["host"], 0]
-                if not no_ingress_status:
+                host = rule.get('host', '')
+                ingress = [namespace, name, application, host, 0]
+                if host and not no_ingress_status:
                     futures[
-                        futures_session.get(f"https://{rule['host']}/", timeout=5)
+                        futures_session.get(f"https://{host}/", timeout=5)
                     ] = ingress
                 cluster_summary["ingresses"].append(ingress)
 
@@ -408,9 +409,7 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
                 if not isinstance(data, dict):
                     data = {}
             except Exception as e:
-                logger.warning(
-                    "Failed to look up application {}: {}".format(app["id"], e)
-                )
+                logger.warning(f"Failed to look up application {app['id']}: {e}")
                 data = {}
             team_id = data.get("team_id", "")
             app["team"] = team_id

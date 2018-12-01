@@ -25,7 +25,20 @@ def test_generate_report(tmpdir, monkeypatch):
             ]
         },
         "/api/v1/pods": {"items": []},
-        "/apis/extensions/v1beta1/ingresses": {"items": []},
+        "/apis/extensions/v1beta1/ingresses": {
+            "items": [
+                {
+                    "metadata": {"name": "ing-1", "namespace": "default"},
+                    "spec": {
+                        "rules": [
+                            # no "host" field!
+                            {"http": {}}
+                        ]
+                    }
+
+                }
+            ]
+        },
         "/api/v1/namespaces": {"items": []},
     }
 
@@ -50,3 +63,4 @@ def test_generate_report(tmpdir, monkeypatch):
         "worker"
     )
     assert len(cluster_summaries) == 1
+    assert len(cluster_summaries['test-cluster-1']['ingresses']) == 1
