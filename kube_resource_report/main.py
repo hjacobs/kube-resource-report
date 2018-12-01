@@ -12,7 +12,7 @@ class CommaSeparatedValues(click.ParamType):
 
     def convert(self, value, param, ctx):
         if isinstance(value, str):
-            values = filter(None, value.split(","))
+            values = list(filter(None, value.split(",")))
         else:
             values = value
         return values
