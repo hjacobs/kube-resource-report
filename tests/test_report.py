@@ -63,7 +63,7 @@ def fake_responses():
 
 
 @pytest.fixture
-def fake_generate_report(tmpdir, monkeypatch): 
+def fake_generate_report(tmpdir, monkeypatch):
     output_dir = tmpdir.mkdir("output")
     monkeypatch.setattr("kube_resource_report.cluster_discovery.tokens.get", lambda x: "mytok")
     monkeypatch.setattr(
@@ -94,13 +94,13 @@ def fake_generate_report(tmpdir, monkeypatch):
         )
         assert len(cluster_summaries) == 1
         return cluster_summaries
-    
+
     return wrapper
 
 
 def test_parse_resource():
     assert parse_resource('500m') == 0.5
-    
+
 
 def test_ingress_without_host(fake_generate_report, fake_responses):
     cluster_summaries = fake_generate_report(fake_responses)
@@ -119,6 +119,5 @@ def test_cluster_cost(fake_generate_report, fake_responses):
 
     assert cluster_summaries['test-cluster-1']['cost_per_user_request_hour']['cpu'] == cost_per_user_request_hour_cpu
     assert cluster_summaries['test-cluster-1']['cost_per_user_request_hour']['memory'] == cost_per_user_request_hour_memory
-
 
     # assert cost_per_hour == cost_per_user_request_hour_cpu + cost_per_user_request_hour_memory
