@@ -531,18 +531,7 @@ def generate_report(
         applications = {}
         namespace_usage = {}
 
-    total_allocatable = collections.defaultdict(int)
-    total_requests = collections.defaultdict(int)
-    total_user_requests = collections.defaultdict(int)
-
     for cluster_id, summary in sorted(cluster_summaries.items()):
-        for r in "cpu", "memory":
-            total_allocatable[r] += summary["allocatable"][r]
-            total_requests[r] += summary["requests"][r]
-            total_user_requests[r] += summary["user_requests"][r]
-
-        cost_per_cpu = summary["cost"] / summary["allocatable"]["cpu"]
-        cost_per_memory = summary["cost"] / summary["allocatable"]["memory"]
         for k, pod in summary["pods"].items():
             app = applications.get(
                 pod["application"],
@@ -629,6 +618,22 @@ def generate_report(
                 },
                 fd,
             )
+
+    write_report(output_path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label)
+
+    return cluster_summaries
+
+
+def write_report(output_path: Path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label):
+    total_allocatable = collections.defaultdict(int)
+    total_requests = collections.defaultdict(int)
+    total_user_requests = collections.defaultdict(int)
+
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        for r in "cpu", "memory":
+            total_allocatable[r] += summary["allocatable"][r]
+            total_requests[r] += summary["requests"][r]
+            total_user_requests[r] += summary["user_requests"][r]
 
     logger.info("Writing namespaces.tsv..")
     with (output_path / "namespaces.tsv").open("w") as csvfile:
@@ -865,5 +870,3 @@ def generate_report(
     for path in assets_source_path.iterdir():
         if path.match("*.js") or path.match("*.css") or path.match("*.png"):
             shutil.copy(str(path), str(assets_path / path.name))
-
-    return cluster_summaries
