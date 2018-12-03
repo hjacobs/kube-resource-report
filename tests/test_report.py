@@ -74,6 +74,7 @@ def fake_metric_responses():
                     "metadata": {"namespace": "default", "name": "pod-1"},
                     "containers": [
                         {
+                            # 50% of requested resources are used
                             "usage": {"cpu": "50m", "memory": "256Mi"}
                         }
                     ]
@@ -148,8 +149,11 @@ def test_cluster_cost(fake_generate_report, fake_responses):
     # assert cost_per_hour == cost_per_user_request_hour_cpu + cost_per_user_request_hour_memory
 
 
-def test_application_report(output_dir, fake_generate_report, fake_responses):
-    fake_generate_report(fake_responses)
+def test_application_report(output_dir, fake_generate_report, fake_responses, fake_metric_responses):
+
+    # merge responses to get usage metrics and slack costs
+    all_responses = {**fake_responses, **fake_metric_responses}
+    fake_generate_report(all_responses)
 
     expected = set(['index.html', 'applications.html', 'application-metrics.json'])
     paths = set()
@@ -166,6 +170,8 @@ def test_application_report(output_dir, fake_generate_report, fake_responses):
     assert data['myapp']['requests'] == {'cpu': 0.1, 'memory': 512 * 1024**2}
     # the "myapp" pod consumes 1/2 of cluster capacity (512Mi of 1Gi memory)
     assert data['myapp']['cost'] == 50.0
+    # only 1/2 of requested resources are used => 50% of costs are slack
+    assert data['myapp']['slack_cost'] == 25.0
 
 
 def test_get_pod_usage(monkeypatch, fake_metric_responses):
