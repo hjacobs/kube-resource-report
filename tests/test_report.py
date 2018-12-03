@@ -1,4 +1,7 @@
+import json
 import pytest
+
+from pathlib import Path
 
 from kube_resource_report.cluster_discovery import Cluster
 from kube_resource_report.report import generate_report, HOURS_PER_MONTH, parse_resource
@@ -23,7 +26,7 @@ def fake_responses():
         "/api/v1/pods": {
             "items": [
                 {
-                    "metadata": {"name": "pod-1", "namespace": "default"},
+                    "metadata": {"name": "pod-1", "namespace": "default", "labels": {"app": "myapp"}},
                     "spec": {
                         "containers": [
                             {
@@ -63,8 +66,12 @@ def fake_responses():
 
 
 @pytest.fixture
-def fake_generate_report(tmpdir, monkeypatch):
-    output_dir = tmpdir.mkdir("output")
+def output_dir(tmpdir):
+    return tmpdir.mkdir("output")
+
+
+@pytest.fixture
+def fake_generate_report(output_dir, monkeypatch):
     monkeypatch.setattr("kube_resource_report.cluster_discovery.tokens.get", lambda x: "mytok")
     monkeypatch.setattr(
         "kube_resource_report.cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
@@ -121,3 +128,23 @@ def test_cluster_cost(fake_generate_report, fake_responses):
     assert cluster_summaries['test-cluster-1']['cost_per_user_request_hour']['memory'] == cost_per_user_request_hour_memory
 
     # assert cost_per_hour == cost_per_user_request_hour_cpu + cost_per_user_request_hour_memory
+
+
+def test_application_report(output_dir, fake_generate_report, fake_responses):
+    fake_generate_report(fake_responses)
+
+    expected = set(['index.html', 'applications.html', 'application-metrics.json'])
+    paths = set()
+    for f in Path(str(output_dir)).iterdir():
+        paths.add(f.name)
+
+    assert expected <= paths
+
+    with (Path(str(output_dir)) / 'application-metrics.json').open() as fd:
+        data = json.load(fd)
+
+    assert data['myapp']['id'] == 'myapp'
+    assert data['myapp']['pods'] == 1
+    assert data['myapp']['requests'] == {'cpu': 0.1, 'memory': 512 * 1024**2}
+    # the "myapp" pod consumes 1/2 of cluster capacity (512Mi of 1Gi memory)
+    assert data['myapp']['cost'] == 50.0
