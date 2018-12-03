@@ -22,6 +22,11 @@ from kube_resource_report import cluster_discovery, pricing, filters, __version_
 
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
+NODE_LABEL_ROLE = "kubernetes.io/role"
+NODE_LABEL_REGION = "failure-domain.beta.kubernetes.io/region"
+NODE_LABEL_INSTANCE_TYPE = "beta.kubernetes.io/instance-type"
+
+OBJECT_LABEL_APPLICATION = ["application", "app"]
 
 ONE_MEBI = 1024 ** 2
 ONE_GIBI = 1024 ** 3
@@ -71,6 +76,13 @@ def parse_resource(v):
     match = RESOURCE_PATTERN.match(v)
     factor = FACTORS[match.group(2)]
     return int(match.group(1)) * factor
+
+
+def get_application_from_labels(labels):
+    for label_name in OBJECT_LABEL_APPLICATION:
+        if label_name in labels:
+            return labels[label_name]
+    return ""
 
 
 session = requests.Session()
@@ -147,14 +159,10 @@ def query_cluster(
             parsed = parse_resource(v)
             node["allocatable"][k] = parsed
             cluster_allocatable[k] += parsed
-        role = node["metadata"]["labels"].get("kubernetes.io/role") or "worker"
+        role = node["metadata"]["labels"].get(NODE_LABEL_ROLE) or "worker"
         node_count[role] += 1
-        region = node["metadata"]["labels"].get(
-            "failure-domain.beta.kubernetes.io/region", "unknown"
-        )
-        instance_type = node["metadata"]["labels"].get(
-            "beta.kubernetes.io/instance-type", "unknown"
-        )
+        region = node["metadata"]["labels"].get(NODE_LABEL_REGION, "unknown")
+        instance_type = node["metadata"]["labels"].get(NODE_LABEL_INSTANCE_TYPE, "unknown")
         is_spot = node["metadata"]["labels"].get(NODE_LABEL_SPOT) == "true"
         node["spot"] = is_spot
         node["kubelet_version"] = (
@@ -205,7 +213,7 @@ def query_cluster(
             # ignore unschedulable/completed pods
             continue
         labels = pod["metadata"].get("labels", {})
-        application = labels.get("application", labels.get("app", ""))
+        application = get_application_from_labels(labels)
         requests = collections.defaultdict(float)
         ns = pod["metadata"]["namespace"]
         for container in pod["spec"]["containers"]:
@@ -306,7 +314,7 @@ def query_cluster(
         for item in response.json()["items"]:
             namespace, name = item["metadata"]["namespace"], item["metadata"]["name"]
             labels = item["metadata"].get("labels", {})
-            application = labels.get("application", labels.get("app", ""))
+            application = get_application_from_labels(labels)
             for rule in item["spec"].get("rules", []):
                 host = rule.get('host', '')
                 ingress = [namespace, name, application, host, 0]
