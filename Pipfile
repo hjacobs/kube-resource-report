@@ -18,6 +18,7 @@ pytest-watch = "*"
 black = "*"
 "boto3" = "*"
 pytest-cov = "*"
+coveralls = "*"
 
 [requires]
 python_version = "3.7"
