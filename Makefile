@@ -8,7 +8,8 @@ default: docker
 
 test:
 	pipenv run flake8
-	pipenv run python3 -m pytest
+	pipenv run coverage run --source=kube_resource_report -m py.test
+	pipenv run coverage report
 
 docker: 
 	docker build --build-arg "VERSION=$(VERSION)" -t "$(IMAGE):$(TAG)" .

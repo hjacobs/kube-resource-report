@@ -22,6 +22,11 @@ from kube_resource_report import cluster_discovery, pricing, filters, __version_
 
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
+NODE_LABEL_ROLE = "kubernetes.io/role"
+NODE_LABEL_REGION = "failure-domain.beta.kubernetes.io/region"
+NODE_LABEL_INSTANCE_TYPE = "beta.kubernetes.io/instance-type"
+
+OBJECT_LABEL_APPLICATION = ["application", "app"]
 
 ONE_MEBI = 1024 ** 2
 ONE_GIBI = 1024 ** 3
@@ -30,6 +35,10 @@ ONE_GIBI = 1024 ** 3
 AVG_DAYS_PER_MONTH = 30.4375
 HOURS_PER_DAY = 24
 HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
+
+# assume minimal requests even if no user requests are set
+MIN_CPU_USER_REQUESTS = 1 / 1000
+MIN_MEMORY_USER_REQUESTS = 1 / 1000
 
 FACTORS = {
     "n": 1 / 1000000000,
@@ -67,6 +76,13 @@ def parse_resource(v):
     match = RESOURCE_PATTERN.match(v)
     factor = FACTORS[match.group(2)]
     return int(match.group(1)) * factor
+
+
+def get_application_from_labels(labels):
+    for label_name in OBJECT_LABEL_APPLICATION:
+        if label_name in labels:
+            return labels[label_name]
+    return ""
 
 
 session = requests.Session()
@@ -143,14 +159,10 @@ def query_cluster(
             parsed = parse_resource(v)
             node["allocatable"][k] = parsed
             cluster_allocatable[k] += parsed
-        role = node["metadata"]["labels"].get("kubernetes.io/role") or "worker"
+        role = node["metadata"]["labels"].get(NODE_LABEL_ROLE) or "worker"
         node_count[role] += 1
-        region = node["metadata"]["labels"].get(
-            "failure-domain.beta.kubernetes.io/region", "unknown"
-        )
-        instance_type = node["metadata"]["labels"].get(
-            "beta.kubernetes.io/instance-type", "unknown"
-        )
+        region = node["metadata"]["labels"].get(NODE_LABEL_REGION, "unknown")
+        instance_type = node["metadata"]["labels"].get(NODE_LABEL_INSTANCE_TYPE, "unknown")
         is_spot = node["metadata"]["labels"].get(NODE_LABEL_SPOT) == "true"
         node["spot"] = is_spot
         node["kubelet_version"] = (
@@ -201,7 +213,7 @@ def query_cluster(
             # ignore unschedulable/completed pods
             continue
         labels = pod["metadata"].get("labels", {})
-        application = labels.get("application", labels.get("app", ""))
+        application = get_application_from_labels(labels)
         requests = collections.defaultdict(float)
         ns = pod["metadata"]["namespace"]
         for container in pod["spec"]["containers"]:
@@ -248,8 +260,8 @@ def query_cluster(
         "usage": cluster_usage,
         "cost": cluster_cost,
         "cost_per_user_request_hour": {
-            "cpu": 0.5 * hourly_cost / max(user_requests["cpu"], 1),
-            "memory": 0.5 * hourly_cost / max(user_requests["memory"] / ONE_GIBI, 1),
+            "cpu": 0.5 * hourly_cost / max(user_requests["cpu"], MIN_CPU_USER_REQUESTS),
+            "memory": 0.5 * hourly_cost / max(user_requests["memory"] / ONE_GIBI, MIN_MEMORY_USER_REQUESTS),
         },
         "ingresses": [],
     }
@@ -302,7 +314,7 @@ def query_cluster(
         for item in response.json()["items"]:
             namespace, name = item["metadata"]["namespace"], item["metadata"]["name"]
             labels = item["metadata"].get("labels", {})
-            application = labels.get("application", labels.get("app", ""))
+            application = get_application_from_labels(labels)
             for rule in item["spec"].get("rules", []):
                 host = rule.get('host', '')
                 ingress = [namespace, name, application, host, 0]
@@ -519,18 +531,7 @@ def generate_report(
         applications = {}
         namespace_usage = {}
 
-    total_allocatable = collections.defaultdict(int)
-    total_requests = collections.defaultdict(int)
-    total_user_requests = collections.defaultdict(int)
-
     for cluster_id, summary in sorted(cluster_summaries.items()):
-        for r in "cpu", "memory":
-            total_allocatable[r] += summary["allocatable"][r]
-            total_requests[r] += summary["requests"][r]
-            total_user_requests[r] += summary["user_requests"][r]
-
-        cost_per_cpu = summary["cost"] / summary["allocatable"]["cpu"]
-        cost_per_memory = summary["cost"] / summary["allocatable"]["memory"]
         for k, pod in summary["pods"].items():
             app = applications.get(
                 pod["application"],
@@ -617,6 +618,22 @@ def generate_report(
                 },
                 fd,
             )
+
+    write_report(output_path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label)
+
+    return cluster_summaries
+
+
+def write_report(output_path: Path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label):
+    total_allocatable = collections.defaultdict(int)
+    total_requests = collections.defaultdict(int)
+    total_user_requests = collections.defaultdict(int)
+
+    for cluster_id, summary in sorted(cluster_summaries.items()):
+        for r in "cpu", "memory":
+            total_allocatable[r] += summary["allocatable"][r]
+            total_requests[r] += summary["requests"][r]
+            total_user_requests[r] += summary["user_requests"][r]
 
     logger.info("Writing namespaces.tsv..")
     with (output_path / "namespaces.tsv").open("w") as csvfile:
@@ -766,9 +783,9 @@ def generate_report(
         "total_pods": sum([len(s["pods"]) for s in cluster_summaries.values()]),
         "total_cost": total_cost,
         "total_cost_per_user_request_hour": {
-            "cpu": 0.5 * total_hourly_cost / max(total_user_requests["cpu"], 1),
+            "cpu": 0.5 * total_hourly_cost / max(total_user_requests["cpu"], MIN_CPU_USER_REQUESTS),
             "memory": 0.5 * total_hourly_cost / max(
-                total_user_requests["memory"] / ONE_GIBI, 1),
+                total_user_requests["memory"] / ONE_GIBI, MIN_MEMORY_USER_REQUESTS),
         },
         "total_slack_cost": sum([a["slack_cost"] for a in applications.values()]),
         "now": now,
@@ -853,5 +870,3 @@ def generate_report(
     for path in assets_source_path.iterdir():
         if path.match("*.js") or path.match("*.css") or path.match("*.png"):
             shutil.copy(str(path), str(assets_path / path.name))
-
-    return cluster_summaries

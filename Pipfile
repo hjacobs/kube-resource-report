@@ -17,6 +17,7 @@ pytest = "*"
 pytest-watch = "*"
 black = "*"
 "boto3" = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.7"
