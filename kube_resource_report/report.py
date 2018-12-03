@@ -31,6 +31,10 @@ AVG_DAYS_PER_MONTH = 30.4375
 HOURS_PER_DAY = 24
 HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
 
+# assume minimal requests even if no user requests are set
+MIN_CPU_USER_REQUESTS = 1 / 1000
+MIN_MEMORY_USER_REQUESTS = 1 / 1000
+
 FACTORS = {
     "n": 1 / 1000000000,
     "u": 1 / 1000000,
@@ -248,8 +252,8 @@ def query_cluster(
         "usage": cluster_usage,
         "cost": cluster_cost,
         "cost_per_user_request_hour": {
-            "cpu": 0.5 * hourly_cost / max(user_requests["cpu"], 1),
-            "memory": 0.5 * hourly_cost / max(user_requests["memory"] / ONE_GIBI, 1),
+            "cpu": 0.5 * hourly_cost / max(user_requests["cpu"], MIN_CPU_USER_REQUESTS),
+            "memory": 0.5 * hourly_cost / max(user_requests["memory"] / ONE_GIBI, MIN_MEMORY_USER_REQUESTS),
         },
         "ingresses": [],
     }
@@ -766,9 +770,9 @@ def generate_report(
         "total_pods": sum([len(s["pods"]) for s in cluster_summaries.values()]),
         "total_cost": total_cost,
         "total_cost_per_user_request_hour": {
-            "cpu": 0.5 * total_hourly_cost / max(total_user_requests["cpu"], 1),
+            "cpu": 0.5 * total_hourly_cost / max(total_user_requests["cpu"], MIN_CPU_USER_REQUESTS),
             "memory": 0.5 * total_hourly_cost / max(
-                total_user_requests["memory"] / ONE_GIBI, 1),
+                total_user_requests["memory"] / ONE_GIBI, MIN_MEMORY_USER_REQUESTS),
         },
         "total_slack_cost": sum([a["slack_cost"] for a in applications.values()]),
         "now": now,

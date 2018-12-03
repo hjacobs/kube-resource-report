@@ -1,18 +1,14 @@
+import pytest
+
 from kube_resource_report.cluster_discovery import Cluster
-from kube_resource_report.report import generate_report
+from kube_resource_report.report import generate_report, HOURS_PER_MONTH, parse_resource
 
 from unittest.mock import MagicMock
 
 
-def test_generate_report(tmpdir, monkeypatch):
-    output_dir = tmpdir.mkdir("output")
-    monkeypatch.setattr("kube_resource_report.cluster_discovery.tokens.get", lambda x: "mytok")
-    monkeypatch.setattr(
-        "kube_resource_report.cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
-        lambda x: [Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org")],
-    )
-
-    responses = {
+@pytest.fixture
+def fake_responses():
+    return {
         "/api/v1/nodes": {
             "items": [
                 {
@@ -24,7 +20,30 @@ def test_generate_report(tmpdir, monkeypatch):
                 }
             ]
         },
-        "/api/v1/pods": {"items": []},
+        "/api/v1/pods": {
+            "items": [
+                {
+                    "metadata": {"name": "pod-1", "namespace": "default"},
+                    "spec": {
+                        "containers": [
+                            {
+                                "resources": {
+                                    "requests": {
+                                        # 1/10 of 1 core (node capacity)
+                                        "cpu": "100m",
+                                        # 1/2 of 1Gi (node capacity)
+                                        "memory": "512Mi"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "status": {
+                        "phase": "Running"
+                    }
+                }
+            ]
+        },
         "/apis/extensions/v1beta1/ingresses": {
             "items": [
                 {
@@ -42,25 +61,64 @@ def test_generate_report(tmpdir, monkeypatch):
         "/api/v1/namespaces": {"items": []},
     }
 
+
+@pytest.fixture
+def fake_generate_report(tmpdir, monkeypatch): 
+    output_dir = tmpdir.mkdir("output")
+    monkeypatch.setattr("kube_resource_report.cluster_discovery.tokens.get", lambda x: "mytok")
     monkeypatch.setattr(
-        "kube_resource_report.report.request",
-        lambda cluster, path: MagicMock(json=lambda: responses.get(path)),
+        "kube_resource_report.cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
+        lambda x: [Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org")],
     )
-    cluster_summaries = generate_report(
-        [],
-        "https://cluster-registry",
-        None,
-        set(),
-        None,
-        False,
-        False,
-        str(output_dir),
-        set(["kube-system"]),
-        None,
-        None,
-        0,
-        None,
-        "worker"
-    )
-    assert len(cluster_summaries) == 1
+
+    def wrapper(responses):
+        monkeypatch.setattr(
+            "kube_resource_report.report.request",
+            lambda cluster, path: MagicMock(json=lambda: responses.get(path)),
+        )
+        cluster_summaries = generate_report(
+            [],
+            "https://cluster-registry",
+            None,
+            set(),
+            None,
+            False,
+            False,
+            str(output_dir),
+            set(["kube-system"]),
+            None,
+            None,
+            100.0,
+            None,
+            "worker"
+        )
+        assert len(cluster_summaries) == 1
+        return cluster_summaries
+    
+    return wrapper
+
+
+def test_parse_resource():
+    assert parse_resource('500m') == 0.5
+    
+
+def test_ingress_without_host(fake_generate_report, fake_responses):
+    cluster_summaries = fake_generate_report(fake_responses)
     assert len(cluster_summaries['test-cluster-1']['ingresses']) == 1
+
+
+def test_cluster_cost(fake_generate_report, fake_responses):
+    cluster_summaries = fake_generate_report(fake_responses)
+
+    cluster_cost = 100.0
+    cost_per_hour = cluster_cost / HOURS_PER_MONTH
+    cost_per_user_request_hour_cpu = 10 * cost_per_hour / 2
+    cost_per_user_request_hour_memory = 2 * cost_per_hour / 2
+
+    assert cluster_summaries['test-cluster-1']['cost'] == cluster_cost
+
+    assert cluster_summaries['test-cluster-1']['cost_per_user_request_hour']['cpu'] == cost_per_user_request_hour_cpu
+    assert cluster_summaries['test-cluster-1']['cost_per_user_request_hour']['memory'] == cost_per_user_request_hour_memory
+
+
+    # assert cost_per_hour == cost_per_user_request_hour_cpu + cost_per_user_request_hour_memory
