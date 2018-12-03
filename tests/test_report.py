@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 
 from kube_resource_report.cluster_discovery import Cluster
-from kube_resource_report.report import generate_report, HOURS_PER_MONTH, parse_resource
+from kube_resource_report.report import generate_report, HOURS_PER_MONTH, parse_resource, get_pod_usage, new_resources
 
 from unittest.mock import MagicMock
 
@@ -62,6 +62,24 @@ def fake_responses():
             ]
         },
         "/api/v1/namespaces": {"items": []},
+    }
+
+
+@pytest.fixture
+def fake_metric_responses():
+    return {
+        "/apis/metrics.k8s.io/v1beta1/pods": {
+            "items": [
+                {
+                    "metadata": {"namespace": "default", "name": "pod-1"},
+                    "containers": [
+                        {
+                            "usage": {"cpu": "50m", "memory": "256Mi"}
+                        }
+                    ]
+                }
+            ]
+        }
     }
 
 
@@ -148,3 +166,13 @@ def test_application_report(output_dir, fake_generate_report, fake_responses):
     assert data['myapp']['requests'] == {'cpu': 0.1, 'memory': 512 * 1024**2}
     # the "myapp" pod consumes 1/2 of cluster capacity (512Mi of 1Gi memory)
     assert data['myapp']['cost'] == 50.0
+
+
+def test_get_pod_usage(monkeypatch, fake_metric_responses):
+    monkeypatch.setattr(
+        "kube_resource_report.report.request",
+        lambda cluster, path: MagicMock(json=lambda: fake_metric_responses.get(path)),
+    )
+    pods = {('default', 'pod-1'): {'usage': new_resources()}}
+    get_pod_usage(None, pods)
+    assert pods[('default', 'pod-1')]['usage']['cpu'] == 0.05

@@ -62,6 +62,10 @@ FACTORS = {
 RESOURCE_PATTERN = re.compile(r"^(\d*)(\D*)$")
 
 
+def new_resources():
+    return {"cpu": 0, "memory": 0}
+
+
 def parse_resource(v):
     """
     >>> parse_resource('100m')
@@ -114,6 +118,69 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+def get_node_usage(cluster, nodes: dict):
+    try:
+        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+        for i, url in enumerate(
+            [
+                "/apis/metrics.k8s.io/v1beta1/nodes",
+                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes",
+            ]
+        ):
+            try:
+                response = request(cluster, url)
+                response.raise_for_status()
+            except Exception as e:
+                if i == 0:
+                    logger.warning("Failed to query metrics: %s", e)
+                else:
+                    raise
+            if response.ok:
+                break
+        for item in response.json()["items"]:
+            key = item["metadata"]["name"]
+            node = nodes.get(key)
+            if node:
+                usage = collections.defaultdict(float)
+                for k, v in item.get("usage", {}).items():
+                    usage[k] += parse_resource(v)
+                node["usage"] = usage
+    except Exception:
+        logger.exception("Failed to get node usage metrics")
+
+
+def get_pod_usage(cluster, pods: dict):
+    try:
+        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+        for i, url in enumerate(
+            [
+                "/apis/metrics.k8s.io/v1beta1/pods",
+                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods",
+            ]
+        ):
+            try:
+                response = request(cluster, url)
+                response.raise_for_status()
+            except Exception as e:
+                if i == 0:
+                    logger.warning("Failed to query metrics: %s", e)
+                else:
+                    raise
+            if response.ok:
+                break
+        for item in response.json()["items"]:
+            key = (item["metadata"]["namespace"], item["metadata"]["name"])
+            pod = pods.get(key)
+            if pod:
+                usage = collections.defaultdict(float)
+                for container in item["containers"]:
+                    for k, v in container.get("usage", {}).items():
+                        usage[k] += parse_resource(v)
+                pod["usage"] = usage
+    except Exception:
+        logger.exception("Failed to get pod usage metrics")
+
+
 def query_cluster(
     cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status, node_label
 ):
@@ -142,15 +209,14 @@ def query_cluster(
     cluster_allocatable = collections.defaultdict(float)
     cluster_requests = collections.defaultdict(float)
     user_requests = collections.defaultdict(float)
-    cluster_usage = collections.defaultdict(float)
     node_count = collections.defaultdict(int)
     cluster_cost = additional_cost_per_cluster
     for node in response.json()["items"]:
         nodes[node["metadata"]["name"]] = node
         node["capacity"] = {}
         node["allocatable"] = {}
-        node["requests"] = {"cpu": 0, "memory": 0}
-        node["usage"] = {"cpu": 0, "memory": 0}
+        node["requests"] = new_resources()
+        node["usage"] = new_resources()
         for k, v in node["status"].get("capacity", {}).items():
             parsed = parse_resource(v)
             node["capacity"][k] = parsed
@@ -173,35 +239,12 @@ def query_cluster(
         node["cost"] = pricing.get_node_cost(region, instance_type, is_spot)
         cluster_cost += node["cost"]
 
-    try:
-        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        for i, url in enumerate(
-            [
-                "/apis/metrics.k8s.io/v1beta1/nodes",
-                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes",
-            ]
-        ):
-            try:
-                response = request(cluster, url)
-                response.raise_for_status()
-            except Exception as e:
-                if i == 0:
-                    logger.warning("Failed to query metrics: %s", e)
-                else:
-                    raise
-            if response.ok:
-                break
-        for item in response.json()["items"]:
-            key = item["metadata"]["name"]
-            node = nodes.get(key)
-            if node:
-                usage = collections.defaultdict(float)
-                for k, v in item.get("usage", {}).items():
-                    usage[k] += parse_resource(v)
-                    cluster_usage[k] += parse_resource(v)
-                node["usage"] = usage
-    except Exception:
-        logger.exception("Failed to query Heapster metrics")
+    get_node_usage(cluster, nodes)
+
+    cluster_usage = collections.defaultdict(float)
+    for node in nodes.values():
+        for k, v in node['usage'].items():
+            cluster_usage[k] += v
 
     cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
     cost_per_memory = cluster_cost / cluster_allocatable["memory"]
@@ -231,7 +274,7 @@ def query_cluster(
             "requests": requests,
             "application": application,
             "cost": cost,
-            "usage": {"cpu": 0, "memory": 0},
+            "usage": new_resources(),
         }
 
     hourly_cost = cluster_cost / HOURS_PER_MONTH
@@ -266,43 +309,16 @@ def query_cluster(
         "ingresses": [],
     }
 
-    cluster_slack_cost = 0
+    get_pod_usage(cluster, pods)
 
-    try:
-        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        for i, url in enumerate(
-            [
-                "/apis/metrics.k8s.io/v1beta1/pods",
-                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods",
-            ]
-        ):
-            try:
-                response = request(cluster, url)
-                response.raise_for_status()
-            except Exception as e:
-                if i == 0:
-                    logger.warning("Failed to query metrics: %s", e)
-                else:
-                    raise
-            if response.ok:
-                break
-        for item in response.json()["items"]:
-            key = (item["metadata"]["namespace"], item["metadata"]["name"])
-            pod = pods.get(key)
-            if pod:
-                usage = collections.defaultdict(float)
-                for container in item["containers"]:
-                    for k, v in container.get("usage", {}).items():
-                        usage[k] += parse_resource(v)
-                pod["usage"] = usage
-                usage_cost = max(
-                    pod["usage"]["cpu"] * cost_per_cpu,
-                    pod["usage"]["memory"] * cost_per_memory,
-                )
-                pod["slack_cost"] = pod["cost"] - usage_cost
-                cluster_slack_cost += pod["slack_cost"]
-    except Exception:
-        logger.exception("Failed to query Heapster metrics")
+    cluster_slack_cost = 0
+    for pod in pods.values():
+        usage_cost = max(
+            pod["usage"]["cpu"] * cost_per_cpu,
+            pod["usage"]["memory"] * cost_per_memory,
+        )
+        pod["slack_cost"] = pod["cost"] - usage_cost
+        cluster_slack_cost += pod["slack_cost"]
 
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
 
