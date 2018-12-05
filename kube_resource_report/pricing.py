@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 
 AVG_DAYS_PER_MONTH = 30.4375
 
+# just assume 60% spot discount
+# see also https://aws.amazon.com/ec2/spot/instance-advisor/
+DEFAULT_SPOT_DISCOUNT = 0.6
+
 NODE_COSTS_MONTHLY = {}
 NODE_SPOT_COSTS_MONTHLY = {}
 
@@ -46,7 +50,7 @@ def get_node_cost(region, instance_type, is_spot):
             cost = NODE_COSTS_MONTHLY.get((region, instance_type))
             if cost is not None:
                 # https://aws.amazon.com/ec2/spot/instance-advisor/
-                discount = 0.60
+                discount = DEFAULT_SPOT_DISCOUNT
                 cost *= 1 - discount
     else:
         cost = NODE_COSTS_MONTHLY.get((region, instance_type))

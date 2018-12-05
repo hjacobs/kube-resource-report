@@ -193,5 +193,5 @@ class MockDiscoverer:
             yield Cluster(
                 f"mock-cluster-{i}",
                 f"mock-cluster-{i}",
-                api_server_url="https://kube-{}.example.org".format(i),
+                api_server_url=f"https://kube-{i}.example.org",
             )
