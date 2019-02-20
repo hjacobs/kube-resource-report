@@ -88,15 +88,17 @@ if __name__ == "__main__":
         "EU (Ireland)": "eu-west-1",
         "EU (London)": "eu-west-2",
         "EU (Paris)": "eu-west-3",
+        "EU (Stockholm)": "eu-north-1",
         # note: Sao Paulo is returned as ASCII (not "São Paulo")
         "South America (Sao Paulo)": "sa-east-1",
         "AWS GovCloud (US)": "us-gov-west-1",
+        "AWS GovCloud (US-East)": "us-gov-east-1",
     }
 
     max_price = {}
     for location in sorted(LOCATIONS.values()):
         # some regions are not available
-        if location in ("ap-northeast-3", "cn-north-1", "cn-northwest-1", "us-gov-west-1"):
+        if location in ("ap-northeast-3", "cn-north-1", "cn-northwest-1", "us-gov-west-1", "us-gov-east-1"):
             continue
         print(location)
         ec2 = boto3.client("ec2", location)
