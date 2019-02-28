@@ -158,7 +158,9 @@ def generate_price_list():
             location = entry["product"]["attributes"].get("location", "")
             location = LOCATIONS.get(location, location)
             sw = entry["product"]["attributes"].get("preInstalledSw", "")
-            if tenancy == "Shared" and os == "Linux" and sw == "NA":
+            usagetype = entry["product"]["attributes"]["usagetype"]
+
+            if tenancy == "Shared" and os == "Linux" and sw == "NA" and "BoxUsage:" in usagetype:
                 for k, v in entry["terms"]["OnDemand"].items():
                     for k_, v_ in v["priceDimensions"].items():
                         if v_["unit"] == "Hrs":
