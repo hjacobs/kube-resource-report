@@ -87,15 +87,17 @@ def generate_price_list():
         "EU (Ireland)": "eu-west-1",
         "EU (London)": "eu-west-2",
         "EU (Paris)": "eu-west-3",
+        "EU (Stockholm)": "eu-north-1",
         # note: Sao Paulo is returned as ASCII (not "São Paulo")
         "South America (Sao Paulo)": "sa-east-1",
         "AWS GovCloud (US)": "us-gov-west-1",
+        "AWS GovCloud (US-East)": "us-gov-east-1",
     }
 
     max_price = {}
     for location in sorted(LOCATIONS.values()):
         # some regions are not available
-        if location in ("ap-northeast-3", "cn-north-1", "cn-northwest-1", "us-gov-west-1"):
+        if location in ("ap-northeast-3", "cn-north-1", "cn-northwest-1", "us-gov-west-1", "us-gov-east-1"):
             continue
         print(location)
         ec2 = boto3.client("ec2", location)
@@ -141,7 +143,8 @@ def generate_price_list():
 
     pricing = boto3.client("pricing", "us-east-1")
 
-    rows = []
+    pricing_data = {}
+
     next_token = ""
     while next_token is not None:
         data = pricing.get_products(
@@ -161,13 +164,19 @@ def generate_price_list():
                         if v_["unit"] == "Hrs":
                             price = float(v_["pricePerUnit"]["USD"])
                             monthly_price = price * 24 * AVG_DAYS_PER_MONTH
-                            rows.append([location, entry["product"]["attributes"]["instanceType"], "{:.4f}".format(monthly_price)])
+                            instance_type = entry["product"]["attributes"]["instanceType"]
+                            key = (location, instance_type)
+
+                            if key in pricing_data:
+                                raise Exception("Duplicate data for {}/{}: {:.4f} and {:.4f}".format(location, instance_type, pricing_data[key], monthly_price))
+
+                            pricing_data[key] = monthly_price
         next_token = data.get("NextToken")
 
     with _path.open("w") as fd:
         writer = csv.writer(fd, lineterminator="\n")
-        for row in sorted(rows):
-            writer.writerow(row)
+        for (location, instance_type), price in sorted(pricing_data.items()):
+            writer.writerow([location, instance_type, "{:.4f}".format(price)])
 
 
 if __name__ == "__main__":
