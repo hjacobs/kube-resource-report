@@ -516,7 +516,7 @@ def generate_report(
     output_path = Path(output_dir)
 
     if pricing_file:
-        pricing.NODE_COSTS_MONTHLY = pricing.regenerate_cost_dict(pricing_file)
+        pricing.regenerate_cost_dict(pricing_file)
 
     start = datetime.datetime.utcnow()
 
