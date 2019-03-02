@@ -526,7 +526,6 @@ def generate_report(
     else:
         links = {}
 
-
     start = datetime.datetime.utcnow()
 
     pickle_path = output_path / "dump.pickle"

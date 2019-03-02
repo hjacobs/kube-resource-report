@@ -19,6 +19,7 @@ black = "*"
 "boto3" = "*"
 pytest-cov = "*"
 coveralls = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.7"
