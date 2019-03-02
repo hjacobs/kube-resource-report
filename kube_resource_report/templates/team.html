@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Team {{ team_id|capitalize }}{% endblock %}
 {% block content %}
-<h1 class="title">Team {{ team_id|capitalize }}</h1>
+<h1 class="title">Team {{ team_id|capitalize }}
+    <span class="links">
+        {% for link in links['team']: %}
+             <a href="{{ link.href.format(id=team_id) }}"
+                title="{{ link.title.format(id=team_id) }}"
+                class="button is-light">
+                 <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+             </a>
+        {% endfor %}
+    </span>
+</h1>
 
 <nav class="level">
   <div class="level-item has-text-centered">
@@ -53,6 +63,9 @@
                   <th>CPU</th>
                   <th>Memory (GiB)</th>
                   <th class="has-text-right">Cost</th>
+                  {% if links['cluster']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -87,6 +100,19 @@
                 </div>
             </td>
             <td class="has-text-right">{{ summary.cost|money }}</td>
+            {% if links['cluster']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['cluster']: %}
+                    <a href="{{ link.href.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                        title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
 
           </tr>
 
@@ -109,6 +135,9 @@
                   <th class="has-text-right">Cost</th>
                   <th class="has-text-right">Slack Cost</th>
                   <th class="has-text-right">Cost %</th>
+                  {% if links['application']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -168,6 +197,19 @@
               {% endwith %}
               {% else %}
             <td class="has-text-right">-</td>
+            {% endif %}
+            {% if links['application']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['application']: %}
+                    <a href="{{ link.href.format(**app) }}"
+                        title="{{ link.title.format(**app) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
             {% endif %}
           </tr>
             {% endif %}

@@ -16,6 +16,9 @@
                   <th>CPU</th>
                   <th>Memory (GiB)</th>
                   <th class="has-text-right">Cost</th>
+                  {% if links['cluster']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -53,6 +56,19 @@
                 </div>
             </td>
             <td class="has-text-right">{{ summary.cost|money }}</td>
+            {% if links['cluster']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['cluster']: %}
+                    <a href="{{ link.href.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                        title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
 
           </tr>
 
