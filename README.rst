@@ -19,6 +19,8 @@ What the script does:
 * Collect all pods and use the ``application`` or ``app`` label as application ID
 * Get additional information for each app from the application registry (``team_id`` and ``active`` field)
 * Group and aggregate resource usage and slack costs per cluster, team and application
+* Allow custom links to existing systems (e.g. link to a monitoring dashboard for each cluster)
+
 
 -----
 Usage
@@ -74,6 +76,7 @@ Running as Docker container
     $ # run kube-resource-report and generate static HTML to ./output (this trick does not work with Docker for Mac!)
     $ docker run -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.6 /output
 
+
 --------------------
 Application Registry
 --------------------
@@ -89,3 +92,33 @@ The optional application registry can provide information per application ID, it
     }
 
 See the ``application-registry.py`` script in the ``sample-report`` folder for an example implementation.
+
+
+------------
+Custom Links
+------------
+
+The generated report can be enhanced with custom links to existing systems, e.g. to link to monitoring dashboards or similar.
+This currently works for clusters, teams, and applications. Custom links can be specified by providing the ``--links-file`` option which must point to a YAML file
+with the links per entity. Example file:
+
+.. code-block:: yaml
+
+    cluster:
+    - href: "https://mymonitoringsystem.example.org/dashboard?cluster={name}"
+      title: "Grafana dashboard for cluster {name}"
+      icon: chart-area
+    application:
+    - href: "https://mymonitoringsystem.example.org/dashboard?application={id}"
+      title: "Grafana dashboard for application {id}"
+      icon: chart-area
+    - href: "https://apps.mycorp.example.org/apps/{id}"
+      title: "Go to detail page of application {id}"
+      icon: search
+    team:
+    - href: "https://people.mycorp.example.org/search?q=team:{id}"
+      title: "Search team {id} on people.mycorp"
+      icon: search
+
+For available icon names, see the `Font Awesome gallery with free icons <https://fontawesome.com/icons?d=gallery&m=free>`_.
+

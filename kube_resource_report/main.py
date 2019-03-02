@@ -81,6 +81,11 @@ class CommaSeparatedValues(click.ParamType):
     help="Path to alternate pricing file"
 )
 @click.option(
+    "--links-file",
+    type=click.Path(exists=True),
+    help="Path to YAML file defining custom links for resources"
+)
+@click.option(
     "--node-label",
     help="Value for the kubernetes.io/role label (e.g. 'worker' if nodes are labeled kubernetes.io/role=worker)",
     default="worker",
@@ -101,6 +106,7 @@ def main(
     additional_cost_per_cluster,
     update_interval_minutes,
     pricing_file,
+    links_file,
     node_label,
 ):
     """Kubernetes Resource Report
@@ -131,6 +137,7 @@ def main(
             exclude_clusters,
             additional_cost_per_cluster,
             pricing_file,
+            links_file,
             node_label,
         )
         if update_interval_minutes > 0:

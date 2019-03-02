@@ -9,6 +9,7 @@ import logging
 import re
 import requests
 import shutil
+import yaml
 from urllib.parse import urljoin
 from pathlib import Path
 
@@ -509,6 +510,7 @@ def generate_report(
     exclude_clusters,
     additional_cost_per_cluster,
     pricing_file,
+    links_file,
     node_label,
 ):
     notifications = []
@@ -517,6 +519,12 @@ def generate_report(
 
     if pricing_file:
         pricing.regenerate_cost_dict(pricing_file)
+
+    if links_file:
+        with open(links_file, 'rb') as fd:
+            links = yaml.safe_load(fd)
+    else:
+        links = {}
 
     start = datetime.datetime.utcnow()
 
@@ -635,12 +643,12 @@ def generate_report(
                 fd,
             )
 
-    write_report(output_path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label)
+    write_report(output_path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links)
 
     return cluster_summaries
 
 
-def write_report(output_path: Path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label):
+def write_report(output_path: Path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links):
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
     total_user_requests = collections.defaultdict(int)
@@ -781,6 +789,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
     total_hourly_cost = total_cost / HOURS_PER_MONTH
     now = datetime.datetime.utcnow()
     context = {
+        "links": links,
         "notifications": notifications,
         "cluster_summaries": cluster_summaries,
         "teams": teams,

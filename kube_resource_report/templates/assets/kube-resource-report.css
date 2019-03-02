@@ -1,3 +1,7 @@
+h1 .links {
+    margin-left: 1rem;
+}
+
 .resource-labels {
     display: flex;
     line-height: 1;

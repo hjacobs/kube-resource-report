@@ -14,6 +14,9 @@
                   <th>Memory (MiB)</th>
                   <th class="has-text-right">Cost</th>
                   <th class="has-text-right">Slack Cost</th>
+                  {% if links['team']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -47,6 +50,20 @@
 
             <td class="has-text-right">{{ team.cost|money }}</td>
             <td class="has-text-right">{{ team.slack_cost|money }}</td>
+
+            {% if links['team']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['team']: %}
+                    <a href="{{ link.href.format(id=team_id) }}"
+                        title="{{ link.title.format(id=team_id) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
 
           </tr>
 

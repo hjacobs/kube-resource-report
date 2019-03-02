@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Cluster {{ summary.cluster.name }}{% endblock %}
 {% block content %}
-<h1 class="title">Cluster {{ summary.cluster.name }}</h1>
+<h1 class="title">Cluster {{ summary.cluster.name }}
+    <span class="links">
+        {% for link in links['cluster']: %}
+             <a href="{{ link.href.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                class="button is-light">
+                 <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+             </a>
+        {% endfor %}
+    </span>
+</h1>
 <h2 class="subtitle">{{ summary.cluster.id if summary.cluster.id != summary.cluster.name else summary.cluster.api_server_url }}</h1>
 
 <nav class="level">
