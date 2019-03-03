@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 @pytest.fixture
 def fake_responses():
     return {
-        "/api/v1/nodes": {
+        ('v1', "nodes"): {
             "items": [
                 {
                     "metadata": {"name": "node-1", "labels": {}},
@@ -23,7 +23,7 @@ def fake_responses():
                 }
             ]
         },
-        "/api/v1/pods": {
+        ('v1', "pods"): {
             "items": [
                 {
                     "metadata": {"name": "pod-1", "namespace": "default", "labels": {"app": "myapp"}},
@@ -47,7 +47,7 @@ def fake_responses():
                 }
             ]
         },
-        "/apis/extensions/v1beta1/ingresses": {
+        ('extensions/v1beta1', "ingresses"): {
             "items": [
                 {
                     "metadata": {"name": "ing-1", "namespace": "default"},
@@ -61,14 +61,14 @@ def fake_responses():
                 }
             ]
         },
-        "/api/v1/namespaces": {"items": []},
+        ('v1', "namespaces"): {"items": []},
     }
 
 
 @pytest.fixture
 def fake_metric_responses():
     return {
-        "/apis/metrics.k8s.io/v1beta1/pods": {
+        ("metrics.k8s.io/v1beta1", "pods"): {
             "items": [
                 {
                     "metadata": {"namespace": "default", "name": "pod-1"},
@@ -89,19 +89,30 @@ def output_dir(tmpdir):
     return tmpdir.mkdir("output")
 
 
+def get_mock_client(responses: dict):
+    mock_client = MagicMock()
+
+    def mock_get(version, url, **kwargs):
+        response = responses.get((version, url))
+        return MagicMock(json=lambda: response)
+
+    mock_client.get = mock_get
+    return mock_client
+
+
 @pytest.fixture
 def fake_generate_report(output_dir, monkeypatch):
+
     monkeypatch.setattr("kube_resource_report.cluster_discovery.tokens.get", lambda x: "mytok")
-    monkeypatch.setattr(
-        "kube_resource_report.cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
-        lambda x: [Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org")],
-    )
 
     def wrapper(responses):
+        mock_client = get_mock_client(responses)
+
         monkeypatch.setattr(
-            "kube_resource_report.report.request",
-            lambda cluster, path: MagicMock(json=lambda: responses.get(path)),
+            "kube_resource_report.cluster_discovery.ClusterRegistryDiscoverer.get_clusters",
+            lambda x: [Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org", mock_client)],
         )
+
         cluster_summaries = generate_report(
             [],
             "https://cluster-registry",
@@ -176,10 +187,8 @@ def test_application_report(output_dir, fake_generate_report, fake_responses, fa
 
 
 def test_get_pod_usage(monkeypatch, fake_metric_responses):
-    monkeypatch.setattr(
-        "kube_resource_report.report.request",
-        lambda cluster, path: MagicMock(json=lambda: fake_metric_responses.get(path)),
-    )
+    mock_client = get_mock_client(fake_metric_responses)
+    cluster = Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org", mock_client)
     pods = {('default', 'pod-1'): {'usage': new_resources()}}
-    get_pod_usage(None, pods)
+    get_pod_usage(cluster, pods)
     assert pods[('default', 'pod-1')]['usage']['cpu'] == 0.05
