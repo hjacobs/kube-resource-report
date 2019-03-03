@@ -286,7 +286,7 @@ def query_cluster(
 
     with FuturesSession(max_workers=10, session=session) as futures_session:
         futures = {}
-        for _ingress in Ingress.objects(cluster.client):
+        for _ingress in Ingress.objects(cluster.client, namespace=pykube.all):
             application = get_application_from_labels(_ingress.labels)
             for rule in _ingress.obj["spec"].get("rules", []):
                 host = rule.get('host', '')
