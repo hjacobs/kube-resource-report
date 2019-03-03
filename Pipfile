@@ -4,12 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-kubernetes = "==7.0.0a1"
 requests = "*"
 click = "*"
 stups-tokens = "*"
 "jinja2" = "*"
 requests-futures = "*"
+pykube-ng = "*"
 
 [dev-packages]
 flake8 = "*"

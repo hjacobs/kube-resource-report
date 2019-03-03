@@ -10,7 +10,6 @@ import re
 import requests
 import shutil
 import yaml
-from urllib.parse import urljoin
 from pathlib import Path
 
 import concurrent.futures
@@ -18,6 +17,10 @@ from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+import pykube
+from pykube import Namespace, Pod, Node, Ingress
+from pykube.objects import APIObject, NamespacedAPIObject
 
 from kube_resource_report import cluster_discovery, pricing, filters, __version__
 
@@ -95,20 +98,6 @@ session = requests.Session()
 session.headers["User-Agent"] = f"kube-resource-report/{__version__}"
 
 
-def request(cluster, path, **kwargs):
-    if "timeout" not in kwargs:
-        # sane default timeout
-        kwargs["timeout"] = (5, 15)
-    if cluster.cert_file and cluster.key_file:
-        kwargs["cert"] = (cluster.cert_file, cluster.key_file)
-    return session.get(
-        urljoin(cluster.api_server_url, path),
-        auth=cluster.auth,
-        verify=cluster.ssl_ca_cert,
-        **kwargs
-    )
-
-
 def json_default(obj):
     if isinstance(obj, set):
         return list(obj)
@@ -119,31 +108,30 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+class NodeMetrics(APIObject):
+
+    version = 'metrics.k8s.io/v1beta1'
+    endpoint = 'nodes'
+    kind = 'NodeMetrics'
+
+
+# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+class PodMetrics(NamespacedAPIObject):
+
+    version = 'metrics.k8s.io/v1beta1'
+    endpoint = 'pods'
+    kind = 'PodMetrics'
+
+
 def get_node_usage(cluster, nodes: dict):
     try:
-        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        for i, url in enumerate(
-            [
-                "/apis/metrics.k8s.io/v1beta1/nodes",
-                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/nodes",
-            ]
-        ):
-            try:
-                response = request(cluster, url)
-                response.raise_for_status()
-            except Exception as e:
-                if i == 0:
-                    logger.warning("Failed to query metrics: %s", e)
-                else:
-                    raise
-            if response.ok:
-                break
-        for item in response.json()["items"]:
-            key = item["metadata"]["name"]
+        for node_metrics in NodeMetrics.objects(cluster.client):
+            key = node_metrics.name
             node = nodes.get(key)
             if node:
                 usage = collections.defaultdict(float)
-                for k, v in item.get("usage", {}).items():
+                for k, v in node_metrics.obj.get("usage", {}).items():
                     usage[k] += parse_resource(v)
                 node["usage"] = usage
     except Exception:
@@ -152,29 +140,12 @@ def get_node_usage(cluster, nodes: dict):
 
 def get_pod_usage(cluster, pods: dict):
     try:
-        # https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-        for i, url in enumerate(
-            [
-                "/apis/metrics.k8s.io/v1beta1/pods",
-                "/api/v1/namespaces/kube-system/services/heapster/proxy/apis/metrics/v1alpha1/pods",
-            ]
-        ):
-            try:
-                response = request(cluster, url)
-                response.raise_for_status()
-            except Exception as e:
-                if i == 0:
-                    logger.warning("Failed to query metrics: %s", e)
-                else:
-                    raise
-            if response.ok:
-                break
-        for item in response.json()["items"]:
-            key = (item["metadata"]["namespace"], item["metadata"]["name"])
+        for pod_metrics in PodMetrics.objects(cluster.client):
+            key = (pod_metrics.namespace, pod_metrics.name)
             pod = pods.get(key)
             if pod:
                 usage = collections.defaultdict(float)
-                for container in item["containers"]:
+                for container in pod_metrics.obj["containers"]:
                     for k, v in container.get("usage", {}).items():
                         usage[k] += parse_resource(v)
                 pod["usage"] = usage
@@ -190,30 +161,23 @@ def query_cluster(
     nodes = {}
     namespaces = {}
 
-    response = request(cluster, "/api/v1/namespaces")
-    response.raise_for_status()
-
-    for item in response.json()["items"]:
-        email = None
-        namespace, status = item["metadata"]["name"], item["status"]["phase"]
-        if 'annotations' in item["metadata"]:
-            if 'email' in item["metadata"]["annotations"]:
-                email = item["metadata"]["annotations"]["email"]
-        namespaces[namespace] = {
-            "status": status,
+    for namespace in Namespace.objects(cluster.client):
+        email = namespace.annotations.get('email')
+        namespaces[namespace.name] = {
+            "status": namespace.obj['status']['phase'],
             "email": email,
         }
 
-    response = request(cluster, "/api/v1/nodes")
-    response.raise_for_status()
     cluster_capacity = collections.defaultdict(float)
     cluster_allocatable = collections.defaultdict(float)
     cluster_requests = collections.defaultdict(float)
     user_requests = collections.defaultdict(float)
     node_count = collections.defaultdict(int)
     cluster_cost = additional_cost_per_cluster
-    for node in response.json()["items"]:
-        nodes[node["metadata"]["name"]] = node
+
+    for _node in Node.objects(cluster.client):
+        node = _node.obj
+        nodes[_node.name] = node
         node["capacity"] = {}
         node["allocatable"] = {}
         node["requests"] = new_resources()
@@ -226,11 +190,11 @@ def query_cluster(
             parsed = parse_resource(v)
             node["allocatable"][k] = parsed
             cluster_allocatable[k] += parsed
-        role = node["metadata"]["labels"].get(NODE_LABEL_ROLE) or "worker"
+        role = _node.labels.get(NODE_LABEL_ROLE) or "worker"
         node_count[role] += 1
-        region = node["metadata"]["labels"].get(NODE_LABEL_REGION, "unknown")
-        instance_type = node["metadata"]["labels"].get(NODE_LABEL_INSTANCE_TYPE, "unknown")
-        is_spot = node["metadata"]["labels"].get(NODE_LABEL_SPOT) == "true"
+        region = _node.labels.get(NODE_LABEL_REGION, "unknown")
+        instance_type = _node.labels.get(NODE_LABEL_INSTANCE_TYPE, "unknown")
+        is_spot = _node.labels.get(NODE_LABEL_SPOT) == "true"
         node["spot"] = is_spot
         node["kubelet_version"] = (
             node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
@@ -250,28 +214,25 @@ def query_cluster(
     cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
     cost_per_memory = cluster_cost / cluster_allocatable["memory"]
 
-    response = request(cluster, "/api/v1/pods")
-    response.raise_for_status()
-    for pod in response.json()["items"]:
-        if pod["status"].get("phase") != "Running":
+    for pod in Pod.objects(cluster.client, namespace=pykube.all):
+        if pod.obj["status"].get("phase") != "Running":
             # ignore unschedulable/completed pods
             continue
-        labels = pod["metadata"].get("labels", {})
-        application = get_application_from_labels(labels)
+        application = get_application_from_labels(pod.labels)
         requests = collections.defaultdict(float)
-        ns = pod["metadata"]["namespace"]
-        for container in pod["spec"]["containers"]:
+        ns = pod.namespace
+        for container in pod.obj["spec"]["containers"]:
             for k, v in container["resources"].get("requests", {}).items():
                 pv = parse_resource(v)
                 requests[k] += pv
                 cluster_requests[k] += pv
                 if ns not in system_namespaces:
                     user_requests[k] += pv
-        if "nodeName" in pod["spec"] and pod["spec"]["nodeName"] in nodes:
+        if "nodeName" in pod.obj["spec"] and pod.obj["spec"]["nodeName"] in nodes:
             for k in ("cpu", "memory"):
-                nodes[pod["spec"]["nodeName"]]["requests"][k] += requests.get(k, 0)
+                nodes[pod.obj["spec"]["nodeName"]]["requests"][k] += requests.get(k, 0)
         cost = max(requests["cpu"] * cost_per_cpu, requests["memory"] * cost_per_memory)
-        pods[(ns, pod["metadata"]["name"])] = {
+        pods[(ns, pod.name)] = {
             "requests": requests,
             "application": application,
             "cost": cost,
@@ -323,18 +284,13 @@ def query_cluster(
 
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
 
-    response = request(cluster, "/apis/extensions/v1beta1/ingresses")
-    response.raise_for_status()
-
     with FuturesSession(max_workers=10, session=session) as futures_session:
         futures = {}
-        for item in response.json()["items"]:
-            namespace, name = item["metadata"]["namespace"], item["metadata"]["name"]
-            labels = item["metadata"].get("labels", {})
-            application = get_application_from_labels(labels)
-            for rule in item["spec"].get("rules", []):
+        for _ingress in Ingress.objects(cluster.client, namespace=pykube.all):
+            application = get_application_from_labels(_ingress.labels)
+            for rule in _ingress.obj["spec"].get("rules", []):
                 host = rule.get('host', '')
-                ingress = [namespace, name, application, host, 0]
+                ingress = [_ingress.namespace, _ingress.name, application, host, 0]
                 if host and not no_ingress_status:
                     futures[
                         futures_session.get(f"https://{host}/", timeout=5)
@@ -632,16 +588,19 @@ def generate_report(
                 namespace["status"] = ns_values["status"]
 
     if not use_cache:
-        with pickle_path.open("wb") as fd:
-            pickle.dump(
-                {
-                    "cluster_summaries": cluster_summaries,
-                    "teams": teams,
-                    "applications": applications,
-                    "namespace_usage": namespace_usage,
-                },
-                fd,
-            )
+        try:
+            with pickle_path.open("wb") as fd:
+                pickle.dump(
+                    {
+                        "cluster_summaries": cluster_summaries,
+                        "teams": teams,
+                        "applications": applications,
+                        "namespace_usage": namespace_usage,
+                    },
+                    fd,
+                )
+        except Exception as e:
+            logger.error(f'Could not dump pickled cache data: {e}')
 
     write_report(output_path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links)
 
