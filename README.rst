@@ -5,6 +5,14 @@ Kubernetes Resource Report
 .. image:: https://travis-ci.org/hjacobs/kube-resource-report.svg?branch=master
    :target: https://travis-ci.org/hjacobs/kube-resource-report
    :alt: Travis CI Build Status
+   
+.. image:: https://coveralls.io/repos/github/hjacobs/kube-resource-report/badge.svg?branch=master;_=1
+   :target: https://coveralls.io/github/hjacobs/kube-resource-report?branch=master
+   :alt: Code Coverage
+
+.. image:: 	https://img.shields.io/docker/pulls/hjacobs/kube-resource-report.svg
+   :target: https://hub.docker.com/r/hjacobs/kube-resource-report
+   :alt: Docker pulls
 
 **This version only supports node costs for AWS EC2 (all regions, On Demand, Linux)**
 
