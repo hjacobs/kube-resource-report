@@ -285,28 +285,34 @@ def query_cluster(
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
 
     with FuturesSession(max_workers=10, session=session) as futures_session:
-        futures = {}
+        futures_by_host = {} # hostname -> future
+        futures = collections.defaultdict(list) # future -> [ingress]
+
         for _ingress in Ingress.objects(cluster.client, namespace=pykube.all):
             application = get_application_from_labels(_ingress.labels)
             for rule in _ingress.obj["spec"].get("rules", []):
                 host = rule.get('host', '')
                 ingress = [_ingress.namespace, _ingress.name, application, host, 0]
                 if host and not no_ingress_status:
-                    futures[
-                        futures_session.get(f"https://{host}/", timeout=5)
-                    ] = ingress
+                    try:
+                        future = futures_by_host[host]
+                    except KeyError:
+                        future = futures_session.get(f"https://{host}/", timeout=5)
+                        futures_by_host[host] = future
+                    futures[future].append(ingress)
                 cluster_summary["ingresses"].append(ingress)
 
         if not no_ingress_status:
             logger.info("Waiting for ingress status..")
             for future in concurrent.futures.as_completed(futures):
-                ingress = futures[future]
+                ingresses = futures[future]
                 try:
                     response = future.result()
                     status = response.status_code
                 except:
                     status = 999
-                ingress[4] = status
+                for ingress in ingresses:
+                    ingress[4] = status
 
     return cluster_summary
 
