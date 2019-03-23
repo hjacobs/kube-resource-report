@@ -119,8 +119,10 @@ def main(
     Generate a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry.
     """
 
-    if not debug:
-        logging.getLogger().setLevel(logging.INFO)
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     if kubeconfig_path:
         kubeconfig_path = Path(kubeconfig_path)
