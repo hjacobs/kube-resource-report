@@ -285,8 +285,8 @@ def query_cluster(
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
 
     with FuturesSession(max_workers=10, session=session) as futures_session:
-        futures_by_host = {} # hostname -> future
-        futures = collections.defaultdict(list) # future -> [ingress]
+        futures_by_host = {}  # hostname -> future
+        futures = collections.defaultdict(list)  # future -> [ingress]
 
         for _ingress in Ingress.objects(cluster.client, namespace=pykube.all):
             application = get_application_from_labels(_ingress.labels)
