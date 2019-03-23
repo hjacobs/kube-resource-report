@@ -104,7 +104,6 @@ def json_default(obj):
     raise TypeError(obj)
 
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -303,7 +302,7 @@ def query_cluster(
                 cluster_summary["ingresses"].append(ingress)
 
         if not no_ingress_status:
-            logger.info("Waiting for ingress status..")
+            logger.info(f'Waiting for ingress status for {cluster.id} ({cluster.api_server_url})..')
             for future in concurrent.futures.as_completed(futures):
                 ingresses = futures[future]
                 try:

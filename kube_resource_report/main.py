@@ -1,6 +1,7 @@
 import click
 from .cluster_discovery import DEFAULT_CLUSTERS
 from pathlib import Path
+import logging
 import os
 import time
 
@@ -90,6 +91,9 @@ class CommaSeparatedValues(click.ParamType):
     help="Value for the kubernetes.io/role label (e.g. 'worker' if nodes are labeled kubernetes.io/role=worker)",
     default="worker",
 )
+@click.option(
+    "--debug", is_flag=True, help="Enable debug logging"
+)
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
     clusters,
@@ -108,11 +112,17 @@ def main(
     pricing_file,
     links_file,
     node_label,
+    debug,
 ):
     """Kubernetes Resource Report
 
     Generate a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry.
     """
+
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     if kubeconfig_path:
         kubeconfig_path = Path(kubeconfig_path)
