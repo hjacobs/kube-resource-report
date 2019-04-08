@@ -60,11 +60,8 @@ spec:
             memory: 20Mi
       volumes:
           - name: report-data
-            emptyDir: {}
-            sizeLimit: 500Mi
+            emptyDir:
+              sizeLimit: 500Mi
           - name: pricing-file
             configMap:
               name: pricing-file
-
-
-
