@@ -5,7 +5,7 @@ Kubernetes Resource Report
 .. image:: https://travis-ci.org/hjacobs/kube-resource-report.svg?branch=master
    :target: https://travis-ci.org/hjacobs/kube-resource-report
    :alt: Travis CI Build Status
-   
+
 .. image:: https://coveralls.io/repos/github/hjacobs/kube-resource-report/badge.svg?branch=master;_=1
    :target: https://coveralls.io/github/hjacobs/kube-resource-report?branch=master
    :alt: Code Coverage
@@ -82,7 +82,7 @@ Running as Docker container
 
     $ kubectl proxy & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output (this trick does not work with Docker for Mac!)
-    $ docker run -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.6 /output
+    $ docker run -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.9 /output
 
 
 --------------------
