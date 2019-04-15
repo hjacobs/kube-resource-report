@@ -139,7 +139,7 @@ def get_node_usage(cluster, nodes: dict):
 
 def get_pod_usage(cluster, pods: dict):
     try:
-        for pod_metrics in PodMetrics.objects(cluster.client):
+        for pod_metrics in PodMetrics.objects(cluster.client, namespace=pykube.all):
             key = (pod_metrics.namespace, pod_metrics.name)
             pod = pods.get(key)
             if pod:
