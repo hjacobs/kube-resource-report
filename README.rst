@@ -82,7 +82,7 @@ Running as Docker container
 
     $ kubectl proxy & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output (this trick does not work with Docker for Mac!)
-    $ docker run -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.9 /output
+    $ docker run -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.9.1 /output
 
 
 --------------------
