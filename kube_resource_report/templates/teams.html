@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Teams{% endblock %}
 {% block content %}
+
+<h1 class="title">All Teams
+    <span class="links">
+            <a href="./teams.tsv"
+            title="Download Teams as Tab-Separated-Values (TSV)"
+            class="button is-light">
+                <span class="icon"><i class="fas fa-file-download"></i></span>
+            </a>
+      </span>
+</h1>
+
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>

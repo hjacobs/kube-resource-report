@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Applications{% endblock %}
 {% block content %}
+
+<h1 class="title">All Applications
+    <span class="links">
+            <a href="./applications.tsv"
+            title="Download Applications as Tab-Separated-Values (TSV)"
+            class="button is-light">
+                <span class="icon"><i class="fas fa-file-download"></i></span>
+            </a>
+      </span>
+</h1>
+
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>
