@@ -230,7 +230,12 @@ def query_cluster(
         component = get_component_from_labels(pod.labels)
         requests = collections.defaultdict(float)
         ns = pod.namespace
+        container_images = []
         for container in pod.obj["spec"]["containers"]:
+            # note that the "image" field is optional according to Kubernetes docs
+            image = container.get("image")
+            if image:
+                container_images.append(image)
             for k, v in container["resources"].get("requests", {}).items():
                 pv = parse_resource(v)
                 requests[k] += pv
@@ -245,6 +250,7 @@ def query_cluster(
             "requests": requests,
             "application": application,
             "component": component,
+            "container_images": container_images,
             "cost": cost,
             "usage": new_resources(),
         }
@@ -758,7 +764,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
     logger.info("Writing pods.tsv..")
     with (output_path / "pods.tsv").open("w") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
-        writer.writerow(["Cluster ID", "API Server URL", "Namespace", "Name", "Application", "Component",
+        writer.writerow(["Cluster ID", "API Server URL", "Namespace", "Name", "Application", "Component", "Container Images",
                          "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]"])
         with (output_path / "slack.tsv").open("w") as csvfile2:
             slackwriter = csv.writer(csvfile2, delimiter="\t")
@@ -784,6 +790,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                             name,
                             pod["application"],
                             pod["component"],
+                            ", ".join(pod["container_images"]),
                             requests["cpu"],
                             requests["memory"],
                             usage["cpu"],
