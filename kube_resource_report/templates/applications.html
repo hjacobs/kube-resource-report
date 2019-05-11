@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Applications{% endblock %}
 {% block content %}
+
+<h1 class="title">All Applications
+    <span class="links">
+            <a href="./applications.tsv"
+            title="Download Applications as Tab-Separated-Values (TSV)"
+            class="button is-light">
+                <span class="icon"><i class="fas fa-file-download"></i></span>
+            </a>
+      </span>
+</h1>
+
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>
@@ -23,7 +34,7 @@
           <tbody>
           {% for application_id, app in applications.items()|sort: %}
           <tr>
-            <td>{{ application_id }}</td>
+            <td><a href="application-{{ application_id }}.html">{{ application_id }}</a></td>
             <td><a href="team-{{ app.team }}.html">{{ app.team }}</a></td>
             <td>
                 {% if app.active is not none: %}

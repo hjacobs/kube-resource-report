@@ -2,6 +2,17 @@
 {% block title %}Pods{% endblock %}
 {% block content %}
 
+
+<h1 class="title">All Pods
+    <span class="links">
+            <a href="./pods.tsv"
+            title="Download Pods as Tab-Separated-Values (TSV)"
+            class="button is-light">
+                <span class="icon"><i class="fas fa-file-download"></i></span>
+            </a>
+      </span>
+</h1>
+
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>
@@ -9,6 +20,7 @@
                   <th>Namespace</th>
                   <th>Name</th>
                   <th>Application</th>
+                  <th>Component</th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
                   <th>CPU</th>
@@ -24,6 +36,7 @@
             <td>{{ namespace_name[0] }}</td>
             <td>{{ namespace_name[1] }}</td>
             <td>{{ pod.application }}</td>
+            <td>{{ pod.component }}</td>
             <td>{{ pod.requests.cpu|round(3) }}</td>
             <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
 

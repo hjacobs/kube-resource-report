@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Clusters{% endblock %}
 {% block content %}
+
+<h1 class="title">All Clusters
+    <span class="links">
+            <a href="./clusters.tsv"
+            title="Download Clusters as Tab-Separated-Values (TSV)"
+            class="button is-light">
+                <span class="icon"><i class="fas fa-file-download"></i></span>
+            </a>
+      </span>
+</h1>
+
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>

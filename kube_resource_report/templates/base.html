@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %} - Kubernetes Resource Report</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.1.0/js/all.js"></script>
     <script src="assets/sortable.min.js"></script>
     <script src="assets/navbar.js"></script>
+    <script src="assets/anchor.min.js"></script>
     <link rel="stylesheet" href="assets/sortable-theme-minimal.css" />
     <link rel="stylesheet" href="assets/kube-resource-report.css" />
     <link rel="shortcut icon" href="assets/favicon.png">
@@ -41,11 +42,13 @@
     </section>
   <footer class="footer">
       <div class="container">
-          <div class="content has-text-centered">
+          <div class="has-text-centered">
               <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> {{ version }}</p>
-              <p>Page generated {{ now.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+              <p class="has-text-grey is-size-7">Page generated on {{ now.strftime('%Y-%m-%d %H:%M UTC') }}. {% if duration: %} Data collection took {{ duration|round(1) }}s. {% endif %}</p>
           </div>
       </div>
   </footer>
+  <!-- https://www.bryanbraun.com/anchorjs/#basic-usage -->
+  <script>anchors.add('h2.title'); </script>
   </body>
 </html>

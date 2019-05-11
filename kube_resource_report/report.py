@@ -30,7 +30,9 @@ NODE_LABEL_ROLE = "kubernetes.io/role"
 NODE_LABEL_REGION = "failure-domain.beta.kubernetes.io/region"
 NODE_LABEL_INSTANCE_TYPE = "beta.kubernetes.io/instance-type"
 
-OBJECT_LABEL_APPLICATION = ["application", "app"]
+# https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
+OBJECT_LABEL_APPLICATION = ["application", "app", "app.kubernetes.io/name"]
+OBJECT_LABEL_COMPONENT = ["component", "app.kubernetes.io/component"]
 
 ONE_MEBI = 1024 ** 2
 ONE_GIBI = 1024 ** 3
@@ -88,6 +90,13 @@ def parse_resource(v):
 
 def get_application_from_labels(labels):
     for label_name in OBJECT_LABEL_APPLICATION:
+        if label_name in labels:
+            return labels[label_name]
+    return ""
+
+
+def get_component_from_labels(labels):
+    for label_name in OBJECT_LABEL_COMPONENT:
         if label_name in labels:
             return labels[label_name]
     return ""
@@ -218,9 +227,15 @@ def query_cluster(
             # ignore unschedulable/completed pods
             continue
         application = get_application_from_labels(pod.labels)
+        component = get_component_from_labels(pod.labels)
         requests = collections.defaultdict(float)
         ns = pod.namespace
+        container_images = []
         for container in pod.obj["spec"]["containers"]:
+            # note that the "image" field is optional according to Kubernetes docs
+            image = container.get("image")
+            if image:
+                container_images.append(image)
             for k, v in container["resources"].get("requests", {}).items():
                 pv = parse_resource(v)
                 requests[k] += pv
@@ -234,6 +249,8 @@ def query_cluster(
         pods[(ns, pod.name)] = {
             "requests": requests,
             "application": application,
+            "component": component,
+            "container_images": container_images,
             "cost": cost,
             "usage": new_resources(),
         }
@@ -489,6 +506,10 @@ def generate_report(
 
     start = datetime.datetime.utcnow()
 
+    # the data collection might take a long time, so first write index.html
+    # to give users feedback that Kubernetes Resource Report has started
+    write_loading_page(output_path)
+
     pickle_path = output_path / "dump.pickle"
 
     if use_cache and pickle_path.exists():
@@ -496,7 +517,6 @@ def generate_report(
             data = pickle.load(fd)
         cluster_summaries = data["cluster_summaries"]
         teams = data["teams"]
-        applications = data["applications"]
 
     else:
         cluster_summaries = get_cluster_summaries(
@@ -513,8 +533,9 @@ def generate_report(
             node_label,
         )
         teams = {}
-        applications = {}
-        namespace_usage = {}
+
+    applications = {}
+    namespace_usage = {}
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for k, pod in summary["pods"].items():
@@ -612,6 +633,30 @@ def generate_report(
     return cluster_summaries
 
 
+def write_loading_page(output_path: Path):
+    file_name = "index.html"
+    file_path = output_path / file_name
+
+    if not file_path.exists():
+        templates_path = Path(__file__).parent / "templates"
+        env = Environment(
+            loader=FileSystemLoader(str(templates_path)),
+            autoescape=select_autoescape(["html", "xml"]),
+        )
+        env.filters["money"] = filters.money
+        env.filters["cpu"] = filters.cpu
+        env.filters["memory"] = filters.memory
+        now = datetime.datetime.utcnow()
+        context = {
+            "now": now,
+            "version": __version__,
+        }
+
+        logger.info(f"Generating {file_name}..")
+        template = env.get_template("loading.html")
+        template.stream(**context).dump(str(file_path))
+
+
 def write_report(output_path: Path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links):
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
@@ -623,27 +668,17 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
             total_requests[r] += summary["requests"][r]
             total_user_requests[r] += summary["user_requests"][r]
 
-    logger.info("Writing namespaces.tsv..")
-    with (output_path / "namespaces.tsv").open("w") as csvfile:
-        writer = csv.writer(csvfile, delimiter="\t")
-        for cluster_id, namespace_item in sorted(namespace_usage.items()):
-            fields = [
-                namespace_item["id"],
-                namespace_item["status"],
-                namespace_item["cluster"],
-                namespace_item["pods"],
-                namespace_item["requests"]["cpu"],
-                namespace_item["requests"]["memory"],
-                round(namespace_item["usage"]["cpu"], 2),
-                round(namespace_item["usage"]["memory"], 2),
-                round(namespace_item["cost"], 2),
-                round(namespace_item["slack_cost"], 2)
-            ]
-            writer.writerow(fields)
+    resource_categories = ["capacity", "allocatable", "requests", "usage"]
 
     logger.info("Writing clusters.tsv..")
     with (output_path / "clusters.tsv").open("w") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
+        headers = ["Cluster ID", "API Server URL", "Master Nodes", "Worker Nodes", "Worker Instance Type", "Kubelet Version"]
+        for x in resource_categories:
+            headers.extend([f"CPU {x.capitalize()}", f"Memory {x.capitalize()} [MiB]"])
+        headers.append("Cost [USD]")
+        headers.append("Slack Cost [USD]")
+        writer.writerow(headers)
         for cluster_id, summary in sorted(cluster_summaries.items()):
             worker_instance_type = set()
             kubelet_version = set()
@@ -659,26 +694,78 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                 ",".join(worker_instance_type),
                 ",".join(kubelet_version),
             ]
-            for x in ["capacity", "allocatable", "requests", "usage"]:
+            for x in resource_categories:
                 fields += [
                     round(summary[x]["cpu"], 2),
                     int(summary[x]["memory"] / ONE_MEBI),
                 ]
             fields += [round(summary["cost"], 2)]
+            fields += [round(summary["slack_cost"], 2)]
             writer.writerow(fields)
 
     logger.info("Writing ingresses.tsv..")
     with (output_path / "ingresses.tsv").open("w") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
+        writer.writerow(["Cluster ID", "API Server URL", "Namespace", "Name", "Application", "Host", "Status"])
         for cluster_id, summary in sorted(cluster_summaries.items()):
             for ingress in summary["ingresses"]:
                 writer.writerow(
                     [cluster_id, summary["cluster"].api_server_url] + ingress
                 )
 
+    logger.info("Writing teams.tsv..")
+    with (output_path / "teams.tsv").open("w") as csvfile:
+        writer = csv.writer(csvfile, delimiter="\t")
+        writer.writerow(["ID", "Clusters", "Applications", "Pods",
+                         "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]", "Slack Cost [USD]"])
+        for team_id, team in sorted(teams.items()):
+            writer.writerow([
+                team_id, len(team["clusters"]), len(team["applications"]), team["pods"],
+                round(team["requests"]["cpu"], 2),
+                round(team["requests"]["memory"], 2),
+                round(team["usage"]["cpu"], 2),
+                round(team["usage"]["memory"], 2),
+                round(team["cost"], 2),
+                round(team["slack_cost"], 2)])
+
+    logger.info("Writing applications.tsv..")
+    with (output_path / "applications.tsv").open("w") as csvfile:
+        writer = csv.writer(csvfile, delimiter="\t")
+        writer.writerow(["ID", "Team", "Clusters", "Pods", "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]", "Slack Cost [USD]"])
+        for app_id, app in sorted(applications.items()):
+            writer.writerow([
+                app_id, app["team"], len(app["clusters"]), app["pods"],
+                round(app["requests"]["cpu"], 2),
+                round(app["requests"]["memory"], 2),
+                round(app["usage"]["cpu"], 2),
+                round(app["usage"]["memory"], 2),
+                round(app["cost"], 2),
+                round(app["slack_cost"], 2)])
+
+    logger.info("Writing namespaces.tsv..")
+    with (output_path / "namespaces.tsv").open("w") as csvfile:
+        writer = csv.writer(csvfile, delimiter="\t")
+        writer.writerow(["Name", "Status", "Cluster", "Pods", "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]", "Slack Cost [USD]"])
+        for cluster_id, namespace_item in sorted(namespace_usage.items()):
+            fields = [
+                namespace_item["id"],
+                namespace_item["status"],
+                namespace_item["cluster"].id,
+                namespace_item["pods"],
+                round(namespace_item["requests"]["cpu"], 2),
+                round(namespace_item["requests"]["memory"], 2),
+                round(namespace_item["usage"]["cpu"], 2),
+                round(namespace_item["usage"]["memory"], 2),
+                round(namespace_item["cost"], 2),
+                round(namespace_item["slack_cost"], 2)
+            ]
+            writer.writerow(fields)
+
     logger.info("Writing pods.tsv..")
     with (output_path / "pods.tsv").open("w") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
+        writer.writerow(["Cluster ID", "API Server URL", "Namespace", "Name", "Application", "Component", "Container Images",
+                         "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]"])
         with (output_path / "slack.tsv").open("w") as csvfile2:
             slackwriter = csv.writer(csvfile2, delimiter="\t")
             for cluster_id, summary in sorted(cluster_summaries.items()):
@@ -702,10 +789,13 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                             namespace,
                             name,
                             pod["application"],
+                            pod["component"],
+                            ", ".join(pod["container_images"]),
                             requests["cpu"],
                             requests["memory"],
                             usage["cpu"],
                             usage["memory"],
+                            pod["cost"]
                         ]
                     )
                 cost_per_cpu = summary["cost"] / summary["allocatable"]["cpu"]
@@ -847,6 +937,15 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
             fd,
             default=json_default
         )
+
+    for app_id, application in applications.items():
+        page = "applications"
+        file_name = f"application-{app_id}.html"
+        logger.info(f"Generating {file_name}..")
+        template = env.get_template("application.html")
+        context["page"] = page
+        context["application"] = application
+        template.stream(**context).dump(str(output_path / file_name))
 
     with (output_path / "application-metrics.json").open("w") as fd:
         json.dump(applications, fd, default=json_default)

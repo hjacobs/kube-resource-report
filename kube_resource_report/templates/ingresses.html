@@ -2,6 +2,16 @@
 {% block title %}Ingresses{% endblock %}
 {% block content %}
 
+<h1 class="title">All Ingresses
+    <span class="links">
+            <a href="./ingresses.tsv"
+            title="Download Ingresses as Tab-Separated-Values (TSV)"
+            class="button is-light">
+                <span class="icon"><i class="fas fa-file-download"></i></span>
+            </a>
+      </span>
+</h1>
+
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>
@@ -20,7 +30,7 @@
             <td><a href="./cluster-{{ cluster_id }}.html">{{ summary["cluster"].name }}</a></td>
             <td>{{ ingress[0] }}</td>
             <td>{{ ingress[1] }}</td>
-            <td>{{ ingress[2] }}</td>
+            <td><a href="./application-{{ ingress[2] }}.html">{{ ingress[2] }}</a></td>
             <td>{{ ingress[3] }}</td>
             <td><span class="tag
                     {% if ingress[4] >= 500 %}

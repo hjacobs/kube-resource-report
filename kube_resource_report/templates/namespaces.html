@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Namespaces{% endblock %}
 {% block content %}
+
+<h1 class="title">All Namespaces
+    <span class="links">
+            <a href="./namespaces.tsv"
+            title="Download Namespaces as Tab-Separated-Values (TSV)"
+            class="button is-light">
+                <span class="icon"><i class="fas fa-file-download"></i></span>
+            </a>
+      </span>
+</h1>
+
       <table class="table is-striped" data-sortable>
           <thead>
               <tr>

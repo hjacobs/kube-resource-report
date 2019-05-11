@@ -144,7 +144,7 @@
           {% for application_id, app in applications.items()|sort: %}
           {% if app.team == team_id: %}
           <tr>
-            <td>{{ application_id }}</td>
+            <td><a href="application-{{ application_id }}.html">{{ application_id }}</a></td>
             <td>
                 {% if app.active is not none: %}
                 {% if app.active: %}
