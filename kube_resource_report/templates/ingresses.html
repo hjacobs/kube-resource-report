@@ -20,7 +20,7 @@
             <td><a href="./cluster-{{ cluster_id }}.html">{{ summary["cluster"].name }}</a></td>
             <td>{{ ingress[0] }}</td>
             <td>{{ ingress[1] }}</td>
-            <td>{{ ingress[2] }}</td>
+            <td><a href="./application-{{ ingress[2] }}.html">{{ ingress[2] }}</a></td>
             <td>{{ ingress[3] }}</td>
             <td><span class="tag
                     {% if ingress[4] >= 500 %}

@@ -507,8 +507,6 @@ def generate_report(
             data = pickle.load(fd)
         cluster_summaries = data["cluster_summaries"]
         teams = data["teams"]
-        applications = data["applications"]
-        namespace_usage = data["namespace_usage"]
 
     else:
         cluster_summaries = get_cluster_summaries(
@@ -525,8 +523,9 @@ def generate_report(
             node_label,
         )
         teams = {}
-        applications = {}
-        namespace_usage = {}
+
+    applications = {}
+    namespace_usage = {}
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for k, pod in summary["pods"].items():
@@ -859,6 +858,15 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
             fd,
             default=json_default
         )
+
+    for app_id, application in applications.items():
+        page = "applications"
+        file_name = f"application-{app_id}.html"
+        logger.info(f"Generating {file_name}..")
+        template = env.get_template("application.html")
+        context["page"] = page
+        context["application"] = application
+        template.stream(**context).dump(str(output_path / file_name))
 
     with (output_path / "application-metrics.json").open("w") as fd:
         json.dump(applications, fd, default=json_default)

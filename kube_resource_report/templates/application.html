@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Application {{ application.id }}{% endblock %}
+{% block content %}
+<h1 class="title">Application {{ application.id }}
+    <span class="links">
+        {% for link in links['application']: %}
+             <a href="{{ link.href.format(id=application.id) }}"
+                title="{{ link.title.format(id=application.id) }}"
+                class="button is-light">
+                 <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+             </a>
+        {% endfor %}
+    </span>
+</h1>
+<h2 class="subtitle">owned by team <a href="./team-{{ application.team }}.html">{{ application.team }}</a></h2>
+
+<nav class="level">
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Clusters</p>
+      <p class="title">{{ application.clusters|count }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Pods</p>
+      <p class="title">{{ application.pods }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">CPU Requests</p>
+      <p class="title">{{ application.requests.cpu|cpu }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Memory Requests</p>
+      <p class="title">{{ application.requests.memory|filesizeformat(True) }}</p>
+    </div>
+  </div>
+  <div class="level-item has-text-centered">
+    <div>
+      <p class="heading">Monthly Cost</p>
+      <p class="title">{{ application.cost|money }} USD</p>
+    </div>
+  </div>
+</nav>
+    <div class="notification is-warning">
+        You can potentially save <strong>{{ application.slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
+    </div>
+
+    <h2 class="title is-5">Ingresses</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Cluster</th>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Host</th>
+                  <th>Status</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for cluster_id, summary in cluster_summaries.items(): %}
+          {% for ingress in summary.ingresses: %}
+          {% if ingress[2] == application.id: %}
+          <tr>
+            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
+            <td>{{ ingress[0] }}</td>
+            <td>{{ ingress[1] }}</td>
+            <td>{{ ingress[3] }}</td>
+            <td><span class="tag
+                    {% if ingress[4] >= 500 %}
+                       is-danger
+                    {% elif ingress[4] >= 400 %}
+                       is-info
+                    {% elif ingress[4] >= 200 %}
+                       is-success
+                    {% else: %}
+                       is-info
+                    {% endif %}
+            ">{{ ingress[4] }}</span></td>
+          </tr>
+          {%endif %}
+          {%endfor %}
+          {%endfor %}
+          </tbody>
+
+        </table>
+
+
+    <h2 class="title is-5">Pods</h2>
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Cluster</th>
+                  <th>Namespace</th>
+                  <th>Component</th>
+                  <th>Name</th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for cluster_id, summary in cluster_summaries.items(): %}
+          {% for namespace_name, pod in summary.pods.items(): %}
+          {% if pod.application == application.id: %}
+          <tr>
+            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
+            <td>{{ namespace_name[0] }}</td>
+            <td>{{ pod.component }}</td>
+            <td>{{ namespace_name[1] }}</td>
+            <td>{{ pod.requests.cpu|round(3) }}</td>
+            <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ pod.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ pod.usage.cpu|round(2) }}</span> <span>{{ pod.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ pod.requests.cpu }}" max="{{ pod.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if pod.usage.cpu > pod.requests.cpu else 'is-primary' }}" value="{{ pod.usage.cpu }}" max="{{ pod.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ pod.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ pod.usage.memory|memory('MiB') }}</span> <span>{{ pod.requests.memory|memory('MiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ pod.requests.memory }}" max="{{ pod.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if pod.usage.memory > pod.requests.memory else 'is-primary' }}" value="{{ pod.usage.memory }}" max="{{ pod.requests.memory }}"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">{{ pod.cost|money }}</td>
+          </tr>
+          {%endif %}
+          {%endfor %}
+          {%endfor %}
+          </tbody>
+
+        </table>
+
+{% endblock %}

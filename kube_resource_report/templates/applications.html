@@ -23,7 +23,7 @@
           <tbody>
           {% for application_id, app in applications.items()|sort: %}
           <tr>
-            <td>{{ application_id }}</td>
+            <td><a href="application-{{ application_id }}.html">{{ application_id }}</a></td>
             <td><a href="team-{{ app.team }}.html">{{ app.team }}</a></td>
             <td>
                 {% if app.active is not none: %}
