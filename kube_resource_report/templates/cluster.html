@@ -220,6 +220,7 @@
                   <th>Namespace</th>
                   <th>Name</th>
                   <th>Application</th>
+                  <th>Component</th>
                   <th>Team</th>
                   <th><abbr title="CPU Requests">CR</abbr></th>
                   <th><abbr title="Memory Requests">MR</abbr></th>
@@ -234,6 +235,7 @@
             <td>{{ namespace_name[0] }}</td>
             <td>{{ namespace_name[1] }}</td>
             <td>{{ pod.application }}</td>
+            <td>{{ pod.component }}</td>
             <td><a href="team-{{ pod.team }}.html">{{ pod.team }}</a></td>
             <td>{{ pod.requests.cpu|round(3) }}</td>
             <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>

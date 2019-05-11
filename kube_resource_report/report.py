@@ -30,7 +30,9 @@ NODE_LABEL_ROLE = "kubernetes.io/role"
 NODE_LABEL_REGION = "failure-domain.beta.kubernetes.io/region"
 NODE_LABEL_INSTANCE_TYPE = "beta.kubernetes.io/instance-type"
 
-OBJECT_LABEL_APPLICATION = ["application", "app"]
+# https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
+OBJECT_LABEL_APPLICATION = ["application", "app", "app.kubernetes.io/name"]
+OBJECT_LABEL_COMPONENT = ["component", "app.kubernetes.io/component"]
 
 ONE_MEBI = 1024 ** 2
 ONE_GIBI = 1024 ** 3
@@ -88,6 +90,13 @@ def parse_resource(v):
 
 def get_application_from_labels(labels):
     for label_name in OBJECT_LABEL_APPLICATION:
+        if label_name in labels:
+            return labels[label_name]
+    return ""
+
+
+def get_component_from_labels(labels):
+    for label_name in OBJECT_LABEL_COMPONENT:
         if label_name in labels:
             return labels[label_name]
     return ""
@@ -218,6 +227,7 @@ def query_cluster(
             # ignore unschedulable/completed pods
             continue
         application = get_application_from_labels(pod.labels)
+        component = get_component_from_labels(pod.labels)
         requests = collections.defaultdict(float)
         ns = pod.namespace
         for container in pod.obj["spec"]["containers"]:
@@ -234,6 +244,7 @@ def query_cluster(
         pods[(ns, pod.name)] = {
             "requests": requests,
             "application": application,
+            "component": component,
             "cost": cost,
             "usage": new_resources(),
         }
@@ -497,6 +508,7 @@ def generate_report(
         cluster_summaries = data["cluster_summaries"]
         teams = data["teams"]
         applications = data["applications"]
+        namespace_usage = data["namespace_usage"]
 
     else:
         cluster_summaries = get_cluster_summaries(
