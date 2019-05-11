@@ -500,6 +500,8 @@ def generate_report(
 
     start = datetime.datetime.utcnow()
 
+    # the data collection might take a long time, so first write index.html
+    # to give users feedback that Kubernetes Resource Report has started
     write_loading_page(output_path)
 
     pickle_path = output_path / "dump.pickle"

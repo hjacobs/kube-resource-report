@@ -42,9 +42,9 @@
     </section>
   <footer class="footer">
       <div class="container">
-          <div class="content has-text-centered">
+          <div class="has-text-centered">
               <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> {{ version }}</p>
-              <p>Page generated {{ now.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+              <p class="has-text-grey is-size-7">Page generated on {{ now.strftime('%Y-%m-%d %H:%M UTC') }}. {% if duration: %} Data collection took {{ duration|round(1) }}s. {% endif %}</p>
           </div>
       </div>
   </footer>
