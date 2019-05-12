@@ -162,6 +162,9 @@ def get_pod_usage(cluster, pods: dict):
 
 
 def find_backend_application(client, ingress, rule):
+    '''
+    The Ingress object might not have a "application" label, so let's try to find the application by looking at the backend service and its pods
+    '''
     paths = rule.get('http', {}).get('paths', [])
     selectors = []
     for path in paths:
@@ -185,7 +188,6 @@ def find_backend_application(client, ingress, rule):
             if application:
                 application_candidates.add(application)
 
-        print(application_candidates)
         if len(application_candidates) == 1:
             return application_candidates.pop()
     return ''
