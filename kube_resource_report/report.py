@@ -19,7 +19,7 @@ from requests_futures.sessions import FuturesSession
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import pykube
-from pykube import Namespace, Pod, Node, Ingress
+from pykube import Namespace, Pod, Node, Ingress, Service, ObjectDoesNotExist
 from pykube.objects import APIObject, NamespacedAPIObject
 
 from kube_resource_report import cluster_discovery, pricing, filters, __version__
@@ -159,6 +159,36 @@ def get_pod_usage(cluster, pods: dict):
                 pod["usage"] = usage
     except Exception:
         logger.exception("Failed to get pod usage metrics")
+
+
+def find_backend_application(client, ingress, rule):
+    paths = rule.get('http', {}).get('paths', [])
+    selectors = []
+    for path in paths:
+        service_name = path.get('backend', {}).get('serviceName')
+        if service_name:
+            try:
+                service = Service.objects(client, namespace=ingress.namespace).get(name=service_name)
+            except ObjectDoesNotExist:
+                logger.debug(f'Referenced service does not exist: {ingress.namespace}/{service_name}')
+            else:
+                selector = service.obj['spec'].get('selector', {})
+                selectors.append(selector)
+                application = get_application_from_labels(selector)
+                if application:
+                    return application
+    # we still haven't found the application, let's look up pods by label selectors
+    for selector in selectors:
+        application_candidates = set()
+        for pod in Pod.objects(client).filter(namespace=ingress.namespace, selector=selector):
+            application = get_application_from_labels(pod.labels)
+            if application:
+                application_candidates.add(application)
+
+        print(application_candidates)
+        if len(application_candidates) == 1:
+            return application_candidates.pop()
+    return ''
 
 
 def query_cluster(
@@ -308,7 +338,12 @@ def query_cluster(
             application = get_application_from_labels(_ingress.labels)
             for rule in _ingress.obj["spec"].get("rules", []):
                 host = rule.get('host', '')
-                ingress = [_ingress.namespace, _ingress.name, application, host, 0]
+                if not application:
+                    # find the application by getting labels from pods
+                    backend_application = find_backend_application(cluster.client, _ingress, rule)
+                else:
+                    backend_application = None
+                ingress = [_ingress.namespace, _ingress.name, application or backend_application, host, 0]
                 if host and not no_ingress_status:
                     try:
                         future = futures_by_host[host]
