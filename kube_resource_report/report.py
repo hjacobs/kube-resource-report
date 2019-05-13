@@ -872,6 +872,8 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
     env = Environment(
         loader=FileSystemLoader(str(templates_path)),
         autoescape=select_autoescape(["html", "xml"]),
+        trim_blocks=True,
+        lstrip_blocks=True
     )
     env.filters["money"] = filters.money
     env.filters["cpu"] = filters.cpu
