@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     application: kube-resource-report
-    version: v0.10
+    version: v0.11.1
   name: kube-resource-report
 spec:
   replicas: 1
@@ -14,13 +14,13 @@ spec:
     metadata:
       labels:
         application: kube-resource-report
-        version: v0.10
+        version: v0.11.1
     spec:
       serviceAccount: kube-resource-report
       containers:
       - name: kube-resource-report
         # see https://github.com/hjacobs/kube-resource-report/releases
-        image: hjacobs/kube-resource-report:0.10
+        image: hjacobs/kube-resource-report:0.11.1
         args:
         - --update-interval-minutes=1
         - "--pricing-file=/pricing-file/pricing.csv"
