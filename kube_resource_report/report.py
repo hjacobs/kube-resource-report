@@ -68,6 +68,9 @@ FACTORS = {
 RESOURCE_PATTERN = re.compile(r"^(\d*)(\D*)$")
 
 
+TEMPLATES_PATH = Path(__file__).parent / "templates"
+
+
 def new_resources():
     return {"cpu": 0, "memory": 0}
 
@@ -545,6 +548,8 @@ def generate_report(
 
     # the data collection might take a long time, so first write index.html
     # to give users feedback that Kubernetes Resource Report has started
+    # first copy CSS/JS/..
+    copy_static_assets(output_path)
     write_loading_page(output_path)
 
     pickle_path = output_path / "dump.pickle"
@@ -670,14 +675,24 @@ def generate_report(
     return cluster_summaries
 
 
+def copy_static_assets(output_path: Path):
+    assets_path = output_path / "assets"
+    assets_path.mkdir(exist_ok=True)
+
+    assets_source_path = TEMPLATES_PATH / "assets"
+
+    for path in assets_source_path.iterdir():
+        if path.match("*.js") or path.match("*.css") or path.match("*.png"):
+            shutil.copy(str(path), str(assets_path / path.name))
+
+
 def write_loading_page(output_path: Path):
     file_name = "index.html"
     file_path = output_path / file_name
 
     if not file_path.exists():
-        templates_path = Path(__file__).parent / "templates"
         env = Environment(
-            loader=FileSystemLoader(str(templates_path)),
+            loader=FileSystemLoader(str(TEMPLATES_PATH)),
             autoescape=select_autoescape(["html", "xml"]),
         )
         env.filters["money"] = filters.money
@@ -868,9 +883,8 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                         ]
                     )
 
-    templates_path = Path(__file__).parent / "templates"
     env = Environment(
-        loader=FileSystemLoader(str(templates_path)),
+        loader=FileSystemLoader(str(TEMPLATES_PATH)),
         autoescape=select_autoescape(["html", "xml"]),
         trim_blocks=True,
         lstrip_blocks=True
@@ -988,12 +1002,3 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
 
     with (output_path / "application-metrics.json").open("w") as fd:
         json.dump(applications, fd, default=json_default)
-
-    assets_path = output_path / "assets"
-    assets_path.mkdir(exist_ok=True)
-
-    assets_source_path = templates_path / "assets"
-
-    for path in assets_source_path.iterdir():
-        if path.match("*.js") or path.match("*.css") or path.match("*.png"):
-            shutil.copy(str(path), str(assets_path / path.name))
