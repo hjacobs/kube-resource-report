@@ -62,28 +62,24 @@
               </tr>
           </thead>
           <tbody>
-          {% for cluster_id, summary in cluster_summaries.items(): %}
-          {% for ingress in summary.ingresses: %}
-          {% if ingress[2] == application.id: %}
+          {% for ingress in ingresses_by_application[application.id]: %}
           <tr>
-            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
-            <td>{{ ingress[0] }}</td>
-            <td>{{ ingress[1] }}</td>
-            <td>{{ ingress[3] }}</td>
+            <td><a href="./cluster-{{ ingress.cluster_id }}.html">{{ ingress.cluster_summary.cluster.name }}</a></td>
+            <td>{{ ingress.namespace }}</td>
+            <td>{{ ingress.name }}</td>
+            <td>{{ ingress.host }}</td>
             <td><span class="tag
-                    {% if ingress[4] >= 500 %}
+                    {% if ingress.status >= 500 %}
                        is-danger
-                    {% elif ingress[4] >= 400 %}
+                    {% elif ingress.status >= 400 %}
                        is-info
-                    {% elif ingress[4] >= 200 %}
+                    {% elif ingress.status >= 200 %}
                        is-success
                     {% else: %}
                        is-info
                     {% endif %}
             ">{{ ingress[4] }}</span></td>
           </tr>
-          {%endif %}
-          {%endfor %}
           {%endfor %}
           </tbody>
 
@@ -107,41 +103,37 @@
               </tr>
           </thead>
           <tbody>
-          {% for cluster_id, summary in cluster_summaries.items(): %}
-          {% for namespace_name, pod in summary.pods.items(): %}
-          {% if pod.application == application.id: %}
+          {% for row in pods_by_application[application.id]: %}
           <tr>
-            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
-            <td>{{ namespace_name[0] }}</td>
-            <td>{{ pod.component }}</td>
-            <td>{{ namespace_name[1] }}</td>
-            <td title="{{ pod.container_images|join(', ') }}">{{ pod.container_images|count }}</td>
-            <td>{{ pod.requests.cpu|round(3) }}</td>
-            <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
+            <td><a href="./cluster-{{ row.cluster_id }}.html">{{ row.cluster_summary.cluster.name }}</a></td>
+            <td>{{ row.namespace }}</td>
+            <td>{{ row.pod.component }}</td>
+            <td>{{ row.name }}</td>
+            <td title="{{ row.pod.container_images|join(', ') }}">{{ row.pod.container_images|count }}</td>
+            <td>{{ row.pod.requests.cpu|round(3) }}</td>
+            <td data-value="{{ row.pod.requests.memory }}">{{ row.pod.requests.memory|filesizeformat(True) }}</td>
 
-            <td style="font-size: 0.75rem" data-value="{{ pod.usage.cpu }}">
+            <td style="font-size: 0.75rem" data-value="{{ row.pod.usage.cpu }}">
                 <div class="resource-labels">
-                    <span>{{ pod.usage.cpu|round(2) }}</span> <span>{{ pod.requests.cpu|round(2) }}</span>
+                    <span>{{ row.pod.usage.cpu|round(2) }}</span> <span>{{ row.pod.requests.cpu|round(2) }}</span>
                 </div>
                 <div class="resource-bar">
-                    <progress class="progress" value="{{ pod.requests.cpu }}" max="{{ pod.requests.cpu }}"></progress>
-                    <progress class="progress {{ 'is-danger' if pod.usage.cpu > pod.requests.cpu else 'is-primary' }}" value="{{ pod.usage.cpu }}" max="{{ pod.requests.cpu }}"></progress>
+                    <progress class="progress" value="{{ row.pod.requests.cpu }}" max="{{ row.pod.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if row.pod.usage.cpu > row.pod.requests.cpu else 'is-primary' }}" value="{{ row.pod.usage.cpu }}" max="{{ row.pod.requests.cpu }}"></progress>
                 </div>
             </td>
-            <td style="font-size: 0.75rem" data-value="{{ pod.usage.memory }}">
+            <td style="font-size: 0.75rem" data-value="{{ row.pod.usage.memory }}">
                 <div class="resource-labels">
-                    <span>{{ pod.usage.memory|memory('MiB') }}</span> <span>{{ pod.requests.memory|memory('MiB') }}</span>
+                    <span>{{ row.pod.usage.memory|memory('MiB') }}</span> <span>{{ row.pod.requests.memory|memory('MiB') }}</span>
                 </div>
                 <div class="resource-bar">
-                    <progress class="progress" value="{{ pod.requests.memory }}" max="{{ pod.requests.memory }}"></progress>
-                    <progress class="progress {{ 'is-danger' if pod.usage.memory > pod.requests.memory else 'is-primary' }}" value="{{ pod.usage.memory }}" max="{{ pod.requests.memory }}"></progress>
+                    <progress class="progress" value="{{ row.pod.requests.memory }}" max="{{ row.pod.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if row.pod.usage.memory > row.pod.requests.memory else 'is-primary' }}" value="{{ row.pod.usage.memory }}" max="{{ row.pod.requests.memory }}"></progress>
                 </div>
             </td>
 
-            <td class="has-text-right">{{ pod.cost|money }}</td>
+            <td class="has-text-right">{{ row.pod.cost|money }}</td>
           </tr>
-          {%endif %}
-          {%endfor %}
           {%endfor %}
           </tbody>
 
