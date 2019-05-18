@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     application: kube-resource-report
-    version: v0.11.1
+    version: v0.12
   name: kube-resource-report
 spec:
   replicas: 1
@@ -14,13 +14,13 @@ spec:
     metadata:
       labels:
         application: kube-resource-report
-        version: v0.11.1
+        version: v0.12
     spec:
       serviceAccount: kube-resource-report
       containers:
       - name: kube-resource-report
         # see https://github.com/hjacobs/kube-resource-report/releases
-        image: hjacobs/kube-resource-report:0.11.1
+        image: hjacobs/kube-resource-report:0.12
         args:
         - --update-interval-minutes=1
         # this is just an example, e.g. for Minikube: assume 30 USD/month cluster costs
