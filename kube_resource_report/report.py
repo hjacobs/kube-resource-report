@@ -991,6 +991,40 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
             default=json_default
         )
 
+    with (output_path / "application-metrics.json").open("w") as fd:
+        json.dump(applications, fd, default=json_default)
+
+    pods_by_application = collections.defaultdict(list)
+    for cluster_id, summary in cluster_summaries.items():
+        for namespace_name, pod in summary['pods'].items():
+            namespace, name = namespace_name
+            pods_by_application[pod['application']].append({
+                'cluster_id': cluster_id, 'cluster_summary': summary,
+                'namespace': namespace,
+                'name': name,
+                'pod': pod}
+            )
+
+    for app_id, application in applications.items():
+        file_name = f"application-{app_id}.json"
+        with (output_path / file_name).open("w") as fd:
+            json.dump(
+                {
+                    **application,
+                    "pods": [
+                        {
+                            **row['pod'],
+                            "cluster": row['cluster_id'],
+                            "namespace": row['namespace'],
+                            "name": row["name"]
+                        }
+                        for row in pods_by_application[app_id]
+                    ]
+                },
+                fd,
+                default=json_default
+            )
+
     for app_id, application in applications.items():
         page = "applications"
         file_name = f"application-{app_id}.html"
@@ -998,7 +1032,5 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
         template = env.get_template("application.html")
         context["page"] = page
         context["application"] = application
+        context["pods_by_application"] = pods_by_application
         template.stream(**context).dump(str(output_path / file_name))
-
-    with (output_path / "application-metrics.json").open("w") as fd:
-        json.dump(applications, fd, default=json_default)
