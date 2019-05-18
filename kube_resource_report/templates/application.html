@@ -62,28 +62,24 @@
               </tr>
           </thead>
           <tbody>
-          {% for cluster_id, summary in cluster_summaries.items(): %}
-          {% for ingress in summary.ingresses: %}
-          {% if ingress[2] == application.id: %}
+          {% for ingress in ingresses_by_application[application.id]: %}
           <tr>
-            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
-            <td>{{ ingress[0] }}</td>
-            <td>{{ ingress[1] }}</td>
-            <td>{{ ingress[3] }}</td>
+            <td><a href="./cluster-{{ ingress.cluster_id }}.html">{{ ingress.cluster_summary.cluster.name }}</a></td>
+            <td>{{ ingress.namespace }}</td>
+            <td>{{ ingress.name }}</td>
+            <td>{{ ingress.host }}</td>
             <td><span class="tag
-                    {% if ingress[4] >= 500 %}
+                    {% if ingress.status >= 500 %}
                        is-danger
-                    {% elif ingress[4] >= 400 %}
+                    {% elif ingress.status >= 400 %}
                        is-info
-                    {% elif ingress[4] >= 200 %}
+                    {% elif ingress.status >= 200 %}
                        is-success
                     {% else: %}
                        is-info
                     {% endif %}
             ">{{ ingress[4] }}</span></td>
           </tr>
-          {%endif %}
-          {%endfor %}
           {%endfor %}
           </tbody>
 
