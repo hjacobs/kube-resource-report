@@ -57,3 +57,9 @@ class OutputManager:
         logger.info(f"Generating {output_file_name}..")
         template = self.env.get_template(template_name)
         template.stream(**context).dump(str(path))
+
+    def clean_up_stale_files(self):
+        for path in self.output_path.iterdir():
+            if path.is_file() and path not in self.written_paths:
+                logger.info(f"Cleaning up {path.name}..")
+                path.unlink()

@@ -529,8 +529,6 @@ def generate_report(
 ):
     notifications = []
 
-    output_path = Path(output_dir)
-
     if pricing_file:
         pricing.regenerate_cost_dict(pricing_file)
 
@@ -542,17 +540,17 @@ def generate_report(
 
     start = datetime.datetime.utcnow()
 
-    out = OutputManager(output_path)
+    out = OutputManager(Path(output_dir))
     # the data collection might take a long time, so first write index.html
     # to give users feedback that Kubernetes Resource Report has started
     # first copy CSS/JS/..
     out.copy_static_assets()
     write_loading_page(out)
 
-    pickle_path = output_path / "dump.pickle"
+    pickle_file_name = "dump.pickle"
 
-    if use_cache and pickle_path.exists():
-        with pickle_path.open("rb") as fd:
+    if use_cache and out.exists(pickle_file_name):
+        with out.open(pickle_file_name, 'rb') as fd:
             data = pickle.load(fd)
         cluster_summaries = data["cluster_summaries"]
         teams = data["teams"]
@@ -654,7 +652,7 @@ def generate_report(
 
     if not use_cache:
         try:
-            with pickle_path.open("wb") as fd:
+            with out.open(pickle_file_name, 'wb') as fd:
                 pickle.dump(
                     {
                         "cluster_summaries": cluster_summaries,
@@ -1008,3 +1006,5 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
         context["ingresses_by_application"] = ingresses_by_application
         context["pods_by_application"] = pods_by_application
         out.render_template('application.html', context, file_name)
+
+    out.clean_up_stale_files()
