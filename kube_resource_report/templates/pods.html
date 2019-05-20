@@ -44,7 +44,7 @@
                 <div class="resource-labels">
                     <span>{{ pod.usage.cpu|round(2) }}</span> <span>{{ pod.requests.cpu|round(2) }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ pod.requests.cpu }}" max="{{ pod.requests.cpu }}"></progress>
                     <progress class="progress {{ 'is-danger' if pod.usage.cpu > pod.requests.cpu else 'is-primary' }}" value="{{ pod.usage.cpu }}" max="{{ pod.requests.cpu }}"></progress>
                 </div>
@@ -53,7 +53,7 @@
                 <div class="resource-labels">
                     <span>{{ pod.usage.memory|memory('MiB') }}</span> <span>{{ pod.requests.memory|memory('MiB') }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ pod.requests.memory }}" max="{{ pod.requests.memory }}"></progress>
                     <progress class="progress {{ 'is-danger' if pod.usage.memory > pod.requests.memory else 'is-primary' }}" value="{{ pod.usage.memory }}" max="{{ pod.requests.memory }}"></progress>
                 </div>
