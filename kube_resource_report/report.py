@@ -8,7 +8,6 @@ import json
 import logging
 import re
 import requests
-import shutil
 import yaml
 from pathlib import Path
 
@@ -16,13 +15,13 @@ import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
 import pykube
 from pykube import Namespace, Pod, Node, Ingress, Service, ObjectDoesNotExist
 from pykube.objects import APIObject, NamespacedAPIObject
 
-from kube_resource_report import cluster_discovery, pricing, filters, __version__
+from kube_resource_report import cluster_discovery, pricing, __version__
+
+from .output import OutputManager
 
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
@@ -66,9 +65,6 @@ FACTORS = {
 }
 
 RESOURCE_PATTERN = re.compile(r"^(\d*)(\D*)$")
-
-
-TEMPLATES_PATH = Path(__file__).parent / "templates"
 
 
 def new_resources():
@@ -533,8 +529,6 @@ def generate_report(
 ):
     notifications = []
 
-    output_path = Path(output_dir)
-
     if pricing_file:
         pricing.regenerate_cost_dict(pricing_file)
 
@@ -546,16 +540,17 @@ def generate_report(
 
     start = datetime.datetime.utcnow()
 
+    out = OutputManager(Path(output_dir))
     # the data collection might take a long time, so first write index.html
     # to give users feedback that Kubernetes Resource Report has started
     # first copy CSS/JS/..
-    copy_static_assets(output_path)
-    write_loading_page(output_path)
+    out.copy_static_assets()
+    write_loading_page(out)
 
-    pickle_path = output_path / "dump.pickle"
+    pickle_file_name = "dump.pickle"
 
-    if use_cache and pickle_path.exists():
-        with pickle_path.open("rb") as fd:
+    if use_cache and out.exists(pickle_file_name):
+        with out.open(pickle_file_name, 'rb') as fd:
             data = pickle.load(fd)
         cluster_summaries = data["cluster_summaries"]
         teams = data["teams"]
@@ -657,7 +652,7 @@ def generate_report(
 
     if not use_cache:
         try:
-            with pickle_path.open("wb") as fd:
+            with out.open(pickle_file_name, 'wb') as fd:
                 pickle.dump(
                     {
                         "cluster_summaries": cluster_summaries,
@@ -670,46 +665,24 @@ def generate_report(
         except Exception as e:
             logger.error(f'Could not dump pickled cache data: {e}')
 
-    write_report(output_path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links)
+    write_report(out, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links)
 
     return cluster_summaries
 
 
-def copy_static_assets(output_path: Path):
-    assets_path = output_path / "assets"
-    assets_path.mkdir(exist_ok=True)
-
-    assets_source_path = TEMPLATES_PATH / "assets"
-
-    for path in assets_source_path.iterdir():
-        if path.match("*.js") or path.match("*.css") or path.match("*.png"):
-            shutil.copy(str(path), str(assets_path / path.name))
-
-
-def write_loading_page(output_path: Path):
+def write_loading_page(out):
     file_name = "index.html"
-    file_path = output_path / file_name
 
-    if not file_path.exists():
-        env = Environment(
-            loader=FileSystemLoader(str(TEMPLATES_PATH)),
-            autoescape=select_autoescape(["html", "xml"]),
-        )
-        env.filters["money"] = filters.money
-        env.filters["cpu"] = filters.cpu
-        env.filters["memory"] = filters.memory
+    if not out.exists(file_name):
         now = datetime.datetime.utcnow()
         context = {
             "now": now,
             "version": __version__,
         }
-
-        logger.info(f"Generating {file_name}..")
-        template = env.get_template("loading.html")
-        template.stream(**context).dump(str(file_path))
+        out.render_template('loading.html', context, file_name)
 
 
-def write_report(output_path: Path, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links):
+def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links):
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
     total_user_requests = collections.defaultdict(int)
@@ -722,8 +695,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
 
     resource_categories = ["capacity", "allocatable", "requests", "usage"]
 
-    logger.info("Writing clusters.tsv..")
-    with (output_path / "clusters.tsv").open("w") as csvfile:
+    with out.open("clusters.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         headers = ["Cluster ID", "API Server URL", "Master Nodes", "Worker Nodes", "Worker Instance Type", "Kubelet Version"]
         for x in resource_categories:
@@ -755,8 +727,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
             fields += [round(summary["slack_cost"], 2)]
             writer.writerow(fields)
 
-    logger.info("Writing ingresses.tsv..")
-    with (output_path / "ingresses.tsv").open("w") as csvfile:
+    with out.open("ingresses.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         writer.writerow(["Cluster ID", "API Server URL", "Namespace", "Name", "Application", "Host", "Status"])
         for cluster_id, summary in sorted(cluster_summaries.items()):
@@ -765,8 +736,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                     [cluster_id, summary["cluster"].api_server_url] + ingress
                 )
 
-    logger.info("Writing teams.tsv..")
-    with (output_path / "teams.tsv").open("w") as csvfile:
+    with out.open("teams.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         writer.writerow(["ID", "Clusters", "Applications", "Pods",
                          "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]", "Slack Cost [USD]"])
@@ -780,8 +750,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                 round(team["cost"], 2),
                 round(team["slack_cost"], 2)])
 
-    logger.info("Writing applications.tsv..")
-    with (output_path / "applications.tsv").open("w") as csvfile:
+    with out.open("applications.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         writer.writerow(["ID", "Team", "Clusters", "Pods", "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]", "Slack Cost [USD]"])
         for app_id, app in sorted(applications.items()):
@@ -794,8 +763,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                 round(app["cost"], 2),
                 round(app["slack_cost"], 2)])
 
-    logger.info("Writing namespaces.tsv..")
-    with (output_path / "namespaces.tsv").open("w") as csvfile:
+    with out.open("namespaces.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         writer.writerow(["Name", "Status", "Cluster", "Pods", "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]", "Slack Cost [USD]"])
         for cluster_id, namespace_item in sorted(namespace_usage.items()):
@@ -813,12 +781,11 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
             ]
             writer.writerow(fields)
 
-    logger.info("Writing pods.tsv..")
-    with (output_path / "pods.tsv").open("w") as csvfile:
+    with out.open("pods.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         writer.writerow(["Cluster ID", "API Server URL", "Namespace", "Name", "Application", "Component", "Container Images",
                          "CPU Requests", "Memory Requests", "CPU Usage", "Memory Usage", "Cost [USD]"])
-        with (output_path / "slack.tsv").open("w") as csvfile2:
+        with out.open("slack.tsv") as csvfile2:
             slackwriter = csv.writer(csvfile2, delimiter="\t")
             for cluster_id, summary in sorted(cluster_summaries.items()):
                 cpu_slack = collections.Counter()
@@ -883,15 +850,6 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
                         ]
                     )
 
-    env = Environment(
-        loader=FileSystemLoader(str(TEMPLATES_PATH)),
-        autoescape=select_autoescape(["html", "xml"]),
-        trim_blocks=True,
-        lstrip_blocks=True
-    )
-    env.filters["money"] = filters.money
-    env.filters["cpu"] = filters.cpu
-    env.filters["memory"] = filters.memory
     total_cost = sum([s["cost"] for s in cluster_summaries.values()])
     total_hourly_cost = total_cost / HOURS_PER_MONTH
     now = datetime.datetime.utcnow()
@@ -927,27 +885,23 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
 
     metrics = calculate_metrics(context)
 
-    with (output_path / "metrics.json").open("w") as fd:
+    with out.open("metrics.json") as fd:
         json.dump(metrics, fd)
 
     for page in ["index", "clusters", "ingresses", "teams", "applications", "namespaces", "pods"]:
         file_name = f"{page}.html"
-        logger.info(f"Generating {file_name}..")
-        template = env.get_template(file_name)
         context["page"] = page
-        template.stream(**context).dump(str(output_path / file_name))
+        out.render_template(file_name, context, file_name)
 
     for cluster_id, summary in cluster_summaries.items():
         page = "clusters"
         file_name = f"cluster-{cluster_id}.html"
-        logger.info(f"Generating {file_name}..")
-        template = env.get_template("cluster.html")
         context["page"] = page
         context["cluster_id"] = cluster_id
         context["summary"] = summary
-        template.stream(**context).dump(str(output_path / file_name))
+        out.render_template('cluster.html', context, file_name)
 
-    with (output_path / "cluster-metrics.json").open("w") as fd:
+    with out.open("cluster-metrics.json") as fd:
         json.dump(
             {
                 cluster_id: {
@@ -967,14 +921,12 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
     for team_id, team in teams.items():
         page = "teams"
         file_name = f"team-{team_id}.html"
-        logger.info(f"Generating {file_name}..")
-        template = env.get_template("team.html")
         context["page"] = page
         context["team_id"] = team_id
         context["team"] = team
-        template.stream(**context).dump(str(output_path / file_name))
+        out.render_template('team.html', context, file_name)
 
-    with (output_path / "team-metrics.json").open("w") as fd:
+    with out.open("team-metrics.json") as fd:
         json.dump(
             {
                 team_id: {
@@ -991,7 +943,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
             default=json_default
         )
 
-    with (output_path / "application-metrics.json").open("w") as fd:
+    with out.open("application-metrics.json") as fd:
         json.dump(applications, fd, default=json_default)
 
     ingresses_by_application = collections.defaultdict(list)
@@ -1018,7 +970,7 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
 
     for app_id, application in applications.items():
         file_name = f"application-{app_id}.json"
-        with (output_path / file_name).open("w") as fd:
+        with out.open(file_name) as fd:
             json.dump(
                 {
                     **application,
@@ -1049,10 +1001,10 @@ def write_report(output_path: Path, start, notifications, cluster_summaries, nam
     for app_id, application in applications.items():
         page = "applications"
         file_name = f"application-{app_id}.html"
-        logger.info(f"Generating {file_name}..")
-        template = env.get_template("application.html")
         context["page"] = page
         context["application"] = application
         context["ingresses_by_application"] = ingresses_by_application
         context["pods_by_application"] = pods_by_application
-        template.stream(**context).dump(str(output_path / file_name))
+        out.render_template('application.html', context, file_name)
+
+    out.clean_up_stale_files()
