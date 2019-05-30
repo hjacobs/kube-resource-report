@@ -78,6 +78,7 @@ Now open http://localhost:8080/ in your browser.
 Deploy using helm chart
 ---------------------------
 
+IMPORTANT: Helm is not used by the maintainer of kube-resource-report - the Helm chart was contributed by `Eriks Zelenka <https://github.com/ezelenka>`_ and is not officially tested or supported!
 This will deploy a single pod with kube-resource-report and nginx (to serve the static HTML):
 
 .. code-block::
