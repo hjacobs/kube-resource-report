@@ -82,8 +82,8 @@ This will deploy a single pod with kube-resource-report and nginx (to serve the 
 
 .. code-block::
 
-    $ helm upgrade --install kube-resource-reporter chart/kube-resource-report
-    $ helm status kube-resource-reporter
+    $ helm upgrade --install kube-resource-report chart/kube-resource-report
+    $ helm status kube-resource-report
 
 Use ``helm status`` command to verify deployment and obtain instructions to access ``kube-resource-report``.
 
