@@ -75,6 +75,20 @@ Now open http://localhost:8080/ in your browser.
 
 
 ---------------------------
+Deploy using helm chart
+---------------------------
+
+This will deploy a single pod with kube-resource-report and nginx (to serve the static HTML):
+
+.. code-block::
+
+    $ helm upgrade --install kube-resource-report chart/kube-resource-report
+    $ helm status kube-resource-report
+
+Use ``helm status`` command to verify deployment and obtain instructions to access ``kube-resource-report``.
+
+
+---------------------------
 Running as Docker container
 ---------------------------
 
