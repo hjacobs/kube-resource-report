@@ -51,7 +51,7 @@
     <span>{{ total_requests['cpu']|cpu }} requested</span>
     <span>{{ total_allocatable['cpu']|cpu }} allocatable</span>
 </div>
-<div class="resource-bar">
+<div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
     <progress class="progress" value="{{ total_requests['cpu'] }}" max="{{ total_allocatable['cpu'] }}"></progress>
     <progress class="progress is-primary" value="{{ total_usage['cpu'] }}" max="{{ total_allocatable['cpu'] }}"></progress>
 </div>
@@ -62,7 +62,7 @@
     <span>{{ total_requests['memory']|filesizeformat(True) }} requested</span>
     <span>{{ total_allocatable['memory']|filesizeformat(True) }} allocatable</span>
 </div>
-<div class="resource-bar">
+<div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
     <progress class="progress" value="{{ total_requests['memory'] }}" max="{{ total_allocatable['memory'] }}"></progress>
     <progress class="progress is-primary" value="{{ total_usage['memory'] }}" max="{{ total_allocatable['memory'] }}"></progress>
 </div>

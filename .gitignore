@@ -3,3 +3,5 @@ __pycache__/
 output/
 .pytest_cache/
 .coverage
+.idea/
+venv/

@@ -56,7 +56,7 @@
                 <div class="resource-labels">
                     <span>{{ app.usage.cpu|round(2) }}</span> <span>{{ app.requests.cpu|round(2) }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ app.requests.cpu }}" max="{{ app.requests.cpu }}"></progress>
                     <progress class="progress {{ 'is-danger' if app.usage.cpu > app.requests.cpu else 'is-primary' }}" value="{{ app.usage.cpu }}" max="{{ app.requests.cpu }}"></progress>
                 </div>
@@ -65,7 +65,7 @@
                 <div class="resource-labels">
                     <span>{{ app.usage.memory|memory('MiB') }}</span> <span>{{ app.requests.memory|memory('MiB') }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ app.requests.memory }}" max="{{ app.requests.memory }}"></progress>
                     <progress class="progress {{ 'is-danger' if app.usage.memory > app.requests.memory else 'is-primary' }}" value="{{ app.usage.memory }}" max="{{ app.requests.memory }}"></progress>
                 </div>

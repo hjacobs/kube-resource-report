@@ -117,7 +117,7 @@
                 <div class="resource-labels">
                     <span>{{ row.pod.usage.cpu|round(2) }}</span> <span>{{ row.pod.requests.cpu|round(2) }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ row.pod.requests.cpu }}" max="{{ row.pod.requests.cpu }}"></progress>
                     <progress class="progress {{ 'is-danger' if row.pod.usage.cpu > row.pod.requests.cpu else 'is-primary' }}" value="{{ row.pod.usage.cpu }}" max="{{ row.pod.requests.cpu }}"></progress>
                 </div>
@@ -126,7 +126,7 @@
                 <div class="resource-labels">
                     <span>{{ row.pod.usage.memory|memory('MiB') }}</span> <span>{{ row.pod.requests.memory|memory('MiB') }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ row.pod.requests.memory }}" max="{{ row.pod.requests.memory }}"></progress>
                     <progress class="progress {{ 'is-danger' if row.pod.usage.memory > row.pod.requests.memory else 'is-primary' }}" value="{{ row.pod.usage.memory }}" max="{{ row.pod.requests.memory }}"></progress>
                 </div>

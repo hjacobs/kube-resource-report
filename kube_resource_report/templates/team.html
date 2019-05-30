@@ -85,7 +85,7 @@
                 <div class="resource-labels">
                     <span>{{ summary.usage.cpu|cpu }}</span> <span>{{ summary.requests.cpu|cpu }}</span> <span>{{ summary.allocatable.cpu|cpu }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
                     <progress class="progress" value="{{ summary.requests.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
                     <progress class="progress is-primary" value="{{ summary.usage.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
                 </div>
@@ -94,7 +94,7 @@
                 <div class="resource-labels">
                     <span>{{ summary.usage.memory|memory('GiB') }}</span> <span>{{ summary.requests.memory|memory('GiB') }}</span> <span>{{ summary.allocatable.memory|memory('GiB') }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
                     <progress class="progress" value="{{ summary.requests.memory }}" max="{{ summary.allocatable.memory }}"></progress>
                     <progress class="progress is-primary" value="{{ summary.usage.memory }}" max="{{ summary.allocatable.memory }}"></progress>
                 </div>
@@ -165,7 +165,7 @@
                 <div class="resource-labels">
                     <span>{{ app.usage.cpu|round(2) }}</span> <span>{{ app.requests.cpu|round(2) }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ app.requests.cpu }}" max="{{ app.requests.cpu }}"></progress>
                     <progress class="progress {{ 'is-danger' if app.usage.cpu > app.requests.cpu else 'is-primary' }}" value="{{ app.usage.cpu }}" max="{{ app.requests.cpu }}"></progress>
                 </div>
@@ -174,7 +174,7 @@
                 <div class="resource-labels">
                     <span>{{ app.usage.memory|memory('MiB') }}</span> <span>{{ app.requests.memory|memory('MiB') }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
                     <progress class="progress" value="{{ app.requests.memory }}" max="{{ app.requests.memory }}"></progress>
                     <progress class="progress {{ 'is-danger' if app.usage.memory > app.requests.memory else 'is-primary' }}" value="{{ app.usage.memory }}" max="{{ app.requests.memory }}"></progress>
                 </div>
@@ -189,7 +189,7 @@
                 <div class="resource-labels">
                     <span>{{ percentage|round(0)|int }}%</span> <span></span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Percentage of application cost divided by team cost">
                     <progress class="progress" value="100" max="100"></progress>
                     <progress class="progress is-primary" value="{{ percentage|round(3) }}" max="100"></progress>
                 </div>

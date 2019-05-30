@@ -52,7 +52,7 @@
                 <div class="resource-labels">
                     <span>{{ summary.usage.cpu|cpu }}</span> <span>{{ summary.requests.cpu|cpu }}</span> <span>{{ summary.allocatable.cpu|cpu }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
                     <progress class="progress" value="{{ summary.requests.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
                     <progress class="progress is-primary" value="{{ summary.usage.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
                 </div>
@@ -61,7 +61,7 @@
                 <div class="resource-labels">
                     <span>{{ summary.usage.memory|memory('GiB') }}</span> <span>{{ summary.requests.memory|memory('GiB') }}</span> <span>{{ summary.allocatable.memory|memory('GiB') }}</span>
                 </div>
-                <div class="resource-bar">
+                <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
                     <progress class="progress" value="{{ summary.requests.memory }}" max="{{ summary.allocatable.memory }}"></progress>
                     <progress class="progress is-primary" value="{{ summary.usage.memory }}" max="{{ summary.allocatable.memory }}"></progress>
                 </div>
