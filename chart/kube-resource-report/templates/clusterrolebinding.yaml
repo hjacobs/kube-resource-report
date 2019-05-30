@@ -1,0 +1,23 @@
+{{- if .Values.rbac.create }}
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
+    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+  name: {{ include "kube-resource-report.fullname" . }}-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "kube-resource-report.fullname" . }}-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: {{ include "kube-resource-report.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

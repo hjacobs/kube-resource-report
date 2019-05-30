@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kube-resource-report.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
+    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccount: {{ include "kube-resource-report.fullname" . }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - --update-interval-minutes={{ .Values.updateInterval }}
+        {{- if .Values.addtionalCostPerCluster }}
+        - --additional-cost-per-cluster=30.0
+        {{- end }}
+        {{- if .Values.pricing.enabled }}
+        - "--pricing-file=/pricing-file/pricing.csv"
+        {{- end }}
+        - /output
+        volumeMounts:
+        - mountPath: /output
+          name: report-data
+        {{- if .Values.pricing.enabled }}
+        - mountPath: /pricing-file/
+          name: pricing-file
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resourcesApp | nindent 10 }}
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+      - name: nginx
+        image: nginx:alpine
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: report-data
+          readOnly: true
+        ports:
+        - name: {{ .Values.container.portName }}
+          containerPort: {{ .Values.container.port }}
+          protocol: {{ .Values.container.portProtocol }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.container.port }}
+        resources:
+          {{- toYaml .Values.resourcesNginx | nindent 10 }}
+      volumes:
+        - name: report-data
+          emptyDir:
+            sizeLimit: 500Mi
+        {{- if .Values.pricing.enabled }}
+        - name: pricing-file
+          configMap:
+            name: pricing-file
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

@@ -1,0 +1,34 @@
+{{- if .Values.rbac.create }}
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
+    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+  name: {{ include "kube-resource-report.fullname" . }}-clusterrole
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "pods", "namespaces"]
+  verbs:
+    - list
+- apiGroups: ["extensions"]
+  resources: ["ingresses"]
+  verbs:
+    - list
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs:
+    - get
+    - list
+- apiGroups: [""]
+  resources: ["services/proxy"]
+  resourceNames: ["heapster"]
+  verbs:
+    - get
+{{- end }}
