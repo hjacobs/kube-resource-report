@@ -14,9 +14,10 @@ metadata:
   name: {{ include "kube-resource-report.fullname" . }}-clusterrole
 rules:
 - apiGroups: [""]
-  resources: ["nodes", "pods", "namespaces"]
+  resources: ["nodes", "pods", "namespaces", "services"]
   verbs:
     - list
+    - get
 - apiGroups: ["extensions"]
   resources: ["ingresses"]
   verbs:
