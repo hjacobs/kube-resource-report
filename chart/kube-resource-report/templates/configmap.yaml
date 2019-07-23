@@ -7,10 +7,5 @@ metadata:
   app.kubernetes.io/instance: {{ .Release.Name }}
   app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
-  # CSV with columns region,instance-type,monthly-price-usd
-  # region is defined via the node label "failure-domain.beta.kubernetes.io/region"
-  # instance-type is defined via the node label "beta.kubernetes.io/instance-type"
-  pricing.csv: |+
-    dc-1,master,30.000
-    dc-1,worker,500.000
+  pricing.csv: {{ .Values.pricing.data | quote }}
 {{- end }}

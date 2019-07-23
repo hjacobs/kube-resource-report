@@ -27,10 +27,13 @@ spec:
         args:
         - --update-interval-minutes={{ .Values.updateInterval }}
         {{- if .Values.addtionalCostPerCluster }}
-        - --additional-cost-per-cluster=30.0
+        - --additional-cost-per-cluster={{ .Values.addtionalCostPerCluster }}
         {{- end }}
         {{- if .Values.pricing.enabled }}
         - "--pricing-file=/pricing-file/pricing.csv"
+        {{- end }}
+        {{- range .Values.customArgs }}
+        - {{ . | quote }}
         {{- end }}
         - /output
         volumeMounts:

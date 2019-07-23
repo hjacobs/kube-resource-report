@@ -18,10 +18,23 @@ fullnameOverride: ""
 # Update interval in minutes
 updateInterval: 1
 
-# this is just an example, e.g. for Minikube: assume 30 USD/month cluster costs
-# addtionalCostPerCluster: 30.0
+# custom args like --system-namespaces
+# e.g. 
+# customArgs:
+#   - "--system-namespaces=kube-system,infra-system"
+customArgs: []
+
+# x additional USD/month cluster costs (like ELB, CloudWatch, etc.)
+addtionalCostPerCluster: 0
+
 pricing:
   enabled: false
+  # CSV with columns region,instance-type,monthly-price-usd
+  # region is defined via the node label "failure-domain.beta.kubernetes.io/region"
+  # instance-type is defined via the node label "beta.kubernetes.io/instance-type"
+  data: |
+    dc-1,master,30.000
+    dc-1,worker,500.000
 
 service:
   type: ClusterIP
