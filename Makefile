@@ -28,4 +28,4 @@ version:
 	sed -i 's,appVersion: "[0-9.]*",appVersion: "$(VERSION)",g' chart/*/Chart.yaml
 
 .PHONY: release
-release: docker version
+release: push version
