@@ -26,6 +26,7 @@ from .output import OutputManager
 # TODO: this should be configurable
 NODE_LABEL_SPOT = "aws.amazon.com/spot"
 NODE_LABEL_ROLE = "kubernetes.io/role"
+# the following labels are used by both AWS and GKE
 NODE_LABEL_REGION = "failure-domain.beta.kubernetes.io/region"
 NODE_LABEL_INSTANCE_TYPE = "beta.kubernetes.io/instance-type"
 

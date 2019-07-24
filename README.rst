@@ -68,8 +68,7 @@ This will deploy a single pod with kube-resource-report and nginx (to serve the 
 
     $ minikube start
     $ kubectl apply -f deploy/
-    $ pod=$(kubectl get pod -l application=kube-resource-report -o jsonpath='{.items[].metadata.name}')
-    $ kubectl port-forward $pod 8080:80
+    $ kubectl port-forward service/kube-resource-report 8080:80
 
 Now open http://localhost:8080/ in your browser.
 
