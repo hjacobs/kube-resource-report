@@ -64,6 +64,7 @@ def fake_responses():
         ('v1', "namespaces"): {"items": []},
     }
 
+
 @pytest.fixture
 def fake_responses_with_two_different_nodes(fake_responses):
     fake_responses[('v1', "nodes")] = {
@@ -85,6 +86,7 @@ def fake_responses_with_two_different_nodes(fake_responses):
         ]
     }
     return fake_responses
+
 
 @pytest.fixture
 def fake_metric_responses():
@@ -213,6 +215,7 @@ def test_get_pod_usage(monkeypatch, fake_metric_responses):
     pods = {('default', 'pod-1'): {'usage': new_resources()}}
     get_pod_usage(cluster, pods)
     assert pods[('default', 'pod-1')]['usage']['cpu'] == 0.05
+
 
 def test_more_than_one_label(fake_generate_report, fake_responses_with_two_different_nodes):
     cluster_summaries = fake_generate_report(fake_responses_with_two_different_nodes)
