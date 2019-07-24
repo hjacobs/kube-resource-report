@@ -95,9 +95,16 @@ Running as Docker container
 .. code-block::
 
     $ kubectl proxy & # start proxy to your cluster (e.g. Minikube)
-    $ # run kube-resource-report and generate static HTML to ./output (this trick does not work with Docker for Mac!)
-    $ docker run -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.14.1 /output
+    $ # run kube-resource-report and generate static HTML to ./output
+    $ docker run --rm -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.14.1 /output
 
+**For macOS**:
+
+.. code-block::
+
+    $ kubectl proxy --accept-hosts '.*' & # start proxy to your cluster (e.g. Minikube)
+    $ # run kube-resource-report and generate static HTML to ./output
+    $ docker run --rm -it -e CLUSTERS=http://docker.for.mac.localhost:8001 --user=$(id -u) -v $(pwd)/output:/output hjacobs/kube-resource-report:0.14.1 /output
 
 --------------------
 Application Registry

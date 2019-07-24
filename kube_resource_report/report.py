@@ -194,7 +194,7 @@ def find_backend_application(client, ingress, rule):
 
 
 def query_cluster(
-    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status, node_label
+    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status, node_labels
 ):
     logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
     pods = {}
@@ -212,7 +212,6 @@ def query_cluster(
     cluster_allocatable = collections.defaultdict(float)
     cluster_requests = collections.defaultdict(float)
     user_requests = collections.defaultdict(float)
-    node_count = collections.defaultdict(int)
     cluster_cost = additional_cost_per_cluster
 
     for _node in Node.objects(cluster.client):
@@ -222,16 +221,18 @@ def query_cluster(
         node["allocatable"] = {}
         node["requests"] = new_resources()
         node["usage"] = new_resources()
+
         for k, v in node["status"].get("capacity", {}).items():
             parsed = parse_resource(v)
             node["capacity"][k] = parsed
             cluster_capacity[k] += parsed
+
         for k, v in node["status"].get("allocatable", {}).items():
             parsed = parse_resource(v)
             node["allocatable"][k] = parsed
             cluster_allocatable[k] += parsed
+
         role = _node.labels.get(NODE_LABEL_ROLE) or "worker"
-        node_count[role] += 1
         region = _node.labels.get(NODE_LABEL_REGION, "unknown")
         instance_type = _node.labels.get(NODE_LABEL_INSTANCE_TYPE, "unknown")
         is_spot = _node.labels.get(NODE_LABEL_SPOT) == "true"
@@ -296,16 +297,16 @@ def query_cluster(
         "pods": pods,
         "namespaces": namespaces,
         "user_pods": len([p for ns, p in pods if ns not in system_namespaces]),
-        "master_nodes": node_count["master"],
-        "worker_nodes": node_count[node_label],
+        "master_nodes": len([n for n in nodes.values() if n["role"] == "master"]),
+        "worker_nodes": len([n for n in nodes.values() if n["role"] in node_labels]),
         "kubelet_versions": set(
-            [n["kubelet_version"] for n in nodes.values() if n["role"] == node_label]
+            [n["kubelet_version"] for n in nodes.values() if n["role"] in node_labels]
         ),
         "worker_instance_types": set(
-            [n["instance_type"] for n in nodes.values() if n["role"] == node_label]
+            [n["instance_type"] for n in nodes.values() if n["role"] in node_labels]
         ),
         "worker_instance_is_spot": any(
-            [n["spot"] for n in nodes.values() if n["role"] == node_label]
+            [n["spot"] for n in nodes.values() if n["role"] in node_labels]
         ),
         "capacity": cluster_capacity,
         "allocatable": cluster_allocatable,
@@ -382,7 +383,7 @@ def get_cluster_summaries(
     notifications: list,
     additional_cost_per_cluster: float,
     no_ingress_status: bool,
-    node_label: str,
+    node_labels: list,
 ):
     cluster_summaries = {}
 
@@ -413,7 +414,7 @@ def get_cluster_summaries(
                         system_namespaces,
                         additional_cost_per_cluster,
                         no_ingress_status,
-                        node_label,
+                        node_labels,
                     )
                 ] = cluster
 
@@ -527,7 +528,7 @@ def generate_report(
     additional_cost_per_cluster,
     pricing_file,
     links_file,
-    node_label,
+    node_labels,
 ):
     notifications = []
 
@@ -569,7 +570,7 @@ def generate_report(
             notifications,
             additional_cost_per_cluster,
             no_ingress_status,
-            node_label,
+            node_labels,
         )
         teams = {}
 
@@ -667,7 +668,7 @@ def generate_report(
         except Exception as e:
             logger.error(f'Could not dump pickled cache data: {e}')
 
-    write_report(out, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links)
+    write_report(out, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links)
 
     return cluster_summaries
 
@@ -684,7 +685,7 @@ def write_loading_page(out):
         out.render_template('loading.html', context, file_name)
 
 
-def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_label, links):
+def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links):
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
     total_user_requests = collections.defaultdict(int)
@@ -709,7 +710,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
             worker_instance_type = set()
             kubelet_version = set()
             for node in summary["nodes"].values():
-                if node["role"] == node_label:
+                if node["role"] in node_labels:
                     worker_instance_type.add(node["instance_type"])
                 kubelet_version.add(node["kubelet_version"])
             fields = [
@@ -717,8 +718,8 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
                 summary["cluster"].api_server_url,
                 summary["master_nodes"],
                 summary["worker_nodes"],
-                ",".join(worker_instance_type),
-                ",".join(kubelet_version),
+                ",".join(sorted(worker_instance_type)),
+                ",".join(sorted(kubelet_version)),
             ]
             for x in resource_categories:
                 fields += [
