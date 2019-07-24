@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.9
+FROM python:3.7-alpine3.10
 
 WORKDIR /
 
@@ -9,7 +9,7 @@ RUN /pipenv-install.py && \
     rm -fr /usr/local/lib/python3.7/site-packages/pip && \
     rm -fr /usr/local/lib/python3.7/site-packages/setuptools
 
-FROM python:3.7-alpine3.9
+FROM python:3.7-alpine3.10
 
 WORKDIR /
 
