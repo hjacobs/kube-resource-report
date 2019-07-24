@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 
 from kube_resource_report.cluster_discovery import Cluster
-from kube_resource_report.report import generate_report, HOURS_PER_MONTH, parse_resource, get_pod_usage, new_resources
+from kube_resource_report.report import generate_report, HOURS_PER_MONTH, parse_resource, get_pod_usage, new_resources, NODE_LABEL_ROLE
 
 from unittest.mock import MagicMock
 
@@ -64,6 +64,27 @@ def fake_responses():
         ('v1', "namespaces"): {"items": []},
     }
 
+@pytest.fixture
+def fake_responses_with_two_different_nodes(fake_responses):
+    fake_responses[('v1', "nodes")] = {
+        "items": [
+            {
+                "metadata": {"name": "node-1", "labels": {NODE_LABEL_ROLE: "worker"}},
+                "status": {
+                    "capacity": {"cpu": "1", "memory": "1Gi"},
+                    "allocatable": {"cpu": "1", "memory": "1Gi"},
+                },
+            },
+            {
+                "metadata": {"name": "node-2", "labels": {NODE_LABEL_ROLE: "node"}},
+                "status": {
+                    "capacity": {"cpu": "1", "memory": "1Gi"},
+                    "allocatable": {"cpu": "1", "memory": "1Gi"},
+                },
+            },
+        ]
+    }
+    return fake_responses
 
 @pytest.fixture
 def fake_metric_responses():
@@ -128,7 +149,7 @@ def fake_generate_report(output_dir, monkeypatch):
             100.0,
             None,
             None,
-            "worker"
+            ["worker", "node"]
         )
         assert len(cluster_summaries) == 1
         return cluster_summaries
@@ -192,3 +213,7 @@ def test_get_pod_usage(monkeypatch, fake_metric_responses):
     pods = {('default', 'pod-1'): {'usage': new_resources()}}
     get_pod_usage(cluster, pods)
     assert pods[('default', 'pod-1')]['usage']['cpu'] == 0.05
+
+def test_more_than_one_label(fake_generate_report, fake_responses_with_two_different_nodes):
+    cluster_summaries = fake_generate_report(fake_responses_with_two_different_nodes)
+    assert cluster_summaries['test-cluster-1']['worker_nodes'] == 2
