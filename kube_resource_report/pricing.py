@@ -92,10 +92,14 @@ def generate_gcp_price_list():
                     instance_type = 'custom-per-cpu'
                 elif _type == 'ram':
                     instance_type = 'custom-per-memory'
-                for region, hourly_price in sorted(data.items()):
-                    if '-' in region and isinstance(hourly_price, float):
-                        monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
-                        writer.writerow([region, instance_type, "{:.4f}".format(monthly_price)])
+                else:
+                    # TODO: handle preemptible etc
+                    instance_type = None
+                if instance_type:
+                    for region, hourly_price in sorted(data.items()):
+                        if '-' in region and isinstance(hourly_price, float):
+                            monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
+                            writer.writerow([region, instance_type, "{:.4f}".format(monthly_price)])
 
 
 def generate_ec2_price_list():

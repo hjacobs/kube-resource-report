@@ -14,7 +14,7 @@ Kubernetes Resource Report
    :target: https://hub.docker.com/r/hjacobs/kube-resource-report
    :alt: Docker pulls
 
-**This version only supports node costs for AWS EC2 (all regions, On Demand, Linux) and GCP standard machine types (all regions, On Demand, without sustained discount)**
+**This version only supports node costs for AWS EC2 (all regions, On Demand, Linux) and GKE/GCP machine types (all regions, On Demand, without sustained discount)**
 
 Script to generate a HTML report of CPU/memory requests vs. usage (collected via Metrics API/Heapster) for one or more Kubernetes clusters.
 
