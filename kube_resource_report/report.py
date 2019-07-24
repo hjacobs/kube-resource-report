@@ -718,8 +718,8 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
                 summary["cluster"].api_server_url,
                 summary["master_nodes"],
                 summary["worker_nodes"],
-                ",".join(worker_instance_type),
-                ",".join(kubelet_version),
+                ",".join(sorted(worker_instance_type)),
+                ",".join(sorted(kubelet_version)),
             ]
             for x in resource_categories:
                 fields += [
