@@ -62,7 +62,7 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
         per_cpu = NODE_COSTS_MONTHLY.get((region, 'custom-per-cpu-core'))
         per_memory = NODE_COSTS_MONTHLY.get((region, 'custom-per-memory-gib'))
         if per_cpu and per_memory:
-            cost = (cpu * per_cpu) + (memory/ONE_GIBI * per_memory)
+            cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
 
     if cost is None:
         logger.warning(f"No cost information for {instance_type} in {region}")
