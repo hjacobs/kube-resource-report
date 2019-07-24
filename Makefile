@@ -17,3 +17,15 @@ docker:
 
 push: docker
 	docker push "$(IMAGE):$(TAG)"
+	docker tag "$(IMAGE):$(TAG)" "$(IMAGE):latest"
+	docker push "$(IMAGE):latest"
+
+.PHONY: version
+version:
+	sed -i 's,$(IMAGE):[0-9.]*,$(IMAGE):$(TAG),g' README.rst deploy/*.yaml
+	sed -i 's,version: v[0-9.]*,version: v$(VERSION),g' deploy/*.yaml
+	sed -i 's,tag: "[0-9.]*",tag: "$(VERSION)",g' chart/*/values.yaml
+	sed -i 's,appVersion: "[0-9.]*",appVersion: "$(VERSION)",g' chart/*/chart.yaml
+
+.PHONY: release
+release: docker version
