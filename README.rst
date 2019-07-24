@@ -156,7 +156,7 @@ For available icon names, see the `Font Awesome gallery with free icons <https:/
 Settings
 --------
 
-You can run ``pipenv run python -m kube_resource_report --help`` to find out information.
+You can run ``docker run --rm hjacobs/kube-resource-report:0.14.1 --help`` to find out information.
 
 Besides this, you can also pass environment variables:
 
