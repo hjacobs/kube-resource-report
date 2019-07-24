@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: hjacobs/kube-resource-report
-  tag: 0.14
+  tag: 0.14.1
   pullPolicy: IfNotPresent
 
 rbac:
@@ -19,7 +19,7 @@ fullnameOverride: ""
 updateInterval: 1
 
 # custom args like --system-namespaces
-# e.g. 
+# e.g.
 # customArgs:
 #   - "--system-namespaces=kube-system,infra-system"
 customArgs: []
