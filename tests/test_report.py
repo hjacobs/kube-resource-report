@@ -4,7 +4,15 @@ import pytest
 from pathlib import Path
 
 from kube_resource_report.cluster_discovery import Cluster
-from kube_resource_report.report import generate_report, HOURS_PER_MONTH, parse_resource, get_pod_usage, new_resources, NODE_LABEL_ROLE
+from kube_resource_report.report import (
+    generate_report,
+    HOURS_PER_MONTH,
+    parse_resource,
+    get_pod_usage,
+    get_node_usage,
+    new_resources,
+    NODE_LABEL_ROLE
+)
 
 from unittest.mock import MagicMock
 
@@ -89,7 +97,7 @@ def fake_responses_with_two_different_nodes(fake_responses):
 
 
 @pytest.fixture
-def fake_metric_responses():
+def fake_pod_metric_responses():
     return {
         ("metrics.k8s.io/v1beta1", "pods"): {
             "items": [
@@ -102,6 +110,25 @@ def fake_metric_responses():
                         }
                     ]
                 }
+            ]
+        }
+    }
+
+
+@pytest.fixture
+def fake_node_metric_responses():
+    return {
+        ("metrics.k8s.io/v1beta1", "nodes"): {
+            "items": [
+                {
+                    "metadata": {
+                        "name": "node-1",
+                    },
+                    "usage": {
+                        "cpu": "16",
+                        "memory": "128Gi"
+                    }
+                },
             ]
         }
     }
@@ -184,10 +211,10 @@ def test_cluster_cost(fake_generate_report, fake_responses):
     # assert cost_per_hour == cost_per_user_request_hour_cpu + cost_per_user_request_hour_memory
 
 
-def test_application_report(output_dir, fake_generate_report, fake_responses, fake_metric_responses):
+def test_application_report(output_dir, fake_generate_report, fake_responses, fake_pod_metric_responses):
 
     # merge responses to get usage metrics and slack costs
-    all_responses = {**fake_responses, **fake_metric_responses}
+    all_responses = {**fake_responses, **fake_pod_metric_responses}
     fake_generate_report(all_responses)
 
     expected = set(['index.html', 'applications.html', 'application-metrics.json'])
@@ -209,12 +236,20 @@ def test_application_report(output_dir, fake_generate_report, fake_responses, fa
     assert data['myapp']['slack_cost'] == 25.0
 
 
-def test_get_pod_usage(monkeypatch, fake_metric_responses):
-    mock_client = get_mock_client(fake_metric_responses)
+def test_get_pod_usage(monkeypatch, fake_pod_metric_responses):
+    mock_client = get_mock_client(fake_pod_metric_responses)
     cluster = Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org", mock_client)
     pods = {('default', 'pod-1'): {'usage': new_resources()}}
     get_pod_usage(cluster, pods)
     assert pods[('default', 'pod-1')]['usage']['cpu'] == 0.05
+
+
+def test_get_node_usage(monkeypatch, fake_node_metric_responses):
+    mock_client = get_mock_client(fake_node_metric_responses)
+    cluster = Cluster("test-cluster-1", "test-cluster-1", "https://test-cluster-1.example.org", mock_client)
+    nodes = {'node-1': {'usage': new_resources()}}
+    get_node_usage(cluster, nodes)
+    assert nodes['node-1']['usage']['cpu'] == 16
 
 
 def test_more_than_one_label(fake_generate_report, fake_responses_with_two_different_nodes):
