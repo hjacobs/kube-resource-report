@@ -241,7 +241,8 @@ def query_cluster(
         )
         node["role"] = role
         node["instance_type"] = instance_type
-        node["cost"] = pricing.get_node_cost(region, instance_type, is_spot)
+        node["cost"] = pricing.get_node_cost(region, instance_type, is_spot,
+                                             cpu=node['capacity'].get('cpu'), memory=node['capacity'].get('memory'))
         cluster_cost += node["cost"]
 
     get_node_usage(cluster, nodes)

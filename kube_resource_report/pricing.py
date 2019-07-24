@@ -45,7 +45,7 @@ def regenerate_cost_dict(pricing_file):
             NODE_COSTS_MONTHLY[(region, instance_type)] = float(monthly_cost)
 
 
-def get_node_cost(region, instance_type, is_spot):
+def get_node_cost(region, instance_type, is_spot, cpu, memory):
     if is_spot:
         cost = NODE_SPOT_COSTS_MONTHLY.get((region, instance_type))
         if cost is None:
@@ -56,6 +56,12 @@ def get_node_cost(region, instance_type, is_spot):
                 cost *= 1 - discount
     else:
         cost = NODE_COSTS_MONTHLY.get((region, instance_type))
+
+    if cost is None and instance_type.startswith('custom-'):
+        per_cpu = NODE_COSTS_MONTHLY.get((region, 'custom-per-cpu'))
+        per_memory = NODE_COSTS_MONTHLY.get((region, 'custom-per-memory'))
+        if per_cpu and per_memory:
+            cost = (cpu * per_cpu) + (memory * per_memory)
 
     if cost is None:
         logger.warning(f"No cost information for {instance_type} in {region}")
@@ -68,12 +74,24 @@ def generate_gcp_price_list():
 
     response = requests.get('https://cloudpricingcalculator.appspot.com/static/data/pricelist.json?v=1563953523378')
     prefix = 'CP-COMPUTEENGINE-VMIMAGE-'
+    custom_prefix = 'CP-COMPUTEENGINE-CUSTOM-VM-'
 
     with _path_gcp.open("w") as fd:
         writer = csv.writer(fd, lineterminator="\n")
         for product, data in sorted(response.json()['gcp_price_list'].items()):
             if product.startswith(prefix):
                 instance_type = product[len(prefix):].lower()
+                for region, hourly_price in sorted(data.items()):
+                    if '-' in region and isinstance(hourly_price, float):
+                        monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
+                        writer.writerow([region, instance_type, "{:.4f}".format(monthly_price)])
+
+            elif product.startswith(custom_prefix):
+                _type = product[len(custom_prefix):].lower()
+                if _type == 'core':
+                    instance_type = 'custom-per-cpu'
+                elif _type == 'ram':
+                    instance_type = 'custom-per-memory'
                 for region, hourly_price in sorted(data.items()):
                     if '-' in region and isinstance(hourly_price, float):
                         monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
