@@ -2,6 +2,7 @@
 
 import collections
 import csv
+import os
 import pickle
 import datetime
 import json
@@ -23,16 +24,15 @@ from kube_resource_report import cluster_discovery, pricing, __version__
 
 from .output import OutputManager
 
-# TODO: this should be configurable
-NODE_LABEL_SPOT = "aws.amazon.com/spot"
-NODE_LABEL_ROLE = "kubernetes.io/role"
+NODE_LABEL_SPOT = os.environ.get("NODE_LABEL_SPOT", "aws.amazon.com/spot")
+NODE_LABEL_ROLE = os.environ.get("NODE_LABEL_ROLE", "kubernetes.io/role")
 # the following labels are used by both AWS and GKE
-NODE_LABEL_REGION = "failure-domain.beta.kubernetes.io/region"
-NODE_LABEL_INSTANCE_TYPE = "beta.kubernetes.io/instance-type"
+NODE_LABEL_REGION = os.environ.get("NODE_LABEL_REGION", "failure-domain.beta.kubernetes.io/region")
+NODE_LABEL_INSTANCE_TYPE = os.environ.get("NODE_LABEL_INSTANCE_TYPE", "beta.kubernetes.io/instance-type")
 
 # https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
-OBJECT_LABEL_APPLICATION = ["application", "app", "app.kubernetes.io/name"]
-OBJECT_LABEL_COMPONENT = ["component", "app.kubernetes.io/component"]
+OBJECT_LABEL_APPLICATION = os.environ.get("OBJECT_LABEL_APPLICATION", "application,app,app.kubernetes.io/name").split(",")
+OBJECT_LABEL_COMPONENT = os.environ.get("OBJECT_LABEL_COMPONENT", "component,app.kubernetes.io/component").split(",")
 
 ONE_MEBI = 1024 ** 2
 ONE_GIBI = 1024 ** 3

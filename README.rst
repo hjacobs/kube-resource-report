@@ -151,3 +151,18 @@ with the links per entity. Example file:
 
 For available icon names, see the `Font Awesome gallery with free icons <https://fontawesome.com/icons?d=gallery&m=free>`_.
 
+
+--------
+Settings
+--------
+
+You can run ``docker run --rm hjacobs/kube-resource-report:0.14.1 --help`` to find out information.
+
+Besides this, you can also pass environment variables:
+
+- ``NODE_LABEL_SPOT`` (default: ``"aws.amazon.com/spot"``)
+- ``NODE_LABEL_ROLE`` (default: ``"kubernetes.io/role"``)
+- ``NODE_LABEL_REGION`` (default: ``"failure-domain.beta.kubernetes.io/region"``)
+- ``NODE_LABEL_INSTANCE_TYPE`` (default: ``"beta.kubernetes.io/instance-type"``)
+- ``OBJECT_LABEL_APPLICATION`` (default: ``"application,app,app.kubernetes.io/name"``)
+- ``OBJECT_LABEL_COMPONENT`` (default: ``"component,app.kubernetes.io/component"``)
