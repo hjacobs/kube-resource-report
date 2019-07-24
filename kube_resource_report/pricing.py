@@ -6,8 +6,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 AVG_DAYS_PER_MONTH = 30.4375
-# GiB != GB
-ONE_GB = 1000 ** 3
+ONE_GIBI = 1024 ** 3
 
 # just assume 60% spot discount
 # see also https://aws.amazon.com/ec2/spot/instance-advisor/
@@ -61,9 +60,9 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
 
     if cost is None and instance_type.startswith('custom-'):
         per_cpu = NODE_COSTS_MONTHLY.get((region, 'custom-per-cpu-core'))
-        per_memory = NODE_COSTS_MONTHLY.get((region, 'custom-per-memory-gb'))
+        per_memory = NODE_COSTS_MONTHLY.get((region, 'custom-per-memory-gib'))
         if per_cpu and per_memory:
-            cost = (cpu * per_cpu) + (memory/ONE_GB * per_memory)
+            cost = (cpu * per_cpu) + (memory/ONE_GIBI * per_memory)
 
     if cost is None:
         logger.warning(f"No cost information for {instance_type} in {region}")
@@ -93,8 +92,9 @@ def generate_gcp_price_list():
                 if _type == 'core':
                     instance_type = 'custom-per-cpu-core'
                 elif _type == 'ram':
-                    # note: GCP prices are per GB (not per GiB!)
-                    instance_type = 'custom-per-memory-gb'
+                    # note: GCP prices are per GiB (2^30 bytes)
+                    # https://cloud.google.com/compute/all-pricing
+                    instance_type = 'custom-per-memory-gib'
                 else:
                     # TODO: handle preemptible etc
                     instance_type = None
