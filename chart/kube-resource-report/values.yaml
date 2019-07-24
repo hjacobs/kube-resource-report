@@ -79,3 +79,9 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# e.g.
+# env:
+#   NODE_LABEL_SPOT: "a.com/spot"
+#   OBJECT_LABEL_APPLICATION: "app,chart"
+env: {}

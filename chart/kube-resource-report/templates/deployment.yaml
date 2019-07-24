@@ -24,6 +24,14 @@ spec:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        # environment variables
+        {{- if .Values.env }}
+        env:
+        {{- end }}
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: {{ tpl $value $ | quote }}
+        {{- end }}
         args:
         - --update-interval-minutes={{ .Values.updateInterval }}
         {{- if .Values.addtionalCostPerCluster }}
