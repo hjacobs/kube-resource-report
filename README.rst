@@ -14,7 +14,7 @@ Kubernetes Resource Report
    :target: https://hub.docker.com/r/hjacobs/kube-resource-report
    :alt: Docker pulls
 
-**This version only supports node costs for AWS EC2 (all regions, On Demand, Linux)**
+**This version only supports node costs for AWS EC2 (all regions, On Demand, Linux) and GCP standard machine types (all regions, On Demand, without sustained discount)**
 
 Script to generate a HTML report of CPU/memory requests vs. usage (collected via Metrics API/Heapster) for one or more Kubernetes clusters.
 
@@ -23,7 +23,7 @@ Want to see how the report looks? `Check out the sample HTML report! <https://hj
 What the script does:
 
 * Discover all clusters (either via ``~/.kube/config``, via in-cluster serviceAccount, or via custom Cluster Registry REST endpoint)
-* Collect all cluster nodes and their estimated costs (AWS only)
+* Collect all cluster nodes and their estimated costs (AWS and GCP only)
 * Collect all pods and use the ``application`` or ``app`` label as application ID
 * Get additional information for each app from the application registry (``team_id`` and ``active`` field)
 * Group and aggregate resource usage and slack costs per cluster, team and application
