@@ -26,7 +26,7 @@ def load_data():
         with p.open() as fd:
             reader = csv.reader(fd)
             for row in reader:
-                region, instance_type, monthly_cost = row
+                region, instance_type, monthly_cost = row[:3]
                 NODE_COSTS_MONTHLY[(region, instance_type)] = float(monthly_cost)
 
     with _spot_path.open() as fd:
@@ -85,7 +85,7 @@ def generate_gcp_price_list():
                 for region, hourly_price in sorted(data.items()):
                     if '-' in region and isinstance(hourly_price, float):
                         monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
-                        writer.writerow([region, instance_type, "{:.4f}".format(monthly_price)])
+                        writer.writerow([region, instance_type, "{:.4f}".format(monthly_price), data.get('cores'), data.get('memory')])
 
             elif product.startswith(custom_prefix):
                 _type = product[len(custom_prefix):].lower()
@@ -95,8 +95,11 @@ def generate_gcp_price_list():
                     # note: GCP prices are per GiB (2^30 bytes)
                     # https://cloud.google.com/compute/all-pricing
                     instance_type = 'custom-per-memory-gib'
+                elif _type == 'core-preemptible':
+                    instance_type = 'custom-preemptible-per-cpu-core'
+                elif _type == 'ram-preemptible':
+                    instance_type = 'custom-preemptible-per-memory-gib'
                 else:
-                    # TODO: handle preemptible etc
                     instance_type = None
                 if instance_type:
                     for region, hourly_price in sorted(data.items()):
