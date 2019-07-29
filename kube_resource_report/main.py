@@ -146,7 +146,7 @@ def main(
 
     if pricing_file:
         pricing_file = Path(pricing_file)
-    
+
     cluster_summaries = {}
 
     while True:
