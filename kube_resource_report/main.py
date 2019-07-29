@@ -71,6 +71,19 @@ class CommaSeparatedValues(click.ParamType):
     default=0,
 )
 @click.option(
+    "--alpha-ema",
+    type=float,
+    help="""
+    Alpha for Exponential Moving Average.
+
+    The coefficient alpha represents the degree of weighting decrease, a constant smoothing
+    factor between 0 and 1. A higher alpha discounts older observations faster.
+
+    More info about EMA: https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+    """,
+    default=1.0,
+)
+@click.option(
     "--update-interval-minutes",
     type=float,
     help="Update the report every X minutes (default: run once and exit)",
@@ -109,6 +122,7 @@ def main(
     include_clusters,
     exclude_clusters,
     additional_cost_per_cluster,
+    alpha_ema,
     update_interval_minutes,
     pricing_file,
     links_file,
@@ -132,9 +146,11 @@ def main(
 
     if pricing_file:
         pricing_file = Path(pricing_file)
+    
+    cluster_summaries = {}
 
     while True:
-        generate_report(
+        cluster_summaries = generate_report(
             clusters,
             cluster_registry,
             kubeconfig_path,
@@ -147,6 +163,8 @@ def main(
             include_clusters,
             exclude_clusters,
             additional_cost_per_cluster,
+            alpha_ema,
+            cluster_summaries,
             pricing_file,
             links_file,
             node_labels,
