@@ -10,6 +10,8 @@ stups-tokens = "*"
 "jinja2" = "*"
 requests-futures = "*"
 pykube-ng = "*"
+awesome-slugify = "*"
+
 
 [dev-packages]
 flake8 = "*"

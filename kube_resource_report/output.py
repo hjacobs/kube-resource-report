@@ -2,6 +2,7 @@ import logging
 import shutil
 
 from pathlib import Path
+from slugify import slugify
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from kube_resource_report import filters
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 class OutputManager:
 
     def __init__(self, output_path: Path):
-        self.output_path = output_path
+        self.output_path = Path(slugify(output_path.name))
         self.written_paths = set()
 
         env = Environment(
