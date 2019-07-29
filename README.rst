@@ -18,7 +18,7 @@ Kubernetes Resource Report
 
 Script to generate a HTML report of CPU/memory requests vs. usage (collected via Metrics API/Heapster) for one or more Kubernetes clusters.
 
-Want to see how the report looks? `Check out the sample HTML report! <https://hjacobs.github.io/kube-resource-report/sample-report/output/index.html>`_
+Want to see how the report looks? Check out the `sample HTML report <https://hjacobs.github.io/kube-resource-report/sample-report/output/index.html>`_ and the `demo deployment <https://kube-resource-report.demo.j-serv.de/>`_!
 
 What the script does:
 
