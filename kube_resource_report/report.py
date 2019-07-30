@@ -712,7 +712,7 @@ def generate_report(
         except Exception as e:
             logger.error(f'Could not dump pickled cache data: {e}')
 
-    write_report(out, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links)
+    write_report(out, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links, alpha_ema)
 
     return cluster_summaries
 
@@ -729,7 +729,7 @@ def write_loading_page(out):
         out.render_template('loading.html', context, file_name)
 
 
-def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links):
+def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links, alpha_ema: float):
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
     total_user_requests = collections.defaultdict(int)
@@ -938,6 +938,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
     for page in ["index", "clusters", "ingresses", "teams", "applications", "namespaces", "pods"]:
         file_name = f"{page}.html"
         context["page"] = page
+        context["alpha_ema"] = alpha_ema
         out.render_template(file_name, context, file_name)
 
     for cluster_id, summary in cluster_summaries.items():
@@ -946,6 +947,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
         context["page"] = page
         context["cluster_id"] = cluster_id
         context["summary"] = summary
+        context["alpha_ema"] = alpha_ema
         out.render_template('cluster.html', context, file_name)
 
     with out.open("cluster-metrics.json") as fd:
@@ -971,6 +973,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
         context["page"] = page
         context["team_id"] = team_id
         context["team"] = team
+        context["alpha_ema"] = alpha_ema
         out.render_template('team.html', context, file_name)
 
     with out.open("team-metrics.json") as fd:
@@ -1052,6 +1055,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
         context["application"] = application
         context["ingresses_by_application"] = ingresses_by_application
         context["pods_by_application"] = pods_by_application
+        context["alpha_ema"] = alpha_ema
         out.render_template('application.html', context, file_name)
 
     out.clean_up_stale_files()
