@@ -74,12 +74,20 @@ class CommaSeparatedValues(click.ParamType):
     "--alpha-ema",
     type=float,
     help="""
-    Alpha for Exponential Moving Average.
+    Alpha for Exponential Moving Average (EMA).
 
     The coefficient alpha represents the degree of weighting decrease, a constant smoothing
     factor between 0 and 1. A higher alpha discounts older observations faster.
 
     More info about EMA: https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+
+    Note that there is no "accepted" value that should be chosen for alpha, although
+    there are some recommended values based on the application.
+
+    You can use EMA as SMA (Simple Moving Average) by choosing `alpha = 2 / (N+1)`,
+    where N is just number of periods (remember that it should behave like SMA; it is not SMA).
+    For example, if your update interval is a minute, by choosing N to 60 you will have "the average" from an hour.
+    By choosing N to 10 you will have "an average" from ten minutes, and so on...
     """,
     default=1.0,
 )
