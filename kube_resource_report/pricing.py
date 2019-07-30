@@ -127,6 +127,7 @@ def generate_ec2_price_list():
         "Asia Pacific (Mumbai)": "ap-south-1",
         "Asia Pacific (Singapore)": "ap-southeast-1",
         "Asia Pacific (Sydney)": "ap-southeast-2",
+        "Asia Pacific (Hong Kong)": "ap-east-1",
         "Canada (Central)": "ca-central-1",
         "China (Beijing)": "cn-north-1",
         "China (Ningxia)": "cn-northwest-1",
@@ -144,7 +145,7 @@ def generate_ec2_price_list():
     max_price = {}
     for location in sorted(LOCATIONS.values()):
         # some regions are not available
-        if location in ("ap-northeast-3", "cn-north-1", "cn-northwest-1", "us-gov-west-1", "us-gov-east-1"):
+        if location in ("ap-northeast-3", "cn-north-1", "cn-northwest-1", "us-gov-west-1", "us-gov-east-1", "ap-east-1"):
             continue
         print(location)
         ec2 = boto3.client("ec2", location)
