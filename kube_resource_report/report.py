@@ -132,30 +132,65 @@ class PodMetrics(NamespacedAPIObject):
     kind = 'PodMetrics'
 
 
-def get_node_usage(cluster, nodes: dict):
+def get_ema(curr_value, prev_value, alpha=1.0):
+    """
+    More info about EMA: https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+
+    The coefficient alpha represents the degree of weighting decrease, a constant smoothing
+    factor between 0 and 1. A higher alpha discounts older observations faster.
+
+    Alpha 1 - only the current observation.
+    Alpha 0 - only the previous observation.
+
+    Choosing the initial smoothed value - https://en.wikipedia.org/wiki/Exponential_smoothing#Choosing_the_initial_smoothed_value
+    """
+    if prev_value is None:
+        # it is the first run, we do not have any information about the past
+        return curr_value
+
+    return prev_value + alpha * (curr_value - prev_value)
+
+
+def get_node_usage(cluster, nodes: dict, prev_nodes: dict, alpha_ema: float):
     try:
         for node_metrics in NodeMetrics.objects(cluster.client):
             key = node_metrics.name
             node = nodes.get(key)
+            prev_node = prev_nodes.get(key, {})
+
             if node:
                 usage = collections.defaultdict(float)
+                prev_usage = prev_node.get("usage", {})
+
                 for k, v in node_metrics.obj.get("usage", {}).items():
-                    usage[k] += parse_resource(v)
+                    curr_value = parse_resource(v)
+                    prev_value = prev_usage.get(k)
+                    usage[k] = get_ema(curr_value, prev_value, alpha_ema)
                 node["usage"] = usage
     except Exception:
         logger.exception("Failed to get node usage metrics")
 
 
-def get_pod_usage(cluster, pods: dict):
+def get_pod_usage(cluster, pods: dict, prev_pods: dict, alpha_ema: float):
     try:
         for pod_metrics in PodMetrics.objects(cluster.client, namespace=pykube.all):
             key = (pod_metrics.namespace, pod_metrics.name)
             pod = pods.get(key)
+            prev_pod = prev_pods.get(key, {})
+
             if pod:
                 usage = collections.defaultdict(float)
+                prev_usage = prev_pod.get("usage", {})
+
                 for container in pod_metrics.obj["containers"]:
                     for k, v in container.get("usage", {}).items():
                         usage[k] += parse_resource(v)
+
+                for k, v in usage.items():
+                    curr_value = v
+                    prev_value = prev_usage.get(k)
+                    usage[k] = get_ema(curr_value, prev_value, alpha_ema)
+
                 pod["usage"] = usage
     except Exception:
         logger.exception("Failed to get pod usage metrics")
@@ -194,7 +229,8 @@ def find_backend_application(client, ingress, rule):
 
 
 def query_cluster(
-    cluster, executor, system_namespaces, additional_cost_per_cluster, no_ingress_status, node_labels
+    cluster, executor, system_namespaces, additional_cost_per_cluster,
+    alpha_ema, prev_cluster_summaries, no_ingress_status, node_labels
 ):
     logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
     pods = {}
@@ -246,7 +282,7 @@ def query_cluster(
                                              cpu=node['capacity'].get('cpu'), memory=node['capacity'].get('memory'))
         cluster_cost += node["cost"]
 
-    get_node_usage(cluster, nodes)
+    get_node_usage(cluster, nodes, prev_cluster_summaries.get("nodes", {}), alpha_ema)
 
     cluster_usage = collections.defaultdict(float)
     for node in nodes.values():
@@ -321,7 +357,7 @@ def query_cluster(
         "ingresses": [],
     }
 
-    get_pod_usage(cluster, pods)
+    get_pod_usage(cluster, pods, prev_cluster_summaries.get("pods", {}), alpha_ema)
 
     cluster_slack_cost = 0
     for pod in pods.values():
@@ -382,6 +418,8 @@ def get_cluster_summaries(
     system_namespaces: set,
     notifications: list,
     additional_cost_per_cluster: float,
+    alpha_ema: float,
+    prev_cluster_summaries: dict,
     no_ingress_status: bool,
     node_labels: list,
 ):
@@ -413,6 +451,8 @@ def get_cluster_summaries(
                         executor,
                         system_namespaces,
                         additional_cost_per_cluster,
+                        alpha_ema,
+                        prev_cluster_summaries.get(cluster.id, {}),
                         no_ingress_status,
                         node_labels,
                     )
@@ -526,6 +566,8 @@ def generate_report(
     include_clusters,
     exclude_clusters,
     additional_cost_per_cluster,
+    alpha_ema,
+    cluster_summaries,
     pricing_file,
     links_file,
     node_labels,
@@ -569,6 +611,8 @@ def generate_report(
             system_namespaces,
             notifications,
             additional_cost_per_cluster,
+            alpha_ema,
+            cluster_summaries,
             no_ingress_status,
             node_labels,
         )
@@ -668,7 +712,7 @@ def generate_report(
         except Exception as e:
             logger.error(f'Could not dump pickled cache data: {e}')
 
-    write_report(out, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links)
+    write_report(out, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links, alpha_ema)
 
     return cluster_summaries
 
@@ -685,7 +729,7 @@ def write_loading_page(out):
         out.render_template('loading.html', context, file_name)
 
 
-def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links):
+def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links, alpha_ema: float):
     total_allocatable = collections.defaultdict(int)
     total_requests = collections.defaultdict(int)
     total_user_requests = collections.defaultdict(int)
@@ -894,6 +938,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
     for page in ["index", "clusters", "ingresses", "teams", "applications", "namespaces", "pods"]:
         file_name = f"{page}.html"
         context["page"] = page
+        context["alpha_ema"] = alpha_ema
         out.render_template(file_name, context, file_name)
 
     for cluster_id, summary in cluster_summaries.items():

@@ -45,6 +45,12 @@
     You can potentially save <strong>{{ total_slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
 </div>
 
+{% if alpha_ema < 1 %}
+  <div class="notification">
+      Remember that you are using EMA (<a href="https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">Exponential Moving Average</a>). What you see are not current values, these values are averaged.
+  </div>
+{% endif %}
+
 <h2 class="title is-5">CPU</h2>
 <div class="resource-labels">
     <span>{{ total_usage['cpu']|cpu }} used</span>
