@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: hjacobs/kube-resource-report
-  tag: "0.15"
+  tag: "0.16"
   pullPolicy: IfNotPresent
 
 rbac:
