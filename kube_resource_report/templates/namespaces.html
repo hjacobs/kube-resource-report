@@ -25,6 +25,9 @@
                   <th>Memory (MiB)</th>
                   <th class="has-text-right">Cost</th>
                   <th class="has-text-right">Slack Cost</th>
+                  {% if links['namespace']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -68,6 +71,20 @@
 
             <td class="has-text-right">{{ namespace_data.cost|money }}</td>
             <td class="has-text-right">{{ namespace_data.slack_cost|money }}</td>
+
+            {% if links['namespace']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['namespace']: %}
+                    <a href="{{ link.href.format(cluster=namespace_data.cluster.name, name=namespace_id[0]) }}"
+                        title="{{ link.title.format(cluster=namespace_data.cluster.name, name=namespace_id[0]) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
 
           </tr>
 

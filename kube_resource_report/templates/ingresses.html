@@ -21,6 +21,9 @@
                   <th>Application</th>
                   <th>Host</th>
                   <th>Status</th>
+                  {% if links['ingress']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -43,6 +46,19 @@
                        is-info
                     {% endif %}
             ">{{ ingress[4] }}</span></td>
+            {% if links['ingress']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['ingress']: %}
+                    <a href="{{ link.href.format(cluster=summary["cluster"].name, namespace=ingress[0], name=ingress[1], application=ingress[2], host=ingress[3]) }}"
+                        title="{{ link.title.format(cluster=summary["cluster"].name, namespace=ingress[0], name=ingress[1], application=ingress[2], host=ingress[3]) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
           </tr>
           {%endfor %}
           {%endfor %}

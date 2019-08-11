@@ -59,6 +59,9 @@
                   <th>Name</th>
                   <th>Host</th>
                   <th>Status</th>
+                  {% if links['ingress']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -79,6 +82,19 @@
                        is-info
                     {% endif %}
             ">{{ ingress[4] }}</span></td>
+            {% if links['ingress']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['ingress']: %}
+                    <a href="{{ link.href.format(cluster=ingress.cluster_summary.cluster.name, namespace=ingress.namespace, name=ingress.name, application=application.id, host=ingress.host) }}"
+                        title="{{ link.title.format(cluster=ingress.cluster_summary.cluster.name, namespace=ingress.namespace, name=ingress.name, application=application.id, host=ingress.host) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
           </tr>
           {%endfor %}
           </tbody>
@@ -100,6 +116,9 @@
                   <th>CPU</th>
                   <th>Memory (MiB)</th>
                   <th class="has-text-right">Cost</th>
+                  {% if links['pod']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -133,6 +152,20 @@
             </td>
 
             <td class="has-text-right">{{ row.pod.cost|money }}</td>
+
+            {% if links['pod']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['pod']: %}
+                    <a href="{{ link.href.format(cluster=row.cluster_summary.cluster.name, namespace=row.namespace, name=row.name) }}"
+                        title="{{ link.title.format(cluster=row.cluster_summary.cluster.name, namespace=row.namespace, name=row.name) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
           </tr>
           {%endfor %}
           </tbody>
