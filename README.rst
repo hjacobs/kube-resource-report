@@ -148,6 +148,22 @@ with the links per entity. Example file:
     - href: "https://people.mycorp.example.org/search?q=team:{id}"
       title: "Search team {id} on people.mycorp"
       icon: search
+    ingress:
+    - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/namespaces/{namespace}/ingresses/{name}"
+      title: "View ingress {name} in Kubernetes Web View"
+      icon: external-link-alt
+    node:
+    - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/nodes/{name}"
+      title: "View node {name} in Kubernetes Web View"
+      icon: external-link-alt
+    namespace:
+    - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/namespaces/{name}"
+      title: "View namespace {name} in Kubernetes Web View"
+      icon: external-link-alt
+    pod:
+    - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/namespaces/{namespace}/pods/{name}"
+      title: "View pod {name} in Kubernetes Web View"
+      icon: external-link-alt
 
 For available icon names, see the `Font Awesome gallery with free icons <https://fontawesome.com/icons?d=gallery&m=free>`_.
 

@@ -26,6 +26,9 @@
                   <th>CPU</th>
                   <th>Memory (MiB)</th>
                   <th class="has-text-right">Cost</th>
+                  {% if links['pod']: %}
+                  <th></th>
+                  {% endif %}
               </tr>
           </thead>
           <tbody>
@@ -60,6 +63,20 @@
             </td>
 
             <td class="has-text-right">{{ pod.cost|money }}</td>
+
+            {% if links['pod']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['pod']: %}
+                    <a href="{{ link.href.format(cluster=summary.cluster.name, namespace=namespace_name[0], name=namespace_name[1]) }}"
+                        title="{{ link.title.format(cluster=summary.cluster.name, namespace=namespace_name[0], name=namespace_name[1]) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
           </tr>
           {%endfor %}
           {%endfor %}
