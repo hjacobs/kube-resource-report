@@ -14,6 +14,10 @@ Kubernetes Resource Report
    :target: https://hub.docker.com/r/hjacobs/kube-resource-report
    :alt: Docker pulls
 
+.. image:: https://img.shields.io/badge/calver-YY.MM.MICRO-22bfda.svg
+   :target: http://calver.org
+   :alt: Calendar Versioning
+
 **This version only supports node costs for AWS EC2 (all regions, On Demand, Linux) and GKE/GCP machine types (all regions, On Demand, without sustained discount)**
 
 Script to generate a HTML report of CPU/memory requests vs. usage (collected via Metrics API/Heapster) for one or more Kubernetes clusters.
@@ -96,7 +100,7 @@ Running as Docker container
 
     $ kubectl proxy & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output
-    $ docker run --rm -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:0.16 /output
+    $ docker run --rm -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:latest /output
 
 **For macOS**:
 
@@ -104,7 +108,7 @@ Running as Docker container
 
     $ kubectl proxy --accept-hosts '.*' & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output
-    $ docker run --rm -it -e CLUSTERS=http://docker.for.mac.localhost:8001 --user=$(id -u) -v $(pwd)/output:/output hjacobs/kube-resource-report:0.16 /output
+    $ docker run --rm -it -e CLUSTERS=http://docker.for.mac.localhost:8001 --user=$(id -u) -v $(pwd)/output:/output hjacobs/kube-resource-report:latest /output
 
 --------------------
 Application Registry
@@ -172,7 +176,7 @@ For available icon names, see the `Font Awesome gallery with free icons <https:/
 Settings
 --------
 
-You can run ``docker run --rm hjacobs/kube-resource-report:0.16 --help`` to find out information.
+You can run ``docker run --rm hjacobs/kube-resource-report:latest --help`` to find out information.
 
 Besides this, you can also pass environment variables:
 
