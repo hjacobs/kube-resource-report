@@ -37,7 +37,7 @@ pricing:
     dc-1,worker,500.000
 
 service:
-  type: ClusterIP
+  type: LoadBalancer
   port: 8080
   portName: http
 

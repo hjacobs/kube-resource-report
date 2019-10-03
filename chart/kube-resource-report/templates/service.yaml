@@ -7,6 +7,8 @@ metadata:
     helm.sh/chart: {{ include "kube-resource-report.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: "0.0.0.0/0"
 spec:
   type: {{ .Values.service.type }}
   ports:
