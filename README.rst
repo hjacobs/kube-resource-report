@@ -84,7 +84,7 @@ Deploy using Helm Chart
 IMPORTANT: Helm is not used by the maintainer of kube-resource-report - the Helm Chart was contributed by `Eriks Zelenka <https://github.com/ezelenka>`_ and is not officially tested or supported!
 
 Assuming that you have already helm properly configured (refer to helm docs), below command will install chart in the
-currently active kubernetes cluster context.
+currently active Kubernetes cluster context.
 
 This will deploy a single pod with kube-resource-report and nginx (to serve the static HTML):
 
