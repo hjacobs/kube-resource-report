@@ -19,6 +19,21 @@ from unittest.mock import MagicMock
 
 @pytest.fixture
 def fake_responses():
+    fake_pod_spec = {
+        "containers": [
+            {
+                "resources": {
+                    "requests": {
+                        # 1/20 of 1 core (node capacity)
+                        "cpu": "50m",
+                        # 1/4 of 1Gi (node capacity)
+                        "memory": "256Mi"
+                    }
+                }
+            }
+        ]
+    }
+
     return {
         ('v1', "nodes"): {
             "items": [
@@ -35,22 +50,49 @@ def fake_responses():
             "items": [
                 {
                     "metadata": {"name": "pod-1", "namespace": "default", "labels": {"app": "myapp"}},
-                    "spec": {
-                        "containers": [
-                            {
-                                "resources": {
-                                    "requests": {
-                                        # 1/10 of 1 core (node capacity)
-                                        "cpu": "100m",
-                                        # 1/2 of 1Gi (node capacity)
-                                        "memory": "512Mi"
-                                    }
-                                }
-                            }
-                        ]
-                    },
+                    "spec": fake_pod_spec,
                     "status": {
                         "phase": "Running"
+                    }
+                },
+                {
+                    "metadata": {"name": "pod-failed", "namespace": "default", "labels": {"app": "myapp"}},
+                    "spec": fake_pod_spec,
+                    "status": {
+                        "phase": "Failed"
+                    }
+                },
+                {
+                    "metadata": {"name": "pod-pending-scheduled", "namespace": "default", "labels": {"app": "myapp"}},
+                    "spec": fake_pod_spec,
+                    "status": {
+                        "phase": "Pending",
+                        "conditions": [
+                            {
+                                "type": "PodScheduled",
+                                "status": "True",
+                            }
+                        ]
+                    }
+                },
+                {
+                    "metadata": {"name": "pod-pending-no-conditions", "namespace": "default", "labels": {"app": "myapp"}},
+                    "spec": fake_pod_spec,
+                    "status": {
+                        "phase": "Pending"
+                    }
+                },
+                {
+                    "metadata": {"name": "pod-pending-not-scheduled", "namespace": "default", "labels": {"app": "myapp"}},
+                    "spec": fake_pod_spec,
+                    "status": {
+                        "phase": "Pending",
+                        "conditions": [
+                            {
+                                "type": "PodScheduled",
+                                "status": "False",
+                            }
+                        ]
                     }
                 }
             ]
@@ -230,7 +272,7 @@ def test_application_report(output_dir, fake_generate_report, fake_responses, fa
         data = json.load(fd)
 
     assert data['myapp']['id'] == 'myapp'
-    assert data['myapp']['pods'] == 1
+    assert data['myapp']['pods'] == 2
     assert data['myapp']['requests'] == {'cpu': 0.1, 'memory': 512 * 1024**2}
     # the "myapp" pod consumes 1/2 of cluster capacity (512Mi of 1Gi memory)
     assert data['myapp']['cost'] == 50.0
