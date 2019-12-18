@@ -11,6 +11,7 @@ from kube_resource_report.report import (
     get_pod_usage,
     get_node_usage,
     new_resources,
+    aggregate_by_team,
     NODE_LABEL_ROLE
 )
 
@@ -177,6 +178,36 @@ def fake_node_metric_responses():
 
 
 @pytest.fixture
+def fake_applications():
+    return {
+        "some-app": {
+            "id": "some-app",
+            "team": "some-team",
+            "clusters": {"some-cluster"},
+            "pods": 1,
+            "cost": 40,
+            "slack_cost": 10,
+            "requests": {
+                "cpu": 1,
+                "memory": 1024,
+            },
+        },
+        "some-other-app": {
+            "id": "some-other-app",
+            "team": "some-team",
+            "clusters": {"some-cluster"},
+            "pods": 1,
+            "cost": 10,
+            "slack_cost": 5,
+            "requests": {
+                "cpu": 0.2,
+                "memory": 512,
+            },
+        },
+    }
+
+
+@pytest.fixture
 def output_dir(tmpdir):
     return tmpdir.mkdir("output")
 
@@ -299,3 +330,15 @@ def test_get_node_usage(monkeypatch, fake_node_metric_responses):
 def test_more_than_one_label(fake_generate_report, fake_responses_with_two_different_nodes):
     cluster_summaries = fake_generate_report(fake_responses_with_two_different_nodes)
     assert cluster_summaries['test-cluster-1']['worker_nodes'] == 2
+
+
+def test_aggregate_by_team(fake_applications):
+    teams = {}
+    aggregate_by_team(fake_applications, teams)
+    assert len(teams) == 1
+    team = teams["some-team"]
+    assert team["cost"] == 50
+    assert team["slack_cost"] == 15
+    assert team["pods"] == 2
+    assert team['requests'] == {'cpu': 1.2, 'memory': 512 + 1024}
+    assert team["clusters"] == {"some-cluster"}
