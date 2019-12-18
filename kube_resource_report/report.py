@@ -33,6 +33,7 @@ NODE_LABEL_INSTANCE_TYPE = os.environ.get("NODE_LABEL_INSTANCE_TYPE", "beta.kube
 # https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
 OBJECT_LABEL_APPLICATION = os.environ.get("OBJECT_LABEL_APPLICATION", "application,app,app.kubernetes.io/name").split(",")
 OBJECT_LABEL_COMPONENT = os.environ.get("OBJECT_LABEL_COMPONENT", "component,app.kubernetes.io/component").split(",")
+OBJECT_LABEL_TEAM = os.environ.get("OBJECT_LABEL_TEAM", "team,owner").split(",")
 
 ONE_MEBI = 1024 ** 2
 ONE_GIBI = 1024 ** 3
@@ -97,6 +98,13 @@ def get_application_from_labels(labels):
 
 def get_component_from_labels(labels):
     for label_name in OBJECT_LABEL_COMPONENT:
+        if label_name in labels:
+            return labels[label_name]
+    return ""
+
+
+def get_team_from_labels(labels):
+    for label_name in OBJECT_LABEL_TEAM:
         if label_name in labels:
             return labels[label_name]
     return ""
@@ -312,6 +320,7 @@ def query_cluster(
             continue
         application = get_application_from_labels(pod.labels)
         component = get_component_from_labels(pod.labels)
+        team = get_team_from_labels(pod.labels)
         requests = collections.defaultdict(float)
         ns = pod.namespace
         container_images = []
@@ -337,6 +346,7 @@ def query_cluster(
             "container_images": container_images,
             "cost": cost,
             "usage": new_resources(),
+            "team": team,
         }
 
     hourly_cost = cluster_cost / HOURS_PER_MONTH
@@ -539,6 +549,37 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
             teams[team_id] = team
 
 
+def resolve_team_labels(applications: dict, teams: dict):
+    for app in applications.values():
+        if app["team"] != "":
+            team_id = app["team"]
+            app["team"] = team_id
+            app["active"] = True
+            team = teams.get(
+                team_id,
+                {
+                    "clusters": set(),
+                    "applications": set(),
+                    "cost": 0,
+                    "pods": 0,
+                    "requests": {},
+                    "usage": {},
+                    "slack_cost": 0,
+                },
+            )
+            team["applications"].add(app["id"])
+            team["clusters"] |= app["clusters"]
+            team["pods"] += app["pods"]
+            for r in "cpu", "memory":
+                team["requests"][r] = team["requests"].get(
+                    r, 0) + app["requests"][r]
+                team["usage"][r] = team["usage"].get(r, 0) + app.get(
+                    "usage", {}).get(r, 0)
+            team["cost"] += app["cost"]
+            team["slack_cost"] += app["slack_cost"]
+            teams[team_id] = team
+
+
 def calculate_metrics(context: dict) -> dict:
     metrics = {
         "clusters": len(context["cluster_summaries"]),
@@ -660,6 +701,7 @@ def generate_report(
             app["slack_cost"] += pod.get("slack_cost", 0)
             app["pods"] += 1
             app["clusters"].add(cluster_id)
+            app["team"] = pod["team"]
             applications[pod["application"]] = app
 
         for ns_pod, pod in summary["pods"].items():
@@ -690,6 +732,8 @@ def generate_report(
 
     if application_registry:
         resolve_application_ids(applications, teams, application_registry)
+
+    resolve_team_labels(applications, teams)
 
     for team in teams.values():
         def cluster_name(cluster_id):
