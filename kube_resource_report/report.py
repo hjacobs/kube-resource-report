@@ -538,11 +538,9 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
 def resolve_team_labels(applications: dict, teams: dict):
     for app in applications.values():
         if app["team"] != "":
-            team_id = app["team"]
-            app["team"] = team_id
             app["active"] = True
             team = teams.get(
-                team_id,
+                app["team"],
                 {
                     "clusters": set(),
                     "applications": set(),
@@ -563,7 +561,7 @@ def resolve_team_labels(applications: dict, teams: dict):
                     "usage", {}).get(r, 0)
             team["cost"] += app["cost"]
             team["slack_cost"] += app["slack_cost"]
-            teams[team_id] = team
+            teams[app["team"]] = team
 
 
 def calculate_metrics(context: dict) -> dict:
