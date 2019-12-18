@@ -29,7 +29,7 @@ What the script does:
 * Discover all clusters (either via ``~/.kube/config``, via in-cluster serviceAccount, or via custom Cluster Registry REST endpoint)
 * Collect all cluster nodes and their estimated costs (AWS and GCP only)
 * Collect all pods and use the ``application`` or ``app`` label as application ID
-* Get additional information for each app from the application registry (``team_id`` and ``active`` field)
+* Get additional information for each app from the application registry (``team_id`` and ``active`` field) OR use the ``team`` label on the pod
 * Group and aggregate resource usage and slack costs per cluster, team and application
 * Allow custom links to existing systems (e.g. link to a monitoring dashboard for each cluster)
 
@@ -94,7 +94,7 @@ This will deploy a single pod with kube-resource-report and nginx (to serve the 
     $ cd kube-resource-report
     $ helm install --name kube-resource-report ./chart/kube-resource-report
     $ helm status kube-resource-report
-    
+
 If you want to do upgrade, try something like:
 
 .. code-block::
@@ -202,3 +202,4 @@ Besides this, you can also pass environment variables:
 - ``NODE_LABEL_INSTANCE_TYPE`` (default: ``"beta.kubernetes.io/instance-type"``)
 - ``OBJECT_LABEL_APPLICATION`` (default: ``"application,app,app.kubernetes.io/name"``)
 - ``OBJECT_LABEL_COMPONENT`` (default: ``"component,app.kubernetes.io/component"``)
+- ``OBJECT_LABEL_TEAM`` (default: ``"team,owner"``)
