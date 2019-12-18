@@ -497,7 +497,7 @@ def get_cluster_summaries(
     return {summary["cluster"].id: summary for summary in sorted_by_name}
 
 
-def resolve_application_ids(applications: dict, teams: dict, application_registry: str):
+def resolve_application_ids(applications: dict, application_registry: str):
     with FuturesSession(max_workers=10, session=session) as futures_session:
         auth = cluster_discovery.OAuthTokenAuth("read-only")
 
@@ -524,60 +524,34 @@ def resolve_application_ids(applications: dict, teams: dict, application_registr
             team_id = data.get("team_id", "")
             app["team"] = team_id
             app["active"] = data.get("active")
-            team = teams.get(
-                team_id,
-                {
-                    "clusters": set(),
-                    "applications": set(),
-                    "cost": 0,
-                    "pods": 0,
-                    "requests": {},
-                    "usage": {},
-                    "slack_cost": 0,
-                },
-            )
-            team["applications"].add(app["id"])
-            team["clusters"] |= app["clusters"]
-            team["pods"] += app["pods"]
-            for r in "cpu", "memory":
-                team["requests"][r] = team["requests"].get(r, 0) + app["requests"][r]
-                team["usage"][r] = team["usage"].get(r, 0) + app.get("usage", {}).get(
-                    r, 0
-                )
-            team["cost"] += app["cost"]
-            team["slack_cost"] += app["slack_cost"]
-            teams[team_id] = team
 
 
-def resolve_team_labels(applications: dict, teams: dict):
+def aggregate_by_team(applications: dict, teams: dict):
     for app in applications.values():
-        if app["team"] != "":
-            team_id = app["team"]
-            app["team"] = team_id
-            app["active"] = True
-            team = teams.get(
-                team_id,
-                {
-                    "clusters": set(),
-                    "applications": set(),
-                    "cost": 0,
-                    "pods": 0,
-                    "requests": {},
-                    "usage": {},
-                    "slack_cost": 0,
-                },
-            )
-            team["applications"].add(app["id"])
-            team["clusters"] |= app["clusters"]
-            team["pods"] += app["pods"]
-            for r in "cpu", "memory":
-                team["requests"][r] = team["requests"].get(
-                    r, 0) + app["requests"][r]
-                team["usage"][r] = team["usage"].get(r, 0) + app.get(
-                    "usage", {}).get(r, 0)
-            team["cost"] += app["cost"]
-            team["slack_cost"] += app["slack_cost"]
-            teams[team_id] = team
+        team_id = app["team"]
+        team = teams.get(
+            team_id,
+            {
+                "clusters": set(),
+                "applications": set(),
+                "cost": 0,
+                "pods": 0,
+                "requests": {},
+                "usage": {},
+                "slack_cost": 0,
+            },
+        )
+        team["applications"].add(app["id"])
+        team["clusters"] |= app["clusters"]
+        team["pods"] += app["pods"]
+        for r in "cpu", "memory":
+            team["requests"][r] = team["requests"].get(
+                r, 0) + app["requests"][r]
+            team["usage"][r] = team["usage"].get(r, 0) + app.get(
+                "usage", {}).get(r, 0)
+        team["cost"] += app["cost"]
+        team["slack_cost"] += app["slack_cost"]
+        teams[team_id] = team
 
 
 def calculate_metrics(context: dict) -> dict:
@@ -733,7 +707,7 @@ def generate_report(
     if application_registry:
         resolve_application_ids(applications, teams, application_registry)
 
-    resolve_team_labels(applications, teams)
+    aggregate_by_team(applications, teams)
 
     for team in teams.values():
         def cluster_name(cluster_id):

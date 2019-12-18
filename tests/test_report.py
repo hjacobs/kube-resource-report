@@ -11,7 +11,7 @@ from kube_resource_report.report import (
     get_pod_usage,
     get_node_usage,
     new_resources,
-    resolve_team_labels,
+    aggregate_by_team,
     NODE_LABEL_ROLE
 )
 
@@ -332,9 +332,9 @@ def test_more_than_one_label(fake_generate_report, fake_responses_with_two_diffe
     assert cluster_summaries['test-cluster-1']['worker_nodes'] == 2
 
 
-def test_team_label(fake_applications):
+def test_aggregate_by_team(fake_applications):
     teams = {}
-    resolve_team_labels(fake_applications, teams)
+    aggregate_by_team(fake_applications, teams)
     assert len(teams) == 1
     team = teams["some-team"]
     assert team["cost"] == 50
