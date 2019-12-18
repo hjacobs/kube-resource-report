@@ -8,6 +8,7 @@ default: docker
 
 test:
 	pipenv run flake8
+	pipenv run mypy --ignore-missing-imports kube_resource_report/
 	pipenv run coverage run --source=kube_resource_report -m py.test
 	pipenv run coverage report
 
