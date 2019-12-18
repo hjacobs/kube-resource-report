@@ -228,6 +228,20 @@ def find_backend_application(client, ingress, rule):
     return ''
 
 
+def pod_active(pod):
+    pod_status = pod.obj["status"]
+    phase = pod_status.get("phase")
+
+    if phase == "Running":
+        return True
+    elif phase == "Pending":
+        for condition in pod_status.get("conditions", []):
+            if condition.get("type") == "PodScheduled":
+                return condition.get("status") == "True"
+
+    return False
+
+
 def query_cluster(
     cluster, executor, system_namespaces, additional_cost_per_cluster,
     alpha_ema, prev_cluster_summaries, no_ingress_status, node_labels
@@ -293,8 +307,8 @@ def query_cluster(
     cost_per_memory = cluster_cost / cluster_allocatable["memory"]
 
     for pod in Pod.objects(cluster.client, namespace=pykube.all):
-        if pod.obj["status"].get("phase") != "Running":
-            # ignore unschedulable/completed pods
+        # ignore unschedulable/completed pods
+        if not pod_active(pod):
             continue
         application = get_application_from_labels(pod.labels)
         component = get_component_from_labels(pod.labels)
