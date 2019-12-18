@@ -12,6 +12,8 @@ import requests
 import yaml
 from pathlib import Path
 
+from typing import Dict, Any, List
+
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
@@ -167,7 +169,7 @@ def get_node_usage(cluster, nodes: dict, prev_nodes: dict, alpha_ema: float):
             prev_node = prev_nodes.get(key, {})
 
             if node:
-                usage = collections.defaultdict(float)
+                usage: dict = collections.defaultdict(float)
                 prev_usage = prev_node.get("usage", {})
 
                 for k, v in node_metrics.obj.get("usage", {}).items():
@@ -187,7 +189,7 @@ def get_pod_usage(cluster, pods: dict, prev_pods: dict, alpha_ema: float):
             prev_pod = prev_pods.get(key, {})
 
             if pod:
-                usage = collections.defaultdict(float)
+                usage: dict = collections.defaultdict(float)
                 prev_usage = prev_pod.get("usage", {})
 
                 for container in pod_metrics.obj["containers"]:
@@ -449,6 +451,8 @@ def get_cluster_summaries(
 ):
     cluster_summaries = {}
 
+    discoverer: Any
+
     if cluster_registry:
         discoverer = cluster_discovery.ClusterRegistryDiscoverer(cluster_registry)
     elif clusters or not kubeconfig_path.exists():
@@ -601,7 +605,7 @@ def generate_report(
     links_file,
     node_labels,
 ):
-    notifications = []
+    notifications: List[tuple] = []
 
     if pricing_file:
         pricing.regenerate_cost_dict(pricing_file)
@@ -647,8 +651,8 @@ def generate_report(
         )
         teams = {}
 
-    applications = {}
-    namespace_usage = {}
+    applications: Dict[str, dict] = {}
+    namespace_usage: Dict[tuple, dict] = {}
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for k, pod in summary["pods"].items():
@@ -719,15 +723,15 @@ def generate_report(
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for k, pod in summary["pods"].items():
-            app = applications.get(pod["application"])
+            app = applications[pod["application"]]
             pod["team"] = app["team"]
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for ns, ns_values in summary["namespaces"].items():
-            namespace = namespace_usage.get((ns, cluster_id))
-            if namespace:
-                namespace["email"] = ns_values["email"]
-                namespace["status"] = ns_values["status"]
+            namespace_ = namespace_usage.get((ns, cluster_id))
+            if namespace_:
+                namespace_["email"] = ns_values["email"]
+                namespace_["status"] = ns_values["status"]
 
     if not use_cache:
         try:
@@ -762,9 +766,9 @@ def write_loading_page(out):
 
 
 def write_report(out: OutputManager, start, notifications, cluster_summaries, namespace_usage, applications, teams, node_labels, links, alpha_ema: float):
-    total_allocatable = collections.defaultdict(int)
-    total_requests = collections.defaultdict(int)
-    total_user_requests = collections.defaultdict(int)
+    total_allocatable: dict = collections.defaultdict(int)
+    total_requests: dict = collections.defaultdict(int)
+    total_user_requests: dict = collections.defaultdict(int)
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for r in "cpu", "memory":
@@ -867,8 +871,8 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
         with out.open("slack.tsv") as csvfile2:
             slackwriter = csv.writer(csvfile2, delimiter="\t")
             for cluster_id, summary in sorted(cluster_summaries.items()):
-                cpu_slack = collections.Counter()
-                memory_slack = collections.Counter()
+                cpu_slack: collections.Counter = collections.Counter()
+                memory_slack: collections.Counter = collections.Counter()
                 for k, pod in summary["pods"].items():
                     namespace, name = k
                     requests = pod["requests"]
@@ -1026,7 +1030,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
     with out.open("application-metrics.json") as fd:
         json.dump(applications, fd, default=json_default)
 
-    ingresses_by_application = collections.defaultdict(list)
+    ingresses_by_application: Dict[str, list] = collections.defaultdict(list)
     for cluster_id, summary in cluster_summaries.items():
         for ingress in summary['ingresses']:
             ingresses_by_application[ingress[2]].append({
@@ -1037,7 +1041,7 @@ def write_report(out: OutputManager, start, notifications, cluster_summaries, na
                 'status': ingress[4]}
             )
 
-    pods_by_application = collections.defaultdict(list)
+    pods_by_application: Dict[str, list] = collections.defaultdict(list)
     for cluster_id, summary in cluster_summaries.items():
         for namespace_name, pod in summary['pods'].items():
             namespace, name = namespace_name

@@ -15,7 +15,7 @@ class OutputManager:
 
     def __init__(self, output_path: Path):
         self.output_path = output_path
-        self.written_paths = set()
+        self.written_paths: set = set()
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_PATH)),

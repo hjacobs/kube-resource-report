@@ -4,6 +4,8 @@ import time
 from pathlib import Path
 from urllib.parse import urljoin
 
+from typing import List
+
 import requests
 import tokens
 from requests.auth import AuthBase
@@ -95,7 +97,7 @@ class ClusterRegistryDiscoverer:
         self._url = cluster_registry_url
         self._cache_lifetime = cache_lifetime
         self._last_cache_refresh = 0
-        self._clusters = []
+        self._clusters: List[Cluster] = []
         self._session = requests.Session()
         self._session.auth = OAuthTokenAuth("read-only")
 
