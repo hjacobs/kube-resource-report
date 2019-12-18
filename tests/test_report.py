@@ -294,9 +294,9 @@ def test_team_label(fake_applications):
     teams = {}
     resolve_team_labels(fake_applications, teams)
     assert len(teams) == 1
-    team = teams["some-team"]
-    assert team["cost"] == 50
-    assert team["slack_cost"] == 15
-    assert team["pods"] == 2
+    team = teams['some-team']
+    assert team['cost'] == 50
+    assert team['slack_cost'] == 15
+    assert team['pods'] == 2
     assert team['requests'] == {'cpu': 1.2, 'memory': 512 + 1024}
-    assert team["clusters"] == {"some-cluster"}
+    assert team['clusters'] == {'some-cluster'}
