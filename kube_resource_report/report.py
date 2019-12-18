@@ -705,7 +705,7 @@ def generate_report(
             namespace_usage[(ns_pod[0], cluster_id)] = namespace
 
     if application_registry:
-        resolve_application_ids(applications, teams, application_registry)
+        resolve_application_ids(applications, application_registry)
 
     aggregate_by_team(applications, teams)
 
