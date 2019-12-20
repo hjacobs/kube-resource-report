@@ -6,6 +6,7 @@ python:
 services:
   - docker
 install:
+  - pip3 install poetry
   - make install
 script:
   - make test docker
