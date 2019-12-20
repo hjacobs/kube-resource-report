@@ -25,7 +25,7 @@ def generate_cluster_id(url: str):
     """Generate some "cluster ID" from given API server URL"""
     for prefix in ("https://", "http://"):
         if url.startswith(prefix):
-            url = url[len(prefix):]
+            url = url[len(prefix) :]
     return CLUSTER_ID_INVALID_CHARS.sub("-", url.lower()).strip("-")
 
 
@@ -44,13 +44,7 @@ class OAuthTokenAuth(AuthBase):
 
 
 class Cluster:
-    def __init__(
-        self,
-        id: str,
-        name: str,
-        api_server_url: str,
-        client: HTTPClient
-    ):
+    def __init__(self, id: str, name: str, api_server_url: str, client: HTTPClient):
         self.id = id
         self.name = name
         self.api_server_url = api_server_url
@@ -70,15 +64,18 @@ class StaticClusterDiscoverer:
                 config = KubeConfig.from_url(DEFAULT_CLUSTERS)
                 client = HTTPClient(config)
                 cluster = Cluster(
-                    generate_cluster_id(DEFAULT_CLUSTERS), "cluster", DEFAULT_CLUSTERS, client
+                    generate_cluster_id(DEFAULT_CLUSTERS),
+                    "cluster",
+                    DEFAULT_CLUSTERS,
+                    client,
                 )
             else:
                 client = HTTPClient(config)
                 cluster = Cluster(
-                    generate_cluster_id(config.cluster['server']),
+                    generate_cluster_id(config.cluster["server"]),
                     "cluster",
-                    config.cluster['server'],
-                    client
+                    config.cluster["server"],
+                    client,
                 )
             self._clusters.append(cluster)
         else:
@@ -86,7 +83,9 @@ class StaticClusterDiscoverer:
                 config = KubeConfig.from_url(api_server_url)
                 client = HTTPClient(config)
                 generated_id = generate_cluster_id(api_server_url)
-                self._clusters.append(Cluster(generated_id, generated_id, api_server_url, client))
+                self._clusters.append(
+                    Cluster(generated_id, generated_id, api_server_url, client)
+                )
 
     def get_clusters(self):
         return self._clusters
@@ -111,23 +110,16 @@ class ClusterRegistryDiscoverer:
             for row in response.json()["items"]:
                 # only consider "ready" clusters
                 if row.get("lifecycle_status", "ready") == "ready":
-                    config = KubeConfig.from_url(row['api_server_url'])
+                    config = KubeConfig.from_url(row["api_server_url"])
                     client = HTTPClient(config)
                     client.session.auth = OAuthTokenAuth("read-only")
                     clusters.append(
-                        Cluster(
-                            row["id"],
-                            row["alias"],
-                            row["api_server_url"],
-                            client
-                        )
+                        Cluster(row["id"], row["alias"], row["api_server_url"], client)
                     )
             self._clusters = clusters
             self._last_cache_refresh = time.time()
         except:
-            logger.exception(
-                f"Failed to refresh from cluster registry {self._url}"
-            )
+            logger.exception(f"Failed to refresh from cluster registry {self._url}")
 
     def get_clusters(self):
         now = time.time()
@@ -153,10 +145,7 @@ class KubeconfigDiscoverer:
             context_config = KubeConfig(config.doc, context)
             client = HTTPClient(context_config)
             cluster = Cluster(
-                context,
-                context,
-                context_config.cluster['server'],
-                client
+                context, context, context_config.cluster["server"], client
             )
             yield cluster
 
@@ -168,5 +157,5 @@ class MockDiscoverer:
                 f"mock-cluster-{i}",
                 f"mock-cluster-{i}",
                 api_server_url=f"https://kube-{i}.example.org",
-                client=None
+                client=None,
             )

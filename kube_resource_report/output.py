@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class OutputManager:
-
     def __init__(self, output_path: Path):
         self.output_path = output_path
         self.written_paths: set = set()
@@ -21,7 +20,7 @@ class OutputManager:
             loader=FileSystemLoader(str(TEMPLATES_PATH)),
             autoescape=select_autoescape(["html", "xml"]),
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
         env.filters["money"] = filters.money
         env.filters["cpu"] = filters.cpu

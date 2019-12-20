@@ -1,8 +1,6 @@
 import pytest
 
-from kube_resource_report.report import (
-    get_ema,
-)
+from kube_resource_report.report import get_ema
 
 
 @pytest.mark.parametrize(
@@ -20,7 +18,7 @@ from kube_resource_report.report import (
         (10, 2, 0.9, 9.2),
         # small alpha, discount older observations slower
         (10, 2, 0.1, 2.8),
-    ]
+    ],
 )
 def test_ema_func(curr_value, prev_value, alpha, expected):
     assert get_ema(curr_value, prev_value, alpha) == expected
@@ -34,8 +32,11 @@ def test_ema_func(curr_value, prev_value, alpha, expected):
         ([1, 1, 2, 2], 2 / (4 + 1)),
         ([1000, 1, 1, 1, 1, 1, 1], 2 / (7 + 1)),
         ([1, 1, 2, 2, 3, 3, 2, 2, 1, 1], 2 / (10 + 1)),
-        ([5, 5, 5, 6, 10, 15, 15, 20, 15, 15, 21, 22, 23, 30, 10, 8, 5, 5, 6, 6], 2 / (20 + 1)),
-    ]
+        (
+            [5, 5, 5, 6, 10, 15, 15, 20, 15, 15, 21, 22, 23, 30, 10, 8, 5, 5, 6, 6],
+            2 / (20 + 1),
+        ),
+    ],
 )
 def test_ema_like_sma(values, alpha):
     """
