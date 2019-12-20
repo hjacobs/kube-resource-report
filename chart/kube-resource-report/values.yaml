@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: hjacobs/kube-resource-report
-  tag: "19.12.1"
+  tag: "19.12.2"
   pullPolicy: IfNotPresent
 
 rbac:
