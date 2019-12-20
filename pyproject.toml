@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "kube_resource_report"
+version = "19.12.1"
+description = "Report Kubernetes cluster and pod resource requests vs usage and generate static HTML"
+authors = ["Henning Jacobs <henning@jacobs1.de>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+click = "*"
+jinja2 = "*"
+pykube-ng = "*"
+requests = "*"
+requests-futures = "*"
+stups-tokens = "*"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^19.10b0", allow-prereleases = true}
+boto3 = "*"
+coverage = "*"
+coveralls = "*"
+flake8 = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-watch = "*"

@@ -6,11 +6,16 @@ TAG              ?= $(VERSION)
 
 default: docker
 
-test:
-	pipenv run flake8
-	pipenv run mypy --ignore-missing-imports kube_resource_report/
-	pipenv run coverage run --source=kube_resource_report -m py.test
-	pipenv run coverage report
+.PHONY:
+install:
+	poetry install
+
+test: install
+	poetry run flake8
+	poetry run black --check kube_resource_report
+	poetry run mypy --ignore-missing-imports kube_resource_report/
+	poetry run coverage run --source=kube_resource_report -m py.test
+	poetry run coverage report
 
 docker: 
 	docker build --build-arg "VERSION=$(VERSION)" -t "$(IMAGE):$(TAG)" .

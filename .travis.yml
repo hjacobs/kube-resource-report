@@ -6,8 +6,7 @@ python:
 services:
   - docker
 install:
-  - pip install pipenv
-  - pipenv install --dev
+  - make install
 script:
   - make test docker
 after_success:

@@ -1,19 +1,20 @@
-FROM python:3.7-alpine3.10
+FROM python:3.8-slim
 
 WORKDIR /
 
-COPY Pipfile.lock /
-COPY pipenv-install.py /
+RUN pip3 install poetry
 
-RUN /pipenv-install.py && \
-    rm -fr /usr/local/lib/python3.7/site-packages/pip && \
-    rm -fr /usr/local/lib/python3.7/site-packages/setuptools
+COPY poetry.lock /
+COPY pyproject.toml /
 
-FROM python:3.7-alpine3.10
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-dev --no-ansi
+
+FROM python:3.8-slim
 
 WORKDIR /
 
-COPY --from=0 /usr/local/lib/python3.7/site-packages /usr/local/lib/python3.7/site-packages
+COPY --from=0 /usr/local/lib/python3.8/site-packages /usr/local/lib/python3.8/site-packages
 
 COPY kube_resource_report /kube_resource_report
 
