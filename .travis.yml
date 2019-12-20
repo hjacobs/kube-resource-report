@@ -6,8 +6,8 @@ python:
 services:
   - docker
 install:
-  - pip install pipenv
-  - pipenv install --dev
+  - pip3 install poetry
+  - make install
 script:
   - make test docker
 after_success:

@@ -100,12 +100,12 @@ class CommaSeparatedValues(click.ParamType):
 @click.option(
     "--pricing-file",
     type=click.Path(exists=True),
-    help="Path to alternate pricing file"
+    help="Path to alternate pricing file",
 )
 @click.option(
     "--links-file",
     type=click.Path(exists=True),
-    help="Path to YAML file defining custom links for resources"
+    help="Path to YAML file defining custom links for resources",
 )
 @click.option(
     "--node-labels",
@@ -113,9 +113,7 @@ class CommaSeparatedValues(click.ParamType):
     help="Values for the kubernetes.io/role label (e.g. 'worker' if nodes are labeled kubernetes.io/role=worker)",
     default="worker",
 )
-@click.option(
-    "--debug", is_flag=True, help="Enable debug logging"
-)
+@click.option("--debug", is_flag=True, help="Enable debug logging")
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
     clusters,

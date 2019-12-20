@@ -58,9 +58,9 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
     else:
         cost = NODE_COSTS_MONTHLY.get((region, instance_type))
 
-    if cost is None and instance_type.startswith('custom-'):
-        per_cpu = NODE_COSTS_MONTHLY.get((region, 'custom-per-cpu-core'))
-        per_memory = NODE_COSTS_MONTHLY.get((region, 'custom-per-memory-gib'))
+    if cost is None and instance_type.startswith("custom-"):
+        per_cpu = NODE_COSTS_MONTHLY.get((region, "custom-per-cpu-core"))
+        per_memory = NODE_COSTS_MONTHLY.get((region, "custom-per-memory-gib"))
         if per_cpu and per_memory:
             cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
 
@@ -73,39 +73,51 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
 def generate_gcp_price_list():
     import requests
 
-    response = requests.get('https://cloudpricingcalculator.appspot.com/static/data/pricelist.json?v=1563953523378')
-    prefix = 'CP-COMPUTEENGINE-VMIMAGE-'
-    custom_prefix = 'CP-COMPUTEENGINE-CUSTOM-VM-'
+    response = requests.get(
+        "https://cloudpricingcalculator.appspot.com/static/data/pricelist.json?v=1563953523378"
+    )
+    prefix = "CP-COMPUTEENGINE-VMIMAGE-"
+    custom_prefix = "CP-COMPUTEENGINE-CUSTOM-VM-"
 
     with _path_gcp.open("w") as fd:
         writer = csv.writer(fd, lineterminator="\n")
-        for product, data in sorted(response.json()['gcp_price_list'].items()):
+        for product, data in sorted(response.json()["gcp_price_list"].items()):
             if product.startswith(prefix):
-                instance_type = product[len(prefix):].lower()
+                instance_type = product[len(prefix) :].lower()
                 for region, hourly_price in sorted(data.items()):
-                    if '-' in region and isinstance(hourly_price, float):
+                    if "-" in region and isinstance(hourly_price, float):
                         monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
-                        writer.writerow([region, instance_type, "{:.4f}".format(monthly_price), data.get('cores'), data.get('memory')])
+                        writer.writerow(
+                            [
+                                region,
+                                instance_type,
+                                "{:.4f}".format(monthly_price),
+                                data.get("cores"),
+                                data.get("memory"),
+                            ]
+                        )
 
             elif product.startswith(custom_prefix):
-                _type = product[len(custom_prefix):].lower()
-                if _type == 'core':
-                    instance_type = 'custom-per-cpu-core'
-                elif _type == 'ram':
+                _type = product[len(custom_prefix) :].lower()
+                if _type == "core":
+                    instance_type = "custom-per-cpu-core"
+                elif _type == "ram":
                     # note: GCP prices are per GiB (2^30 bytes)
                     # https://cloud.google.com/compute/all-pricing
-                    instance_type = 'custom-per-memory-gib'
-                elif _type == 'core-preemptible':
-                    instance_type = 'custom-preemptible-per-cpu-core'
-                elif _type == 'ram-preemptible':
-                    instance_type = 'custom-preemptible-per-memory-gib'
+                    instance_type = "custom-per-memory-gib"
+                elif _type == "core-preemptible":
+                    instance_type = "custom-preemptible-per-cpu-core"
+                elif _type == "ram-preemptible":
+                    instance_type = "custom-preemptible-per-memory-gib"
                 else:
                     instance_type = None
                 if instance_type:
                     for region, hourly_price in sorted(data.items()):
-                        if '-' in region and isinstance(hourly_price, float):
+                        if "-" in region and isinstance(hourly_price, float):
                             monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
-                            writer.writerow([region, instance_type, "{:.4f}".format(monthly_price)])
+                            writer.writerow(
+                                [region, instance_type, "{:.4f}".format(monthly_price)]
+                            )
 
 
 def generate_ec2_price_list():
@@ -145,7 +157,14 @@ def generate_ec2_price_list():
     max_price = {}
     for location in sorted(LOCATIONS.values()):
         # some regions are not available
-        if location in ("ap-northeast-3", "cn-north-1", "cn-northwest-1", "us-gov-west-1", "us-gov-east-1", "ap-east-1"):
+        if location in (
+            "ap-northeast-3",
+            "cn-north-1",
+            "cn-northwest-1",
+            "us-gov-west-1",
+            "us-gov-east-1",
+            "ap-east-1",
+        ):
             continue
         print(location)
         ec2 = boto3.client("ec2", location)
@@ -153,29 +172,39 @@ def generate_ec2_price_list():
         today = datetime.date.today()
         start = today - datetime.timedelta(days=3)
 
-        instance_types_required = set([x[1] for x in NODE_COSTS_MONTHLY.keys() if x[0] == location])
+        instance_types_required = set(
+            [x[1] for x in NODE_COSTS_MONTHLY.keys() if x[0] == location]
+        )
         # instances not available as Spot..
-        instance_types_required -= set(['hs1.8xlarge', 't2.nano'])
+        instance_types_required -= set(["hs1.8xlarge", "t2.nano"])
         instance_types_seen = set()
 
         next_token = ""
         i = 0
         while next_token is not None:
-            data = ec2.describe_spot_price_history(Filters=[{"Name": "product-description", "Values": ["Linux/UNIX"]}],
-                                                   StartTime=start.isoformat(), EndTime=today.isoformat(), NextToken=next_token)
-            print('. ', end='')
+            data = ec2.describe_spot_price_history(
+                Filters=[{"Name": "product-description", "Values": ["Linux/UNIX"]}],
+                StartTime=start.isoformat(),
+                EndTime=today.isoformat(),
+                NextToken=next_token,
+            )
+            print(". ", end="")
             for entry in data["SpotPriceHistory"]:
                 print(entry)
                 instance_type = entry["InstanceType"]
                 instance_types_seen.add(instance_type)
                 price = float(entry["SpotPrice"])
                 monthly_price = price * 24 * AVG_DAYS_PER_MONTH
-                max_price[(location, instance_type)] = max(max_price.get((location, instance_type), 0), monthly_price)
+                max_price[(location, instance_type)] = max(
+                    max_price.get((location, instance_type), 0), monthly_price
+                )
             i += 1
             if instance_types_seen >= instance_types_required or i > 4:
                 next_token = None
             else:
-                print(f"Waiting to see instance types {instance_types_required - instance_types_seen}")
+                print(
+                    f"Waiting to see instance types {instance_types_required - instance_types_seen}"
+                )
                 next_token = data.get("NextToken")
 
     with _spot_path.open("w") as fd:
@@ -198,7 +227,7 @@ def generate_ec2_price_list():
         data = pricing.get_products(
             ServiceCode="AmazonEC2", Filters=filters, NextToken=next_token
         )
-        print('. ', end='')
+        print(". ", end="")
         for entry in data["PriceList"]:
             entry = json.loads(entry)
             tenancy = entry["product"]["attributes"].get("tenancy")
@@ -208,17 +237,31 @@ def generate_ec2_price_list():
             sw = entry["product"]["attributes"].get("preInstalledSw", "")
             usagetype = entry["product"]["attributes"]["usagetype"]
 
-            if tenancy == "Shared" and os == "Linux" and sw == "NA" and "BoxUsage:" in usagetype:
+            if (
+                tenancy == "Shared"
+                and os == "Linux"
+                and sw == "NA"
+                and "BoxUsage:" in usagetype
+            ):
                 for k, v in entry["terms"]["OnDemand"].items():
                     for k_, v_ in v["priceDimensions"].items():
                         if v_["unit"] == "Hrs":
                             price = float(v_["pricePerUnit"]["USD"])
                             monthly_price = price * 24 * AVG_DAYS_PER_MONTH
-                            instance_type = entry["product"]["attributes"]["instanceType"]
+                            instance_type = entry["product"]["attributes"][
+                                "instanceType"
+                            ]
                             key = (location, instance_type)
 
                             if key in pricing_data:
-                                raise Exception("Duplicate data for {}/{}: {:.4f} and {:.4f}".format(location, instance_type, pricing_data[key], monthly_price))
+                                raise Exception(
+                                    "Duplicate data for {}/{}: {:.4f} and {:.4f}".format(
+                                        location,
+                                        instance_type,
+                                        pricing_data[key],
+                                        monthly_price,
+                                    )
+                                )
 
                             pricing_data[key] = monthly_price
         next_token = data.get("NextToken")
