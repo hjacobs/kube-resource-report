@@ -38,11 +38,11 @@ What the script does:
 Usage
 -----
 
-The usage requires `Pipenv <https://docs.pipenv.org/>`_ (see below for alternative with Docker):
+The usage requires `Poetry <https://python-poetry.org/>`_ (see below for alternative with Docker):
 
 .. code-block::
 
-    $ pipenv install && pipenv shell
+    $ poetry install && poetry shell
     $ mkdir output
     $ python3 -m kube_resource_report output/ # uses clusters defined in ~/.kube/config
     $ OAUTH2_ACCESS_TOKENS=read-only=mytok python3 -m kube_resource_report --cluster-registry=https://cluster-registry.example.org output/ # discover clusters via registry
