@@ -33,6 +33,9 @@ What the script does:
 * Group and aggregate resource usage and slack costs per cluster, team and application
 * Allow custom links to existing systems (e.g. link to a monitoring dashboard for each cluster)
 
+The primary goal of Kubernetes Resource Report is to help optimize Kubernetes resource requests and avoid slack.
+**Slack** is the difference between resource requests and resource usage, e.g. requesting 2 GiB of memory and only using 200 MiB would mean 1.8 GiB of memory slack — i.e. 1.8 GiB of memory capacity are blocked (and paid for), but unused.
+Kubernetes Resource Report shows a Dollar value of potential savings, e.g. “You can potentially save 321.99 USD every month by optimizing resource requests and reducing slack”. The potential savings are calculated by taking the cluster AWS costs (sum of all node costs, ELB, and etcd instances) and attributing the relevant share per application/team by resource requests. Example: a cluster with 15 vCPUs capacity and 768 USD total costs runs an application with 1 vCPU slack, this would show as 51 USD potential savings for the application (“slack”, disregarding memory in this example).
 
 -----
 Usage
