@@ -3,9 +3,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pricing-file
-  helm.sh/chart: {{ include "kube-resource-report.chart" . }}
-  app.kubernetes.io/instance: {{ .Release.Name }}
-  app.kubernetes.io/managed-by: {{ .Release.Service }}
+  labels:
+    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
   pricing.csv: {{ .Values.pricing.data | quote }}
 {{- end }}
