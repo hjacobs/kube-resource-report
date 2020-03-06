@@ -30,3 +30,14 @@ Create chart name and version as used by the chart label.
 {{- define "kube-resource-report.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Return the appropriate apiVersion for Ingress.
+*/}}
+{{- define "kube-resource-report.ingress.apiVersion" -}}
+{{- if and (ge .Capabilities.KubeVersion.Minor "4") (le .Capabilities.KubeVersion.Minor "13") -}}
+{{- print "extensions/v1beta1" -}}
+{{- else if ge .Capabilities.KubeVersion.Minor "14" -}}
+{{- print "networking.k8s.io/v1beta1" -}}
+{{- end -}}
+{{- end -}}
