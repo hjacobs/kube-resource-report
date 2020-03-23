@@ -116,6 +116,7 @@
                   <th>CPU</th>
                   <th>Memory (MiB)</th>
                   <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
                   {% if links['pod']: %}
                   <th></th>
                   {% endif %}
@@ -152,6 +153,7 @@
             </td>
 
             <td class="has-text-right">{{ row.pod.cost|money }}</td>
+            <td class="has-text-right">{{ row.pod.slack_cost|money }}</td>
 
             {% if links['pod']: %}
             <td class="links">

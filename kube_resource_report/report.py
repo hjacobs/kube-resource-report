@@ -1010,6 +1010,7 @@ def write_report(
                 "CPU Usage",
                 "Memory Usage",
                 "Cost [USD]",
+                "Slack Cost [USD]",
             ]
         )
         with out.open("slack.tsv") as csvfile2:
@@ -1042,6 +1043,7 @@ def write_report(
                             usage["cpu"],
                             usage["memory"],
                             pod["cost"],
+                            pod["slack_cost"],
                         ]
                     )
                 cost_per_cpu = summary["cost"] / summary["allocatable"]["cpu"]
