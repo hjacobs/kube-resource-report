@@ -4,8 +4,8 @@
 <h1 class="title">Application {{ application.id }}
     <span class="links">
         {% for link in links['application']: %}
-             <a href="{{ link.href.format(id=application.id) }}"
-                title="{{ link.title.format(id=application.id) }}"
+             <a href="{{ link.href.format(**application) }}"
+                title="{{ link.title.format(**application) }}"
                 class="button is-light">
                  <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
              </a>
