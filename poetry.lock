@@ -55,10 +55,10 @@ description = "The AWS SDK for Python"
 name = "boto3"
 optional = false
 python-versions = "*"
-version = "1.12.26"
+version = "1.12.32"
 
 [package.dependencies]
-botocore = ">=1.15.26,<1.16.0"
+botocore = ">=1.15.32,<1.16.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
@@ -68,7 +68,7 @@ description = "Low-level, data-driven core of boto 3."
 name = "botocore"
 optional = false
 python-versions = "*"
-version = "1.15.26"
+version = "1.15.32"
 
 [package.dependencies]
 docutils = ">=0.10,<0.16"
@@ -191,7 +191,7 @@ marker = "python_version < \"3.8\""
 name = "importlib-metadata"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
-version = "1.5.0"
+version = "1.6.0"
 
 [package.dependencies]
 zipp = ">=0.5"
@@ -599,12 +599,12 @@ black = [
     {file = "black-19.10b0.tar.gz", hash = "sha256:c2edb73a08e9e0e6f65a0e6af18b059b8b1cdd5bef997d7a0b181df93dc81539"},
 ]
 boto3 = [
-    {file = "boto3-1.12.26-py2.py3-none-any.whl", hash = "sha256:934057d57331d1f9c969f186533e87f460e97d2127ca2fde0505a234ec9ad286"},
-    {file = "boto3-1.12.26.tar.gz", hash = "sha256:c998a5a8c6ec6ebb4f3fc6884faa0250e511dbc27fee555e422fe6023e0e73ac"},
+    {file = "boto3-1.12.32-py2.py3-none-any.whl", hash = "sha256:57398de1b5e074e715c866441e69f90c9468959d5743a021d8aeed04fbaa1078"},
+    {file = "boto3-1.12.32.tar.gz", hash = "sha256:60ac1124597231ed36a7320547cd0d16a001bb92333ab30ad20514f77e585225"},
 ]
 botocore = [
-    {file = "botocore-1.15.26-py2.py3-none-any.whl", hash = "sha256:9a697a5e1fca536d68b13f99545a49f446db622c0c525f0d29609bb875ac0b7a"},
-    {file = "botocore-1.15.26.tar.gz", hash = "sha256:285bd8f8f2258628eb32994505570896c76bdd8f3c7828d2e7749739f9ba07a9"},
+    {file = "botocore-1.15.32-py2.py3-none-any.whl", hash = "sha256:a963af564d94107787ff3d2c534e8b7aed7f12e014cdd609f8fcb17bf9d9b19a"},
+    {file = "botocore-1.15.32.tar.gz", hash = "sha256:3ea89601ee452b65084005278bd832be854cfde5166685dcb14b6c8f19d3fc6d"},
 ]
 certifi = [
     {file = "certifi-2019.11.28-py2.py3-none-any.whl", hash = "sha256:017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3"},
@@ -680,8 +680,8 @@ idna = [
     {file = "idna-2.9.tar.gz", hash = "sha256:7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb"},
 ]
 importlib-metadata = [
-    {file = "importlib_metadata-1.5.0-py2.py3-none-any.whl", hash = "sha256:b97607a1a18a5100839aec1dc26a1ea17ee0d93b20b0f008d80a5a050afb200b"},
-    {file = "importlib_metadata-1.5.0.tar.gz", hash = "sha256:06f5b3a99029c7134207dd882428a66992a9de2bef7c2b699b5641f9886c3302"},
+    {file = "importlib_metadata-1.6.0-py2.py3-none-any.whl", hash = "sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f"},
+    {file = "importlib_metadata-1.6.0.tar.gz", hash = "sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e"},
 ]
 jinja2 = [
     {file = "Jinja2-2.11.1-py2.py3-none-any.whl", hash = "sha256:b0eaf100007721b5c16c1fc1eecb87409464edc10469ddc9a22a27a99123be49"},
