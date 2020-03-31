@@ -226,7 +226,7 @@ def generate_ec2_price_list():
     try:
         generate_ec2_spot_price_list()
     except Exception as e:
-        print(e)
+        print(f"Could not load AWS EC2 Spot prices: {e}")
 
     filters = [
         {"Type": "TERM_MATCH", "Field": "operatingSystem", "Value": "Linux"},
