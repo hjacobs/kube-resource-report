@@ -14,7 +14,7 @@ spec:
       labels:
         {{- include "kube-resource-report.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccount: {{ include "kube-resource-report.fullname" . }}
+      serviceAccountName: {{ include "kube-resource-report.serviceAccountName" . }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

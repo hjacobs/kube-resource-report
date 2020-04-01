@@ -61,3 +61,14 @@ Selector labels
 app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "kube-resource-report.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "kube-resource-report.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
