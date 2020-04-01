@@ -32,8 +32,11 @@ spec:
         {{- if .Values.addtionalCostPerCluster }}
         - --additional-cost-per-cluster={{ .Values.addtionalCostPerCluster }}
         {{- end }}
+        {{- if .Values.customLinks.enabled }}
+        - "--links-file=/kube_resource_report/config/links.yaml"
+        {{- end }}
         {{- if .Values.pricing.enabled }}
-        - "--pricing-file=/pricing-file/pricing.csv"
+        - "--pricing-file=/kube_resource_report/config/pricing.csv"
         {{- end }}
         {{- range .Values.customArgs }}
         - {{ . | quote }}
@@ -42,9 +45,9 @@ spec:
         volumeMounts:
         - mountPath: /output
           name: report-data
-        {{- if .Values.pricing.enabled }}
-        - mountPath: /pricing-file/
-          name: pricing-file
+        {{- if or .Values.pricing.enabled .Values.customLinks.enabled }}
+        - mountPath: /kube_resource_report/config/
+          name: configs
         {{- end }}
         resources:
           {{- toYaml .Values.resourcesApp | nindent 10 }}
@@ -90,10 +93,10 @@ spec:
         - name: report-data
           emptyDir:
             sizeLimit: 500Mi
-        {{- if .Values.pricing.enabled }}
-        - name: pricing-file
+        {{- if or .Values.customLinks.enabled .Values.pricing.enabled }}
+        - name: configs
           configMap:
-            name: pricing-file
+            name: {{ .Release.Name }}-configs
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

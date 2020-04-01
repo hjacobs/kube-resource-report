@@ -24,6 +24,16 @@ updateInterval: 1
 #   - "--system-namespaces=kube-system,infra-system"
 customArgs: []
 
+# Custom links
+# Ref: https://github.com/hjacobs/kube-resource-report#custom-links
+customLinks:
+  enabled: false
+  data: |
+    team:
+    - href: "https://people.mycorp.example.org/search?q=team:{id}"
+      title: "Search team {id} on people.mycorp"
+      icon: search
+
 # x additional USD/month cluster costs (like ELB, CloudWatch, etc.)
 addtionalCostPerCluster: 0
 
