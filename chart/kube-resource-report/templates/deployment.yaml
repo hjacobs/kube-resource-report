@@ -3,21 +3,16 @@ kind: Deployment
 metadata:
   name: {{ include "kube-resource-report.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "kube-resource-report.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "kube-resource-report.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "kube-resource-report.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccount: {{ include "kube-resource-report.fullname" . }}
       containers:

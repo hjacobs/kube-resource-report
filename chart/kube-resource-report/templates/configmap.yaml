@@ -4,9 +4,7 @@ kind: ConfigMap
 metadata:
   name: pricing-file
   labels:
-    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "kube-resource-report.labels" . | nindent 4 }}
 data:
   pricing.csv: {{ .Values.pricing.data | quote }}
 {{- end }}

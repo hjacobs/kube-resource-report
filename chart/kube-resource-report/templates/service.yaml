@@ -3,10 +3,7 @@ kind: Service
 metadata:
   name: {{ include "kube-resource-report.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "kube-resource-report.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -15,5 +12,4 @@ spec:
       protocol: {{ .Values.container.portProtocol }}
       name: {{ .Values.service.portName }}
   selector:
-    app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "kube-resource-report.selectorLabels" . | nindent 4 }}
