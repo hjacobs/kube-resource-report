@@ -2,6 +2,17 @@ h1 .links {
     margin-left: 1rem;
 }
 
+main div.section { margin: 0 0 1.5rem 0; padding: 0; }
+
+main div.section.collapsible h2.title { cursor: pointer; border-bottom: 1px solid #fff; }
+main div.section.collapsible h2.title:hover { color: #363636; border-bottom: 1px solid #dbdbdb; }
+main div.section.collapsible h2.title:hover::after { content: " ▴"; }
+
+main div.section.is-collapsed h2.title { color: #7a7a7a; border-bottom: 1px solid #dbdbdb; }
+main div.section.is-collapsed h2.title:hover::after { content: " ▾"; }
+main div.section.is-collapsed .content,
+main div.section.is-collapsed table { display: none; }
+
 .resource-labels {
     display: flex;
     line-height: 1;

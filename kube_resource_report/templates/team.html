@@ -4,217 +4,224 @@
 <h1 class="title">Team {{ team_id|capitalize }}
     <span class="links">
         {% for link in links['team']: %}
-             <a href="{{ link.href.format(id=team_id) }}"
-                title="{{ link.title.format(id=team_id) }}"
-                class="button is-light">
-                 <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
-             </a>
+        <a href="{{ link.href.format(id=team_id) }}"
+           title="{{ link.title.format(id=team_id) }}"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+        </a>
         {% endfor %}
     </span>
 </h1>
 
 <nav class="level">
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Applications</p>
-      <p class="title">{{ team.applications|count }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Applications</p>
+            <p class="title">{{ team.applications|count }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Pods</p>
-      <p class="title">{{ team.pods }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Pods</p>
+            <p class="title">{{ team.pods }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">CPU Requests</p>
-      <p class="title">{{ team.requests.cpu|cpu }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">CPU Requests</p>
+            <p class="title">{{ team.requests.cpu|cpu }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Memory Requests</p>
-      <p class="title">{{ team.requests.memory|filesizeformat(True) }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Memory Requests</p>
+            <p class="title">{{ team.requests.memory|filesizeformat(True) }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Monthly Cost</p>
-      <p class="title">{{ team.cost|money }} USD</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Monthly Cost</p>
+            <p class="title">{{ team.cost|money }} USD</p>
+        </div>
     </div>
-  </div>
 </nav>
-    <div class="notification is-warning">
-        You can potentially save <strong>{{ team.slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
-    </div>
+<div class="notification is-warning">
+    You can potentially save <strong>{{ team.slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
+</div>
+
+</div>
+<div class="section collapsible" data-name="clusters">
     <h2 class="title is-5">Clusters</h2>
-      <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
-          <thead>
-              <tr>
-                  <th>Cluster</th>
-                  <th><abbr title="Master Nodes">MN</abbr></th>
-                  <th><abbr title="Worker Nodes">WN</abbr></th>
-                  <th>Inst. Types</th>
-                  <th>Version</th>
-                  <th><abbr title="Ingresses">I</abbr></th>
-                  <th><abbr title="Pods">P</abbr></th>
-                  <th><abbr title="User Pods">UP</abbr></th>
-                  <th>CPU</th>
-                  <th>Memory (GiB)</th>
-                  <th class="has-text-right">Cost</th>
-                  {% if links['cluster']: %}
-                  <th></th>
-                  {% endif %}
-              </tr>
-          </thead>
-          <tbody>
-              {% for cluster_id in team.clusters: %}
-          {% set summary = cluster_summaries[cluster_id] %}
-          <tr>
-            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
-            <td>{{ summary.master_nodes }}</td>
-            <td>{{ summary.worker_nodes }}</td>
-            <td>{{ summary.worker_instance_types|join(', ') }}</td>
-            <td>{{ summary.kubelet_versions|join(', ') }}</td>
-            <td>{{ summary.ingresses|count }}</td>
-            <td>{{ summary.pods|count }}</td>
-            <td>{{ summary.user_pods }}</td>
+    <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+        <thead>
+            <tr>
+                <th>Cluster</th>
+                <th><abbr title="Master Nodes">MN</abbr></th>
+                <th><abbr title="Worker Nodes">WN</abbr></th>
+                <th>Inst. Types</th>
+                <th>Version</th>
+                <th><abbr title="Ingresses">I</abbr></th>
+                <th><abbr title="Pods">P</abbr></th>
+                <th><abbr title="User Pods">UP</abbr></th>
+                <th>CPU</th>
+                <th>Memory (GiB)</th>
+                <th class="has-text-right">Cost</th>
+                {% if links['cluster']: %}
+                <th></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for cluster_id in team.clusters: %}
+            {% set summary = cluster_summaries[cluster_id] %}
+            <tr>
+                <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
+                <td>{{ summary.master_nodes }}</td>
+                <td>{{ summary.worker_nodes }}</td>
+                <td>{{ summary.worker_instance_types|join(', ') }}</td>
+                <td>{{ summary.kubelet_versions|join(', ') }}</td>
+                <td>{{ summary.ingresses|count }}</td>
+                <td>{{ summary.pods|count }}</td>
+                <td>{{ summary.user_pods }}</td>
 
-            <td style="font-size: 0.75rem" data-value="{{ summary.usage.cpu }}">
-                <div class="resource-labels">
-                    <span>{{ summary.usage.cpu|cpu }}</span> <span>{{ summary.requests.cpu|cpu }}</span> <span>{{ summary.allocatable.cpu|cpu }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
-                    <progress class="progress" value="{{ summary.requests.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
-                    <progress class="progress is-primary" value="{{ summary.usage.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
-                </div>
-            </td>
-            <td style="font-size: 0.75rem" data-value="{{ summary.usage.memory }}">
-                <div class="resource-labels">
-                    <span>{{ summary.usage.memory|memory('GiB') }}</span> <span>{{ summary.requests.memory|memory('GiB') }}</span> <span>{{ summary.allocatable.memory|memory('GiB') }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
-                    <progress class="progress" value="{{ summary.requests.memory }}" max="{{ summary.allocatable.memory }}"></progress>
-                    <progress class="progress is-primary" value="{{ summary.usage.memory }}" max="{{ summary.allocatable.memory }}"></progress>
-                </div>
-            </td>
-            <td class="has-text-right">{{ summary.cost|money }}</td>
-            {% if links['cluster']: %}
-            <td class="links">
-                <div class="buttons has-addons">
-                {% for link in links['cluster']: %}
-                    <a href="{{ link.href.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
-                        title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
-                        class="button is-small">
-                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
-                    </a>
-                {% endfor %}
-                </div>
-            </td>
-            {% endif %}
+                <td style="font-size: 0.75rem" data-value="{{ summary.usage.cpu }}">
+                    <div class="resource-labels">
+                        <span>{{ summary.usage.cpu|cpu }}</span> <span>{{ summary.requests.cpu|cpu }}</span> <span>{{ summary.allocatable.cpu|cpu }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
+                        <progress class="progress" value="{{ summary.requests.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
+                        <progress class="progress is-primary" value="{{ summary.usage.cpu }}" max="{{ summary.allocatable.cpu }}"></progress>
+                    </div>
+                </td>
+                <td style="font-size: 0.75rem" data-value="{{ summary.usage.memory }}">
+                    <div class="resource-labels">
+                        <span>{{ summary.usage.memory|memory('GiB') }}</span> <span>{{ summary.requests.memory|memory('GiB') }}</span> <span>{{ summary.allocatable.memory|memory('GiB') }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
+                        <progress class="progress" value="{{ summary.requests.memory }}" max="{{ summary.allocatable.memory }}"></progress>
+                        <progress class="progress is-primary" value="{{ summary.usage.memory }}" max="{{ summary.allocatable.memory }}"></progress>
+                    </div>
+                </td>
+                <td class="has-text-right">{{ summary.cost|money }}</td>
+                {% if links['cluster']: %}
+                <td class="links">
+                    <div class="buttons has-addons">
+                        {% for link in links['cluster']: %}
+                        <a href="{{ link.href.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                           title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                           class="button is-small">
+                            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
 
-          </tr>
+            </tr>
 
-          {%endfor %}
-          </tbody>
+            {%endfor %}
+        </tbody>
 
-        </table>
+    </table>
+</div>
+
+<div class="section collapsible" data-name="applications">
     <h2 class="title is-5">Applications</h2>
-      <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
-          <thead>
-              <tr>
-                  <th>ID</th>
-                  <th><abbr title="Active?">A?</abbr></th>
-                  <th><abbr title="Clusters">C</abbr></th>
-                  <th><abbr title="Pods">P</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th>CPU</th>
-                  <th>Memory (MiB)</th>
-                  <th class="has-text-right">Cost</th>
-                  <th class="has-text-right">Slack Cost</th>
-                  <th class="has-text-right">Cost %</th>
-                  {% if links['application']: %}
-                  <th></th>
-                  {% endif %}
-              </tr>
-          </thead>
-          <tbody>
-          {% for application_id, app in applications.items()|sort: %}
-          {% if app.team == team_id: %}
-          <tr>
-            <td><a href="application-{{ application_id }}.html">{{ application_id }}</a></td>
-            <td>
-                {% if app.active is not none: %}
-                {% if app.active: %}
-                <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
+    <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th><abbr title="Active?">A?</abbr></th>
+                <th><abbr title="Clusters">C</abbr></th>
+                <th><abbr title="Pods">P</abbr></th>
+                <th><abbr title="CPU Requests">CR</abbr></th>
+                <th><abbr title="Memory Requests">MR</abbr></th>
+                <th>CPU</th>
+                <th>Memory (MiB)</th>
+                <th class="has-text-right">Cost</th>
+                <th class="has-text-right">Slack Cost</th>
+                <th class="has-text-right">Cost %</th>
+                {% if links['application']: %}
+                <th></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for application_id, app in applications.items()|sort: %}
+            {% if app.team == team_id: %}
+            <tr>
+                <td><a href="application-{{ application_id }}.html">{{ application_id }}</a></td>
+                <td>
+                    {% if app.active is not none: %}
+                    {% if app.active: %}
+                    <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
 
-                {% else: %}
-                <span class="icon"><i class="fas fa-exclamation-triangle has-text-warning"></i></span>
-                {% endif %}
-                {% endif %}
+                    {% else: %}
+                    <span class="icon"><i class="fas fa-exclamation-triangle has-text-warning"></i></span>
+                    {% endif %}
+                    {% endif %}
 
                 </td>
-            <td>{{ app.clusters|count }}</td>
-            <td>{{ app.pods }}</td>
-            <td>{{ app.requests.cpu|round(3) }}</td>
-            <td data-value="{{ app.requests.memory }}">{{ app.requests.memory|filesizeformat(True) }}</td>
+                <td>{{ app.clusters|count }}</td>
+                <td>{{ app.pods }}</td>
+                <td>{{ app.requests.cpu|round(3) }}</td>
+                <td data-value="{{ app.requests.memory }}">{{ app.requests.memory|filesizeformat(True) }}</td>
 
-            <td style="font-size: 0.75rem" data-value="{{ app.usage.cpu }}">
-                <div class="resource-labels">
-                    <span>{{ app.usage.cpu|round(2) }}</span> <span>{{ app.requests.cpu|round(2) }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                    <progress class="progress" value="{{ app.requests.cpu }}" max="{{ app.requests.cpu }}"></progress>
-                    <progress class="progress {{ 'is-danger' if app.usage.cpu > app.requests.cpu else 'is-primary' }}" value="{{ app.usage.cpu }}" max="{{ app.requests.cpu }}"></progress>
-                </div>
-            </td>
-            <td style="font-size: 0.75rem" data-value="{{ app.usage.memory }}">
-                <div class="resource-labels">
-                    <span>{{ app.usage.memory|memory('MiB') }}</span> <span>{{ app.requests.memory|memory('MiB') }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                    <progress class="progress" value="{{ app.requests.memory }}" max="{{ app.requests.memory }}"></progress>
-                    <progress class="progress {{ 'is-danger' if app.usage.memory > app.requests.memory else 'is-primary' }}" value="{{ app.usage.memory }}" max="{{ app.requests.memory }}"></progress>
-                </div>
-            </td>
+                <td style="font-size: 0.75rem" data-value="{{ app.usage.cpu }}">
+                    <div class="resource-labels">
+                        <span>{{ app.usage.cpu|round(2) }}</span> <span>{{ app.requests.cpu|round(2) }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        <progress class="progress" value="{{ app.requests.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                        <progress class="progress {{ 'is-danger' if app.usage.cpu > app.requests.cpu else 'is-primary' }}" value="{{ app.usage.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                    </div>
+                </td>
+                <td style="font-size: 0.75rem" data-value="{{ app.usage.memory }}">
+                    <div class="resource-labels">
+                        <span>{{ app.usage.memory|memory('MiB') }}</span> <span>{{ app.requests.memory|memory('MiB') }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        <progress class="progress" value="{{ app.requests.memory }}" max="{{ app.requests.memory }}"></progress>
+                        <progress class="progress {{ 'is-danger' if app.usage.memory > app.requests.memory else 'is-primary' }}" value="{{ app.usage.memory }}" max="{{ app.requests.memory }}"></progress>
+                    </div>
+                </td>
 
-            <td class="has-text-right">{{ app.cost|money }}</td>
-            <td class="has-text-right">{{ app.slack_cost|money }}</td>
+                <td class="has-text-right">{{ app.cost|money }}</td>
+                <td class="has-text-right">{{ app.slack_cost|money }}</td>
 
-            {% if team.cost > 0 %}
-              {% with percentage=(app.cost / team.cost) * 100 %}
-              <td style="font-size: 0.75rem" data-value="{{ percentage|round(3) }}">
-                <div class="resource-labels">
-                    <span>{{ percentage|round(0)|int }}%</span> <span></span>
-                </div>
-                <div class="resource-bar" title="Percentage of application cost divided by team cost">
-                    <progress class="progress" value="100" max="100"></progress>
-                    <progress class="progress is-primary" value="{{ percentage|round(3) }}" max="100"></progress>
-                </div>
-              </td>
-              {% endwith %}
-              {% else %}
-            <td class="has-text-right">-</td>
+                {% if team.cost > 0 %}
+                {% with percentage=(app.cost / team.cost) * 100 %}
+                <td style="font-size: 0.75rem" data-value="{{ percentage|round(3) }}">
+                    <div class="resource-labels">
+                        <span>{{ percentage|round(0)|int }}%</span> <span></span>
+                    </div>
+                    <div class="resource-bar" title="Percentage of application cost divided by team cost">
+                        <progress class="progress" value="100" max="100"></progress>
+                        <progress class="progress is-primary" value="{{ percentage|round(3) }}" max="100"></progress>
+                    </div>
+                </td>
+                {% endwith %}
+                {% else %}
+                <td class="has-text-right">-</td>
+                {% endif %}
+                {% if links['application']: %}
+                <td class="links">
+                    <div class="buttons has-addons">
+                        {% for link in links['application']: %}
+                        <a href="{{ link.href.format(**app) }}"
+                           title="{{ link.title.format(**app) }}"
+                           class="button is-small">
+                            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
             {% endif %}
-            {% if links['application']: %}
-            <td class="links">
-                <div class="buttons has-addons">
-                {% for link in links['application']: %}
-                    <a href="{{ link.href.format(**app) }}"
-                        title="{{ link.title.format(**app) }}"
-                        class="button is-small">
-                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
-                    </a>
-                {% endfor %}
-                </div>
-            </td>
-            {% endif %}
-          </tr>
-            {% endif %}
-          {%endfor %}
-          </tbody>
+            {%endfor %}
+        </tbody>
 
-        </table>
+    </table>
+</div>
 {% endblock %}
