@@ -708,23 +708,28 @@ def generate_report(
                     "active": None,
                 },
             )
-            component = app["components"].get(pod["component"], {
-                "cost": 0,
-                "slack_cost": 0,
-                "pods": 0,
-                "requests": {},
-                "usage": {},
-                "clusters": set(),
-            })
+            component = app["components"].get(
+                pod["component"],
+                {
+                    "cost": 0,
+                    "slack_cost": 0,
+                    "pods": 0,
+                    "requests": {},
+                    "usage": {},
+                    "clusters": set(),
+                },
+            )
             for r in "cpu", "memory":
                 app["requests"][r] = app["requests"].get(r, 0) + pod["requests"][r]
                 app["usage"][r] = app["usage"].get(r, 0) + pod.get("usage", {}).get(
                     r, 0
                 )
-                component["requests"][r] = component["requests"].get(r, 0) + pod["requests"][r]
-                component["usage"][r] = component["usage"].get(r, 0) + pod.get("usage", {}).get(
-                    r, 0
+                component["requests"][r] = (
+                    component["requests"].get(r, 0) + pod["requests"][r]
                 )
+                component["usage"][r] = component["usage"].get(r, 0) + pod.get(
+                    "usage", {}
+                ).get(r, 0)
             app["cost"] += pod["cost"]
             app["slack_cost"] += pod.get("slack_cost", 0)
             app["pods"] += 1
