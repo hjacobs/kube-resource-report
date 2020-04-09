@@ -700,6 +700,7 @@ def generate_report(
                     "cost": 0,
                     "slack_cost": 0,
                     "pods": 0,
+                    "components": {},
                     "requests": {},
                     "usage": {},
                     "clusters": set(),
@@ -707,9 +708,21 @@ def generate_report(
                     "active": None,
                 },
             )
+            component = app["components"].get(pod["component"], {
+                "cost": 0,
+                "slack_cost": 0,
+                "pods": 0,
+                "requests": {},
+                "usage": {},
+                "clusters": set(),
+            })
             for r in "cpu", "memory":
                 app["requests"][r] = app["requests"].get(r, 0) + pod["requests"][r]
                 app["usage"][r] = app["usage"].get(r, 0) + pod.get("usage", {}).get(
+                    r, 0
+                )
+                component["requests"][r] = component["requests"].get(r, 0) + pod["requests"][r]
+                component["usage"][r] = component["usage"].get(r, 0) + pod.get("usage", {}).get(
                     r, 0
                 )
             app["cost"] += pod["cost"]
@@ -717,6 +730,13 @@ def generate_report(
             app["pods"] += 1
             app["clusters"].add(cluster_id)
             app["team"] = pod["team"]
+
+            component["cost"] += pod["cost"]
+            component["slack_cost"] += pod.get("slack_cost", 0)
+            component["pods"] += 1
+            component["clusters"].add(cluster_id)
+
+            app["components"][pod["component"]] = component
             applications[pod["application"]] = app
 
         for ns_pod, pod in summary["pods"].items():

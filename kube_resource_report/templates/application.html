@@ -103,6 +103,93 @@
     </table>
 </div>
 
+<div class="section collapsible" data-name="components">
+    <h2 class="title is-5">Components</h2>
+    <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th><abbr title="Clusters">C</abbr></th>
+                <th><abbr title="Pods">P</abbr></th>
+                <th><abbr title="CPU Requests">CR</abbr></th>
+                <th><abbr title="Memory Requests">MR</abbr></th>
+                <th>CPU</th>
+                <th>Memory (MiB)</th>
+                <th class="has-text-right">Cost</th>
+                <th class="has-text-right">Slack Cost</th>
+                <th class="has-text-right">Cost %</th>
+                {% if links['component']: %}
+                <th></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for name, component in application.components.items()|sort: %}
+            <tr>
+                <td>{{ name }}</td>
+                <td title="{{ component.clusters|join(', ') }}">{{ component.clusters|count }}</td>
+                <td>{{ component.pods }}</td>
+                <td>{{ component.requests.cpu|round(3) }}</td>
+                <td data-value="{{ component.requests.memory }}">{{ component.requests.memory|filesizeformat(True) }}</td>
+
+                <td style="font-size: 0.75rem" data-value="{{ component.usage.cpu }}">
+                    <div class="resource-labels">
+                        <span>{{ component.usage.cpu|round(2) }}</span> <span>{{ component.requests.cpu|round(2) }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        <progress class="progress" value="{{ component.requests.cpu }}" max="{{ component.requests.cpu }}"></progress>
+                        <progress class="progress {{ 'is-danger' if component.usage.cpu > component.requests.cpu else 'is-primary' }}" value="{{ component.usage.cpu }}" max="{{ component.requests.cpu }}"></progress>
+                    </div>
+                </td>
+                <td style="font-size: 0.75rem" data-value="{{ component.usage.memory }}">
+                    <div class="resource-labels">
+                        <span>{{ component.usage.memory|memory('MiB') }}</span> <span>{{ component.requests.memory|memory('MiB') }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        <progress class="progress" value="{{ component.requests.memory }}" max="{{ component.requests.memory }}"></progress>
+                        <progress class="progress {{ 'is-danger' if component.usage.memory > component.requests.memory else 'is-primary' }}" value="{{ component.usage.memory }}" max="{{ component.requests.memory }}"></progress>
+                    </div>
+                </td>
+
+                <td class="has-text-right">{{ component.cost|money }}</td>
+                <td class="has-text-right">{{ component.slack_cost|money }}</td>
+
+                {% if application.cost > 0 %}
+                {% with percentage=(component.cost / application.cost) * 100 %}
+                <td style="font-size: 0.75rem" data-value="{{ percentage|round(3) }}">
+                    <div class="resource-labels">
+                        <span>{{ percentage|round(0)|int }}%</span> <span></span>
+                    </div>
+                    <div class="resource-bar" title="Percentage of component cost divided by application cost">
+                        <progress class="progress" value="100" max="100"></progress>
+                        <progress class="progress is-primary" value="{{ percentage|round(3) }}" max="100"></progress>
+                    </div>
+                </td>
+                {% endwith %}
+                {% else %}
+                <td class="has-text-right">-</td>
+                {% endif %}
+
+                {% if links['component']: %}
+                <td class="links">
+                    <div class="buttons has-addons">
+                        {% for link in links['component']: %}
+                        <a href="{{ link.href.format(app=application.id, name=name) }}"
+                           title="{{ link.title.format(app=application.id, name=name) }}"
+                           class="button is-small">
+                            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {%endfor %}
+        </tbody>
+
+    </table>
+</div>
+
 <div class="section collapsible" data-name="pods">
     <h2 class="title is-5">Pods</h2>
     <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
