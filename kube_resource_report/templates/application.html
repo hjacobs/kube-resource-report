@@ -126,7 +126,7 @@
         <tbody>
             {% for name, component in application.components.items()|sort: %}
             <tr>
-                <td>{{ name }}</td>
+                <td>{% if name == "": %}<i>unnamed</i>{% else %}{{ name }}{% endif %}</td>
                 <td title="{{ component.clusters|join(', ') }}">{{ component.clusters|count }}</td>
                 <td>{{ component.pods }}</td>
                 <td>{{ component.requests.cpu|round(3) }}</td>
