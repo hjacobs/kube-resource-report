@@ -1,5 +1,17 @@
 import re
 
+ONE_MEBI = 1024 ** 2
+ONE_GIBI = 1024 ** 3
+
+# assume minimal requests even if no user requests are set
+MIN_CPU_USER_REQUESTS = 1 / 1000
+MIN_MEMORY_USER_REQUESTS = 1 / 1000
+
+# we show costs per month by default as it leads to easily digestable numbers (for humans)
+AVG_DAYS_PER_MONTH = 30.4375
+HOURS_PER_DAY = 24
+HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
+
 RESOURCE_PATTERN = re.compile(r"^(\d*)(\D*)$")
 
 FACTORS = {
