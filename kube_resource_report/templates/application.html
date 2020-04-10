@@ -52,6 +52,7 @@
 
 <div class="section collapsible" data-name="ingresses">
     <h2 class="title is-5">Ingresses</h2>
+    {% if ingresses_by_application[application.id]: %}
     <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
         <thead>
             <tr>
@@ -99,8 +100,10 @@
             </tr>
             {%endfor %}
         </tbody>
-
     </table>
+    {% else: %}
+    <p class="content"><em>No Ingresses found for application {{ application.id }}.</em></p>
+    {% endif %}
 </div>
 
 <div class="section collapsible" data-name="components">
@@ -126,7 +129,7 @@
         <tbody>
             {% for name, component in application.components.items()|sort: %}
             <tr>
-                <td>{% if name == "": %}<i>unnamed</i>{% else %}{{ name }}{% endif %}</td>
+                <td>{% if not name: %}<em>unnamed</em>{% else %}{{ name }}{% endif %}</td>
                 <td title="{{ component.clusters|join(', ') }}">{{ component.clusters|count }}</td>
                 <td>{{ component.pods }}</td>
                 <td>{{ component.requests.cpu|round(3) }}</td>
