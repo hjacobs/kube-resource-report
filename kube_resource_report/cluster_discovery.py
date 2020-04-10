@@ -21,7 +21,7 @@ tokens.configure(from_file_only=True)
 
 
 def generate_cluster_id(url: str):
-    """Generate some "cluster ID" from given API server URL"""
+    """Generate some "cluster ID" from given API server URL."""
     for prefix in ("https://", "http://"):
         if url.startswith(prefix):
             url = url[len(prefix) :]
@@ -29,8 +29,8 @@ def generate_cluster_id(url: str):
 
 
 class OAuthTokenAuth(AuthBase):
-    """Dynamic authentication using the "tokens" library to load OAuth tokens from file
-    (potentially mounted from a Kubernetes secret)"""
+
+    """Dynamic authentication using the "tokens" library to load OAuth tokens from file (potentially mounted from a Kubernetes secret)."""
 
     def __init__(self, token_name):
         self.token_name = token_name

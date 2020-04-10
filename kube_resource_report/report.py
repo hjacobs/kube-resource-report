@@ -161,8 +161,10 @@ class PodMetrics(NamespacedAPIObject):
     kind = "PodMetrics"
 
 
-def get_ema(curr_value, prev_value, alpha=1.0):
+def get_ema(curr_value: float, prev_value: float, alpha: float = 1.0):
     """
+    Calculate the Exponential Moving Average.
+
     More info about EMA: https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
 
     The coefficient alpha represents the degree of weighting decrease, a constant smoothing
@@ -225,7 +227,7 @@ def get_pod_usage(cluster, pods: dict, prev_pods: dict, alpha_ema: float):
         logger.exception("Failed to get pod usage metrics")
 
 
-def find_backend_application(client, ingress, rule):
+def find_backend_application(client: pykube.HTTPClient, ingress: Ingress, rule):
     """
     Find the application ID for a given Ingress object.
 
