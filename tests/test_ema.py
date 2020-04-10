@@ -39,9 +39,7 @@ def test_ema_func(curr_value, prev_value, alpha, expected):
     ],
 )
 def test_ema_like_sma(values, alpha):
-    """
-    You can treat EMA like SMA, let's check if the function is correctly written.
-    """
+    """You can treat EMA like SMA, let's check if the function is correctly written."""
     sma = sum(values) / len(values)
 
     ema = None

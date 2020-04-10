@@ -1,21 +1,18 @@
 import json
+from pathlib import Path
+from unittest.mock import MagicMock
+
 import pytest
 
-from pathlib import Path
-
 from kube_resource_report.cluster_discovery import Cluster
-from kube_resource_report.report import (
-    generate_report,
-    HOURS_PER_MONTH,
-    parse_resource,
-    get_pod_usage,
-    get_node_usage,
-    new_resources,
-    aggregate_by_team,
-    NODE_LABEL_ROLE,
-)
-
-from unittest.mock import MagicMock
+from kube_resource_report.report import aggregate_by_team
+from kube_resource_report.report import generate_report
+from kube_resource_report.report import get_node_usage
+from kube_resource_report.report import get_pod_usage
+from kube_resource_report.report import HOURS_PER_MONTH
+from kube_resource_report.report import new_resources
+from kube_resource_report.report import NODE_LABEL_ROLE
+from kube_resource_report.report import parse_resource
 
 
 @pytest.fixture

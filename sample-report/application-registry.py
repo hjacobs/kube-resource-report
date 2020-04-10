@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-This is an example application registry with test data.
+Run an example application registry with test data.
+
 Run this script and use --application-registry=http://localhost:8080
 """
-
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer
 
 DATA = {
     "example-app": {"team_id": "example-team", "active": True},

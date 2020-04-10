@@ -1,10 +1,11 @@
-import click
-from .cluster_discovery import DEFAULT_CLUSTERS
-from pathlib import Path
 import logging
 import os
 import time
+from pathlib import Path
 
+import click
+
+from .cluster_discovery import DEFAULT_CLUSTERS
 from .report import generate_report
 
 
@@ -135,10 +136,7 @@ def main(
     node_labels,
     debug,
 ):
-    """Kubernetes Resource Report
-
-    Generate a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry.
-    """
+    """Kubernetes Resource Report generates a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry."""
 
     if debug:
         logging.basicConfig(level=logging.DEBUG)

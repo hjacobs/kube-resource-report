@@ -1,30 +1,36 @@
 #!/usr/bin/env python3
-
 import collections
+import concurrent.futures
 import csv
-import os
-import pickle
 import datetime
 import json
 import logging
+import os
+import pickle
 import re
-import requests
-import yaml
-from pathlib import Path
-
-from typing import Dict, Any, List
-
-import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
-from requests_futures.sessions import FuturesSession
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
 
 import pykube
-from pykube import Namespace, Pod, Node, Ingress, Service, ObjectDoesNotExist
-from pykube.objects import APIObject, NamespacedAPIObject
-
-from kube_resource_report import cluster_discovery, pricing, __version__
+import requests
+import yaml
+from pykube import Ingress
+from pykube import Namespace
+from pykube import Node
+from pykube import ObjectDoesNotExist
+from pykube import Pod
+from pykube import Service
+from pykube.objects import APIObject
+from pykube.objects import NamespacedAPIObject
+from requests_futures.sessions import FuturesSession
 
 from .output import OutputManager
+from kube_resource_report import __version__
+from kube_resource_report import cluster_discovery
+from kube_resource_report import pricing
 
 NODE_LABEL_SPOT = os.environ.get("NODE_LABEL_SPOT", "aws.amazon.com/spot")
 NODE_LABEL_PREEMPTIBLE = os.environ.get(
@@ -88,6 +94,8 @@ def new_resources():
 
 def parse_resource(v):
     """
+    Parse a Kubernetes resource value.
+
     >>> parse_resource('100m')
     0.1
     >>> parse_resource('100M')
@@ -219,6 +227,8 @@ def get_pod_usage(cluster, pods: dict, prev_pods: dict, alpha_ema: float):
 
 def find_backend_application(client, ingress, rule):
     """
+    Find the application ID for a given Ingress object.
+
     The Ingress object might not have a "application" label, so let's try to find the application by looking at the backend service and its pods
     """
     paths = rule.get("http", {}).get("paths", [])
@@ -469,7 +479,7 @@ def query_cluster(
                 try:
                     response = future.result()
                     status = response.status_code
-                except:
+                except Exception:
                     status = 999
                 for ingress in ingresses:
                     ingress[4] = status
@@ -698,7 +708,7 @@ def generate_report(
     namespace_usage: Dict[tuple, dict] = {}
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
-        for k, pod in summary["pods"].items():
+        for _k, pod in summary["pods"].items():
             app = applications.get(
                 pod["application"],
                 {
@@ -793,8 +803,8 @@ def generate_report(
 
         team["clusters"] = sorted(team["clusters"], key=cluster_name)
 
-    for cluster_id, summary in sorted(cluster_summaries.items()):
-        for k, pod in summary["pods"].items():
+    for _cluster_id, summary in sorted(cluster_summaries.items()):
+        for _k, pod in summary["pods"].items():
             app = applications[pod["application"]]
             pod["team"] = app["team"]
 
@@ -864,7 +874,7 @@ def write_report(
     total_requests: dict = collections.defaultdict(int)
     total_user_requests: dict = collections.defaultdict(int)
 
-    for cluster_id, summary in sorted(cluster_summaries.items()):
+    for summary in cluster_summaries.values():
         for r in "cpu", "memory":
             total_allocatable[r] += summary["allocatable"][r]
             total_requests[r] += summary["requests"][r]
@@ -1010,7 +1020,7 @@ def write_report(
                 "Slack Cost [USD]",
             ]
         )
-        for cluster_id, namespace_item in sorted(namespace_usage.items()):
+        for _cluster_id, namespace_item in sorted(namespace_usage.items()):
             fields = [
                 namespace_item["id"],
                 namespace_item["status"],

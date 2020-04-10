@@ -2,15 +2,14 @@ import logging
 import re
 import time
 from pathlib import Path
-from urllib.parse import urljoin
-
 from typing import List
+from urllib.parse import urljoin
 
 import requests
 import tokens
+from pykube import HTTPClient
+from pykube import KubeConfig
 from requests.auth import AuthBase
-
-from pykube import HTTPClient, KubeConfig
 
 # default URL points to kubectl proxy
 DEFAULT_CLUSTERS = "http://localhost:8001/"
@@ -118,8 +117,10 @@ class ClusterRegistryDiscoverer:
                     )
             self._clusters = clusters
             self._last_cache_refresh = time.time()
-        except:
-            logger.exception(f"Failed to refresh from cluster registry {self._url}")
+        except Exception as e:
+            logger.exception(
+                f"Failed to refresh from cluster registry {self._url}: {e}"
+            )
 
     def get_clusters(self):
         now = time.time()

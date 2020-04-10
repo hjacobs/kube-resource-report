@@ -12,16 +12,14 @@ install:
 
 .PHONY:
 lint: install
-	poetry run black --check kube_resource_report tests
-	poetry run flake8
-	poetry run mypy --ignore-missing-imports kube_resource_report/
+	poetry run pre-commit run --all-files
 
 .PHONY:
 test: install lint
 	poetry run coverage run --source=kube_resource_report -m py.test
 	poetry run coverage report
 
-docker: 
+docker:
 	docker build --build-arg "VERSION=$(VERSION)" -t "$(IMAGE):$(TAG)" .
 	@echo 'Docker image $(IMAGE):$(TAG) can now be used.'
 
