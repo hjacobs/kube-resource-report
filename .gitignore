@@ -1,4 +1,5 @@
 .*.swp
+*.egg*
 __pycache__/
 output/
 .pytest_cache/
@@ -6,3 +7,4 @@ output/
 .idea/
 venv/
 .vscode/
+.mypy_cache

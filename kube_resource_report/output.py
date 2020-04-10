@@ -1,8 +1,10 @@
 import logging
 import shutil
-
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+from jinja2 import Environment
+from jinja2 import FileSystemLoader
+from jinja2 import select_autoescape
 
 from kube_resource_report import filters
 

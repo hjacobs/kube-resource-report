@@ -1,126 +1,32 @@
 #!/usr/bin/env python3
-
 import collections
+import concurrent.futures
 import csv
-import os
-import pickle
 import datetime
 import json
 import logging
+import pickle
 import re
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
+
 import requests
 import yaml
-from pathlib import Path
-
-from typing import Dict, Any, List
-
-import concurrent.futures
-from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 
-import pykube
-from pykube import Namespace, Pod, Node, Ingress, Service, ObjectDoesNotExist
-from pykube.objects import APIObject, NamespacedAPIObject
-
-from kube_resource_report import cluster_discovery, pricing, __version__
-
 from .output import OutputManager
-
-NODE_LABEL_SPOT = os.environ.get("NODE_LABEL_SPOT", "aws.amazon.com/spot")
-NODE_LABEL_PREEMPTIBLE = os.environ.get(
-    "NODE_LABEL_PREEMPTIBLE", "cloud.google.com/gke-preemptible"
-)
-NODE_LABEL_ROLE = os.environ.get("NODE_LABEL_ROLE", "kubernetes.io/role")
-# the following labels are used by both AWS and GKE
-NODE_LABEL_REGION = os.environ.get(
-    "NODE_LABEL_REGION", "failure-domain.beta.kubernetes.io/region"
-)
-NODE_LABEL_INSTANCE_TYPE = os.environ.get(
-    "NODE_LABEL_INSTANCE_TYPE", "beta.kubernetes.io/instance-type"
-)
-
-# https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
-OBJECT_LABEL_APPLICATION = os.environ.get(
-    "OBJECT_LABEL_APPLICATION", "application,app,app.kubernetes.io/name"
-).split(",")
-OBJECT_LABEL_COMPONENT = os.environ.get(
-    "OBJECT_LABEL_COMPONENT", "component,app.kubernetes.io/component"
-).split(",")
-OBJECT_LABEL_TEAM = os.environ.get("OBJECT_LABEL_TEAM", "team,owner").split(",")
-
-ONE_MEBI = 1024 ** 2
-ONE_GIBI = 1024 ** 3
-
-# we show costs per month by default as it leads to easily digestable numbers (for humans)
-AVG_DAYS_PER_MONTH = 30.4375
-HOURS_PER_DAY = 24
-HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
-
-# assume minimal requests even if no user requests are set
-MIN_CPU_USER_REQUESTS = 1 / 1000
-MIN_MEMORY_USER_REQUESTS = 1 / 1000
-
-FACTORS = {
-    "n": 1 / 1000000000,
-    "u": 1 / 1000000,
-    "m": 1 / 1000,
-    "": 1,
-    "k": 1000,
-    "M": 1000 ** 2,
-    "G": 1000 ** 3,
-    "T": 1000 ** 4,
-    "P": 1000 ** 5,
-    "E": 1000 ** 6,
-    "Ki": 1024,
-    "Mi": 1024 ** 2,
-    "Gi": 1024 ** 3,
-    "Ti": 1024 ** 4,
-    "Pi": 1024 ** 5,
-    "Ei": 1024 ** 6,
-}
-
-RESOURCE_PATTERN = re.compile(r"^(\d*)(\D*)$")
-
-
-def new_resources():
-    return {"cpu": 0, "memory": 0}
-
-
-def parse_resource(v):
-    """
-    >>> parse_resource('100m')
-    0.1
-    >>> parse_resource('100M')
-    1000000000
-    >>> parse_resource('2Gi')
-    2147483648
-    >>> parse_resource('2k')
-    2048
-    """
-    match = RESOURCE_PATTERN.match(v)
-    factor = FACTORS[match.group(2)]
-    return int(match.group(1)) * factor
-
-
-def get_application_from_labels(labels):
-    for label_name in OBJECT_LABEL_APPLICATION:
-        if label_name in labels:
-            return labels[label_name]
-    return ""
-
-
-def get_component_from_labels(labels):
-    for label_name in OBJECT_LABEL_COMPONENT:
-        if label_name in labels:
-            return labels[label_name]
-    return ""
-
-
-def get_team_from_labels(labels):
-    for label_name in OBJECT_LABEL_TEAM:
-        if label_name in labels:
-            return labels[label_name]
-    return ""
+from .query import query_cluster
+from .utils import HOURS_PER_MONTH
+from .utils import MIN_CPU_USER_REQUESTS
+from .utils import MIN_MEMORY_USER_REQUESTS
+from .utils import ONE_GIBI
+from .utils import ONE_MEBI
+from kube_resource_report import __version__
+from kube_resource_report import cluster_discovery
+from kube_resource_report import pricing
 
 
 session = requests.Session()
@@ -135,346 +41,6 @@ def json_default(obj):
 
 
 logger = logging.getLogger(__name__)
-
-
-# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-class NodeMetrics(APIObject):
-
-    version = "metrics.k8s.io/v1beta1"
-    endpoint = "nodes"
-    kind = "NodeMetrics"
-
-
-# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-class PodMetrics(NamespacedAPIObject):
-
-    version = "metrics.k8s.io/v1beta1"
-    endpoint = "pods"
-    kind = "PodMetrics"
-
-
-def get_ema(curr_value, prev_value, alpha=1.0):
-    """
-    More info about EMA: https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
-
-    The coefficient alpha represents the degree of weighting decrease, a constant smoothing
-    factor between 0 and 1. A higher alpha discounts older observations faster.
-
-    Alpha 1 - only the current observation.
-    Alpha 0 - only the previous observation.
-
-    Choosing the initial smoothed value - https://en.wikipedia.org/wiki/Exponential_smoothing#Choosing_the_initial_smoothed_value
-    """
-    if prev_value is None:
-        # it is the first run, we do not have any information about the past
-        return curr_value
-
-    return prev_value + alpha * (curr_value - prev_value)
-
-
-def get_node_usage(cluster, nodes: dict, prev_nodes: dict, alpha_ema: float):
-    try:
-        for node_metrics in NodeMetrics.objects(cluster.client):
-            key = node_metrics.name
-            node = nodes.get(key)
-            prev_node = prev_nodes.get(key, {})
-
-            if node:
-                usage: dict = collections.defaultdict(float)
-                prev_usage = prev_node.get("usage", {})
-
-                for k, v in node_metrics.obj.get("usage", {}).items():
-                    curr_value = parse_resource(v)
-                    prev_value = prev_usage.get(k)
-                    usage[k] = get_ema(curr_value, prev_value, alpha_ema)
-                node["usage"] = usage
-    except Exception:
-        logger.exception("Failed to get node usage metrics")
-
-
-def get_pod_usage(cluster, pods: dict, prev_pods: dict, alpha_ema: float):
-    try:
-        for pod_metrics in PodMetrics.objects(cluster.client, namespace=pykube.all):
-            key = (pod_metrics.namespace, pod_metrics.name)
-            pod = pods.get(key)
-            prev_pod = prev_pods.get(key, {})
-
-            if pod:
-                usage: dict = collections.defaultdict(float)
-                prev_usage = prev_pod.get("usage", {})
-
-                for container in pod_metrics.obj["containers"]:
-                    for k, v in container.get("usage", {}).items():
-                        usage[k] += parse_resource(v)
-
-                for k, v in usage.items():
-                    curr_value = v
-                    prev_value = prev_usage.get(k)
-                    usage[k] = get_ema(curr_value, prev_value, alpha_ema)
-
-                pod["usage"] = usage
-    except Exception:
-        logger.exception("Failed to get pod usage metrics")
-
-
-def find_backend_application(client, ingress, rule):
-    """
-    The Ingress object might not have a "application" label, so let's try to find the application by looking at the backend service and its pods
-    """
-    paths = rule.get("http", {}).get("paths", [])
-    selectors = []
-    for path in paths:
-        service_name = path.get("backend", {}).get("serviceName")
-        if service_name:
-            try:
-                service = Service.objects(client, namespace=ingress.namespace).get(
-                    name=service_name
-                )
-            except ObjectDoesNotExist:
-                logger.debug(
-                    f"Referenced service does not exist: {ingress.namespace}/{service_name}"
-                )
-            else:
-                selector = service.obj["spec"].get("selector", {})
-                selectors.append(selector)
-                application = get_application_from_labels(selector)
-                if application:
-                    return application
-    # we still haven't found the application, let's look up pods by label selectors
-    for selector in selectors:
-        application_candidates = set()
-        for pod in Pod.objects(client).filter(
-            namespace=ingress.namespace, selector=selector
-        ):
-            application = get_application_from_labels(pod.labels)
-            if application:
-                application_candidates.add(application)
-
-        if len(application_candidates) == 1:
-            return application_candidates.pop()
-    return ""
-
-
-def pod_active(pod):
-    pod_status = pod.obj["status"]
-    phase = pod_status.get("phase")
-
-    if phase == "Running":
-        return True
-    elif phase == "Pending":
-        for condition in pod_status.get("conditions", []):
-            if condition.get("type") == "PodScheduled":
-                return condition.get("status") == "True"
-
-    return False
-
-
-def query_cluster(
-    cluster,
-    executor,
-    system_namespaces,
-    additional_cost_per_cluster,
-    alpha_ema,
-    prev_cluster_summaries,
-    no_ingress_status,
-    node_labels,
-):
-    logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
-    pods = {}
-    nodes = {}
-    namespaces = {}
-
-    for namespace in Namespace.objects(cluster.client):
-        email = namespace.annotations.get("email")
-        namespaces[namespace.name] = {
-            "status": namespace.obj["status"]["phase"],
-            "email": email,
-        }
-
-    cluster_capacity = collections.defaultdict(float)
-    cluster_allocatable = collections.defaultdict(float)
-    cluster_requests = collections.defaultdict(float)
-    user_requests = collections.defaultdict(float)
-    cluster_cost = additional_cost_per_cluster
-
-    for _node in Node.objects(cluster.client):
-        node = _node.obj
-        nodes[_node.name] = node
-        node["capacity"] = {}
-        node["allocatable"] = {}
-        node["requests"] = new_resources()
-        node["usage"] = new_resources()
-
-        for k, v in node["status"].get("capacity", {}).items():
-            parsed = parse_resource(v)
-            node["capacity"][k] = parsed
-            cluster_capacity[k] += parsed
-
-        for k, v in node["status"].get("allocatable", {}).items():
-            parsed = parse_resource(v)
-            node["allocatable"][k] = parsed
-            cluster_allocatable[k] += parsed
-
-        role = _node.labels.get(NODE_LABEL_ROLE) or "worker"
-        region = _node.labels.get(NODE_LABEL_REGION, "unknown")
-        instance_type = _node.labels.get(NODE_LABEL_INSTANCE_TYPE, "unknown")
-        is_spot = _node.labels.get(NODE_LABEL_SPOT) == "true"
-        is_preemptible = _node.labels.get(NODE_LABEL_PREEMPTIBLE, "false") == "true"
-        if is_preemptible:
-            instance_type = instance_type + "-preemptible"
-        node["spot"] = is_spot or is_preemptible
-        node["kubelet_version"] = (
-            node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
-        )
-        node["role"] = role
-        node["instance_type"] = instance_type
-        node["cost"] = pricing.get_node_cost(
-            region,
-            instance_type,
-            is_spot,
-            cpu=node["capacity"].get("cpu"),
-            memory=node["capacity"].get("memory"),
-        )
-        cluster_cost += node["cost"]
-
-    get_node_usage(cluster, nodes, prev_cluster_summaries.get("nodes", {}), alpha_ema)
-
-    cluster_usage = collections.defaultdict(float)
-    for node in nodes.values():
-        for k, v in node["usage"].items():
-            cluster_usage[k] += v
-
-    cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
-    cost_per_memory = cluster_cost / cluster_allocatable["memory"]
-
-    for pod in Pod.objects(cluster.client, namespace=pykube.all):
-        # ignore unschedulable/completed pods
-        if not pod_active(pod):
-            continue
-        application = get_application_from_labels(pod.labels)
-        component = get_component_from_labels(pod.labels)
-        team = get_team_from_labels(pod.labels)
-        requests = collections.defaultdict(float)
-        ns = pod.namespace
-        container_images = []
-        for container in pod.obj["spec"]["containers"]:
-            # note that the "image" field is optional according to Kubernetes docs
-            image = container.get("image")
-            if image:
-                container_images.append(image)
-            for k, v in container["resources"].get("requests", {}).items():
-                pv = parse_resource(v)
-                requests[k] += pv
-                cluster_requests[k] += pv
-                if ns not in system_namespaces:
-                    user_requests[k] += pv
-        if "nodeName" in pod.obj["spec"] and pod.obj["spec"]["nodeName"] in nodes:
-            for k in ("cpu", "memory"):
-                nodes[pod.obj["spec"]["nodeName"]]["requests"][k] += requests.get(k, 0)
-        cost = max(requests["cpu"] * cost_per_cpu, requests["memory"] * cost_per_memory)
-        pods[(ns, pod.name)] = {
-            "requests": requests,
-            "application": application,
-            "component": component,
-            "container_images": container_images,
-            "cost": cost,
-            "usage": new_resources(),
-            "team": team,
-        }
-
-    hourly_cost = cluster_cost / HOURS_PER_MONTH
-
-    cluster_summary = {
-        "cluster": cluster,
-        "nodes": nodes,
-        "pods": pods,
-        "namespaces": namespaces,
-        "user_pods": len([p for ns, p in pods if ns not in system_namespaces]),
-        "master_nodes": len([n for n in nodes.values() if n["role"] == "master"]),
-        "worker_nodes": len([n for n in nodes.values() if n["role"] in node_labels]),
-        "kubelet_versions": set(
-            [n["kubelet_version"] for n in nodes.values() if n["role"] in node_labels]
-        ),
-        "worker_instance_types": set(
-            [n["instance_type"] for n in nodes.values() if n["role"] in node_labels]
-        ),
-        "worker_instance_is_spot": any(
-            [n["spot"] for n in nodes.values() if n["role"] in node_labels]
-        ),
-        "capacity": cluster_capacity,
-        "allocatable": cluster_allocatable,
-        "requests": cluster_requests,
-        "user_requests": user_requests,
-        "usage": cluster_usage,
-        "cost": cluster_cost,
-        "cost_per_user_request_hour": {
-            "cpu": 0.5 * hourly_cost / max(user_requests["cpu"], MIN_CPU_USER_REQUESTS),
-            "memory": 0.5
-            * hourly_cost
-            / max(user_requests["memory"] / ONE_GIBI, MIN_MEMORY_USER_REQUESTS),
-        },
-        "ingresses": [],
-    }
-
-    get_pod_usage(cluster, pods, prev_cluster_summaries.get("pods", {}), alpha_ema)
-
-    cluster_slack_cost = 0
-    for pod in pods.values():
-        usage_cost = max(
-            pod["usage"]["cpu"] * cost_per_cpu,
-            pod["usage"]["memory"] * cost_per_memory,
-        )
-        pod["slack_cost"] = pod["cost"] - usage_cost
-        cluster_slack_cost += pod["slack_cost"]
-
-    cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
-
-    with FuturesSession(max_workers=10, session=session) as futures_session:
-        futures_by_host = {}  # hostname -> future
-        futures = collections.defaultdict(list)  # future -> [ingress]
-
-        for _ingress in Ingress.objects(cluster.client, namespace=pykube.all):
-            application = get_application_from_labels(_ingress.labels)
-            for rule in _ingress.obj["spec"].get("rules", []):
-                host = rule.get("host", "")
-                if not application:
-                    # find the application by getting labels from pods
-                    backend_application = find_backend_application(
-                        cluster.client, _ingress, rule
-                    )
-                else:
-                    backend_application = None
-                ingress = [
-                    _ingress.namespace,
-                    _ingress.name,
-                    application or backend_application,
-                    host,
-                    0,
-                ]
-                if host and not no_ingress_status:
-                    try:
-                        future = futures_by_host[host]
-                    except KeyError:
-                        future = futures_session.get(f"https://{host}/", timeout=5)
-                        futures_by_host[host] = future
-                    futures[future].append(ingress)
-                cluster_summary["ingresses"].append(ingress)
-
-        if not no_ingress_status:
-            logger.info(
-                f"Waiting for ingress status for {cluster.id} ({cluster.api_server_url}).."
-            )
-            for future in concurrent.futures.as_completed(futures):
-                ingresses = futures[future]
-                try:
-                    response = future.result()
-                    status = response.status_code
-                except:
-                    status = 999
-                for ingress in ingresses:
-                    ingress[4] = status
-
-    return cluster_summary
 
 
 def get_cluster_summaries(
@@ -698,7 +264,7 @@ def generate_report(
     namespace_usage: Dict[tuple, dict] = {}
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
-        for k, pod in summary["pods"].items():
+        for _k, pod in summary["pods"].items():
             app = applications.get(
                 pod["application"],
                 {
@@ -793,8 +359,8 @@ def generate_report(
 
         team["clusters"] = sorted(team["clusters"], key=cluster_name)
 
-    for cluster_id, summary in sorted(cluster_summaries.items()):
-        for k, pod in summary["pods"].items():
+    for _cluster_id, summary in sorted(cluster_summaries.items()):
+        for _k, pod in summary["pods"].items():
             app = applications[pod["application"]]
             pod["team"] = app["team"]
 
@@ -864,7 +430,7 @@ def write_report(
     total_requests: dict = collections.defaultdict(int)
     total_user_requests: dict = collections.defaultdict(int)
 
-    for cluster_id, summary in sorted(cluster_summaries.items()):
+    for summary in cluster_summaries.values():
         for r in "cpu", "memory":
             total_allocatable[r] += summary["allocatable"][r]
             total_requests[r] += summary["requests"][r]
@@ -1010,7 +576,7 @@ def write_report(
                 "Slack Cost [USD]",
             ]
         )
-        for cluster_id, namespace_item in sorted(namespace_usage.items()):
+        for _cluster_id, namespace_item in sorted(namespace_usage.items()):
             fields = [
                 namespace_item["id"],
                 namespace_item["status"],

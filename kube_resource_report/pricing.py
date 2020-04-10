@@ -258,8 +258,8 @@ def generate_ec2_price_list():
                 and sw == "NA"
                 and "BoxUsage:" in usagetype
             ):
-                for k, v in entry["terms"]["OnDemand"].items():
-                    for k_, v_ in v["priceDimensions"].items():
+                for _k, v in entry["terms"]["OnDemand"].items():
+                    for _, v_ in v["priceDimensions"].items():
                         if v_["unit"] == "Hrs":
                             price = float(v_["pricePerUnit"]["USD"])
                             if price == 0:
