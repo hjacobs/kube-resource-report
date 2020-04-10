@@ -1,25 +1,40 @@
-import pykube
-import logging
 import collections
-from pykube.objects import APIObject, NamespacedAPIObject
+import logging
+
+import pykube
+from pykube.objects import APIObject
+from pykube.objects import NamespacedAPIObject
+
 from .utils import parse_resource
 
 logger = logging.getLogger(__name__)
 
-# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+
 class NodeMetrics(APIObject):
+
+    """
+    Kubernetes API object for Node metrics.
+
+    See https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+    """
 
     version = "metrics.k8s.io/v1beta1"
     endpoint = "nodes"
     kind = "NodeMetrics"
 
 
-# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
 class PodMetrics(NamespacedAPIObject):
+
+    """
+    Kubernetes API object for Pod metrics.
+
+    See https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
+    """
 
     version = "metrics.k8s.io/v1beta1"
     endpoint = "pods"
     kind = "PodMetrics"
+
 
 def get_ema(curr_value: float, prev_value: float, alpha: float = 1.0):
     """

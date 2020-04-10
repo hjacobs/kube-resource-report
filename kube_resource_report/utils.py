@@ -21,6 +21,7 @@ FACTORS = {
     "Ei": 1024 ** 6,
 }
 
+
 def parse_resource(v):
     """
     Parse a Kubernetes resource value.

@@ -160,6 +160,74 @@ def pod_active(pod):
     return False
 
 
+def map_node(_node: Node):
+    """Map a Kubernetes Node object to our internal structure."""
+
+    node = _node.obj
+    node["capacity"] = {}
+    node["allocatable"] = {}
+    node["requests"] = new_resources()
+    node["usage"] = new_resources()
+
+    for k, v in node["status"].get("capacity", {}).items():
+        parsed = parse_resource(v)
+        node["capacity"][k] = parsed
+
+    for k, v in node["status"].get("allocatable", {}).items():
+        parsed = parse_resource(v)
+        node["allocatable"][k] = parsed
+
+    role = _node.labels.get(NODE_LABEL_ROLE) or "worker"
+    region = _node.labels.get(NODE_LABEL_REGION, "unknown")
+    instance_type = _node.labels.get(NODE_LABEL_INSTANCE_TYPE, "unknown")
+    is_spot = _node.labels.get(NODE_LABEL_SPOT) == "true"
+    is_preemptible = _node.labels.get(NODE_LABEL_PREEMPTIBLE, "false") == "true"
+    if is_preemptible:
+        instance_type = instance_type + "-preemptible"
+    node["spot"] = is_spot or is_preemptible
+    node["kubelet_version"] = (
+        node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
+    )
+    node["role"] = role
+    node["instance_type"] = instance_type
+    node["cost"] = pricing.get_node_cost(
+        region,
+        instance_type,
+        is_spot,
+        cpu=node["capacity"].get("cpu"),
+        memory=node["capacity"].get("memory"),
+    )
+    return node
+
+
+def map_pod(pod: Pod, cost_per_cpu: float, cost_per_memory: float):
+    """Map a Kubernetes Pod object to our internal structure."""
+
+    application = get_application_from_labels(pod.labels)
+    component = get_component_from_labels(pod.labels)
+    team = get_team_from_labels(pod.labels)
+    requests: Dict[str, float] = collections.defaultdict(float)
+    container_images = []
+    for container in pod.obj["spec"]["containers"]:
+        # note that the "image" field is optional according to Kubernetes docs
+        image = container.get("image")
+        if image:
+            container_images.append(image)
+        for k, v in container["resources"].get("requests", {}).items():
+            pv = parse_resource(v)
+            requests[k] += pv
+    cost = max(requests["cpu"] * cost_per_cpu, requests["memory"] * cost_per_memory)
+    return {
+        "requests": requests,
+        "application": application,
+        "component": component,
+        "container_images": container_images,
+        "cost": cost,
+        "usage": new_resources(),
+        "team": team,
+    }
+
+
 def query_cluster(
     cluster,
     executor,
@@ -189,43 +257,13 @@ def query_cluster(
     cluster_cost = additional_cost_per_cluster
 
     for _node in Node.objects(cluster.client):
-        node = _node.obj
+        node = map_node(_node)
         nodes[_node.name] = node
-        node["capacity"] = {}
-        node["allocatable"] = {}
-        node["requests"] = new_resources()
-        node["usage"] = new_resources()
 
-        for k, v in node["status"].get("capacity", {}).items():
-            parsed = parse_resource(v)
-            node["capacity"][k] = parsed
-            cluster_capacity[k] += parsed
-
-        for k, v in node["status"].get("allocatable", {}).items():
-            parsed = parse_resource(v)
-            node["allocatable"][k] = parsed
-            cluster_allocatable[k] += parsed
-
-        role = _node.labels.get(NODE_LABEL_ROLE) or "worker"
-        region = _node.labels.get(NODE_LABEL_REGION, "unknown")
-        instance_type = _node.labels.get(NODE_LABEL_INSTANCE_TYPE, "unknown")
-        is_spot = _node.labels.get(NODE_LABEL_SPOT) == "true"
-        is_preemptible = _node.labels.get(NODE_LABEL_PREEMPTIBLE, "false") == "true"
-        if is_preemptible:
-            instance_type = instance_type + "-preemptible"
-        node["spot"] = is_spot or is_preemptible
-        node["kubelet_version"] = (
-            node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
-        )
-        node["role"] = role
-        node["instance_type"] = instance_type
-        node["cost"] = pricing.get_node_cost(
-            region,
-            instance_type,
-            is_spot,
-            cpu=node["capacity"].get("cpu"),
-            memory=node["capacity"].get("memory"),
-        )
+        for k, v in node["capacity"].items():
+            cluster_capacity[k] += v
+        for k, v in node["allocatable"].items():
+            cluster_allocatable[k] += v
         cluster_cost += node["cost"]
 
     metrics.get_node_usage(
@@ -244,36 +282,16 @@ def query_cluster(
         # ignore unschedulable/completed pods
         if not pod_active(pod):
             continue
-        application = get_application_from_labels(pod.labels)
-        component = get_component_from_labels(pod.labels)
-        team = get_team_from_labels(pod.labels)
-        requests = collections.defaultdict(float)
-        ns = pod.namespace
-        container_images = []
-        for container in pod.obj["spec"]["containers"]:
-            # note that the "image" field is optional according to Kubernetes docs
-            image = container.get("image")
-            if image:
-                container_images.append(image)
-            for k, v in container["resources"].get("requests", {}).items():
-                pv = parse_resource(v)
-                requests[k] += pv
-                cluster_requests[k] += pv
-                if ns not in system_namespaces:
-                    user_requests[k] += pv
-        if "nodeName" in pod.obj["spec"] and pod.obj["spec"]["nodeName"] in nodes:
+        pod_ = map_pod(pod, cost_per_cpu, cost_per_memory)
+        for k, v in pod_["requests"].items():
+            cluster_requests[k] += v
+            if pod.namespace not in system_namespaces:
+                user_requests[k] += v
+        node_name = pod.obj["spec"].get("nodeName")
+        if node_name and node_name in nodes:
             for k in ("cpu", "memory"):
-                nodes[pod.obj["spec"]["nodeName"]]["requests"][k] += requests.get(k, 0)
-        cost = max(requests["cpu"] * cost_per_cpu, requests["memory"] * cost_per_memory)
-        pods[(ns, pod.name)] = {
-            "requests": requests,
-            "application": application,
-            "component": component,
-            "container_images": container_images,
-            "cost": cost,
-            "usage": new_resources(),
-            "team": team,
-        }
+                nodes[node_name]["requests"][k] += pod_["requests"].get(k, 0)
+        pods[(pod.namespace, pod.name)] = pod_
 
     hourly_cost = cluster_cost / HOURS_PER_MONTH
 
