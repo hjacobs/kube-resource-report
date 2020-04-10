@@ -27,6 +27,9 @@ from kube_resource_report import cluster_discovery, pricing, __version__
 from .output import OutputManager
 
 NODE_LABEL_SPOT = os.environ.get("NODE_LABEL_SPOT", "aws.amazon.com/spot")
+NODE_LABEL_PREEMPTIBLE = os.environ.get(
+    "NODE_LABEL_PREEMPTIBLE", "cloud.google.com/gke-preemptible"
+)
 NODE_LABEL_ROLE = os.environ.get("NODE_LABEL_ROLE", "kubernetes.io/role")
 # the following labels are used by both AWS and GKE
 NODE_LABEL_REGION = os.environ.get(
@@ -316,7 +319,10 @@ def query_cluster(
         region = _node.labels.get(NODE_LABEL_REGION, "unknown")
         instance_type = _node.labels.get(NODE_LABEL_INSTANCE_TYPE, "unknown")
         is_spot = _node.labels.get(NODE_LABEL_SPOT) == "true"
-        node["spot"] = is_spot
+        is_preemptible = _node.labels.get(NODE_LABEL_PREEMPTIBLE, "false") == "true"
+        if is_preemptible:
+            instance_type = instance_type + "-preemptible"
+        node["spot"] = is_spot or is_preemptible
         node["kubelet_version"] = (
             node["status"].get("nodeInfo", {}).get("kubeletVersion", "")
         )
