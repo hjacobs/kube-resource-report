@@ -1,6 +1,6 @@
 import pytest
 
-from kube_resource_report.report import get_ema
+from kube_resource_report.metrics import get_ema
 
 
 @pytest.mark.parametrize(

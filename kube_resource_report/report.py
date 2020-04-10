@@ -23,13 +23,13 @@ from pykube import Node
 from pykube import ObjectDoesNotExist
 from pykube import Pod
 from pykube import Service
-from pykube.objects import APIObject
-from pykube.objects import NamespacedAPIObject
 from requests_futures.sessions import FuturesSession
 
 from .output import OutputManager
+from .utils import parse_resource
 from kube_resource_report import __version__
 from kube_resource_report import cluster_discovery
+from kube_resource_report import metrics
 from kube_resource_report import pricing
 
 NODE_LABEL_SPOT = os.environ.get("NODE_LABEL_SPOT", "aws.amazon.com/spot")
@@ -66,48 +66,9 @@ HOURS_PER_MONTH = HOURS_PER_DAY * AVG_DAYS_PER_MONTH
 MIN_CPU_USER_REQUESTS = 1 / 1000
 MIN_MEMORY_USER_REQUESTS = 1 / 1000
 
-FACTORS = {
-    "n": 1 / 1000000000,
-    "u": 1 / 1000000,
-    "m": 1 / 1000,
-    "": 1,
-    "k": 1000,
-    "M": 1000 ** 2,
-    "G": 1000 ** 3,
-    "T": 1000 ** 4,
-    "P": 1000 ** 5,
-    "E": 1000 ** 6,
-    "Ki": 1024,
-    "Mi": 1024 ** 2,
-    "Gi": 1024 ** 3,
-    "Ti": 1024 ** 4,
-    "Pi": 1024 ** 5,
-    "Ei": 1024 ** 6,
-}
-
-RESOURCE_PATTERN = re.compile(r"^(\d*)(\D*)$")
-
 
 def new_resources():
     return {"cpu": 0, "memory": 0}
-
-
-def parse_resource(v):
-    """
-    Parse a Kubernetes resource value.
-
-    >>> parse_resource('100m')
-    0.1
-    >>> parse_resource('100M')
-    1000000000
-    >>> parse_resource('2Gi')
-    2147483648
-    >>> parse_resource('2k')
-    2048
-    """
-    match = RESOURCE_PATTERN.match(v)
-    factor = FACTORS[match.group(2)]
-    return int(match.group(1)) * factor
 
 
 def get_application_from_labels(labels):
@@ -143,88 +104,6 @@ def json_default(obj):
 
 
 logger = logging.getLogger(__name__)
-
-
-# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-class NodeMetrics(APIObject):
-
-    version = "metrics.k8s.io/v1beta1"
-    endpoint = "nodes"
-    kind = "NodeMetrics"
-
-
-# https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
-class PodMetrics(NamespacedAPIObject):
-
-    version = "metrics.k8s.io/v1beta1"
-    endpoint = "pods"
-    kind = "PodMetrics"
-
-
-def get_ema(curr_value: float, prev_value: float, alpha: float = 1.0):
-    """
-    Calculate the Exponential Moving Average.
-
-    More info about EMA: https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
-
-    The coefficient alpha represents the degree of weighting decrease, a constant smoothing
-    factor between 0 and 1. A higher alpha discounts older observations faster.
-
-    Alpha 1 - only the current observation.
-    Alpha 0 - only the previous observation.
-
-    Choosing the initial smoothed value - https://en.wikipedia.org/wiki/Exponential_smoothing#Choosing_the_initial_smoothed_value
-    """
-    if prev_value is None:
-        # it is the first run, we do not have any information about the past
-        return curr_value
-
-    return prev_value + alpha * (curr_value - prev_value)
-
-
-def get_node_usage(cluster, nodes: dict, prev_nodes: dict, alpha_ema: float):
-    try:
-        for node_metrics in NodeMetrics.objects(cluster.client):
-            key = node_metrics.name
-            node = nodes.get(key)
-            prev_node = prev_nodes.get(key, {})
-
-            if node:
-                usage: dict = collections.defaultdict(float)
-                prev_usage = prev_node.get("usage", {})
-
-                for k, v in node_metrics.obj.get("usage", {}).items():
-                    curr_value = parse_resource(v)
-                    prev_value = prev_usage.get(k)
-                    usage[k] = get_ema(curr_value, prev_value, alpha_ema)
-                node["usage"] = usage
-    except Exception:
-        logger.exception("Failed to get node usage metrics")
-
-
-def get_pod_usage(cluster, pods: dict, prev_pods: dict, alpha_ema: float):
-    try:
-        for pod_metrics in PodMetrics.objects(cluster.client, namespace=pykube.all):
-            key = (pod_metrics.namespace, pod_metrics.name)
-            pod = pods.get(key)
-            prev_pod = prev_pods.get(key, {})
-
-            if pod:
-                usage: dict = collections.defaultdict(float)
-                prev_usage = prev_pod.get("usage", {})
-
-                for container in pod_metrics.obj["containers"]:
-                    for k, v in container.get("usage", {}).items():
-                        usage[k] += parse_resource(v)
-
-                for k, v in usage.items():
-                    curr_value = v
-                    prev_value = prev_usage.get(k)
-                    usage[k] = get_ema(curr_value, prev_value, alpha_ema)
-
-                pod["usage"] = usage
-    except Exception:
-        logger.exception("Failed to get pod usage metrics")
 
 
 def find_backend_application(client: pykube.HTTPClient, ingress: Ingress, rule):
@@ -349,7 +228,9 @@ def query_cluster(
         )
         cluster_cost += node["cost"]
 
-    get_node_usage(cluster, nodes, prev_cluster_summaries.get("nodes", {}), alpha_ema)
+    metrics.get_node_usage(
+        cluster, nodes, prev_cluster_summaries.get("nodes", {}), alpha_ema
+    )
 
     cluster_usage = collections.defaultdict(float)
     for node in nodes.values():
@@ -428,7 +309,9 @@ def query_cluster(
         "ingresses": [],
     }
 
-    get_pod_usage(cluster, pods, prev_cluster_summaries.get("pods", {}), alpha_ema)
+    metrics.get_pod_usage(
+        cluster, pods, prev_cluster_summaries.get("pods", {}), alpha_ema
+    )
 
     cluster_slack_cost = 0
     for pod in pods.values():

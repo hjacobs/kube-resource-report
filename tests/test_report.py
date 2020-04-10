@@ -5,10 +5,10 @@ from unittest.mock import MagicMock
 import pytest
 
 from kube_resource_report.cluster_discovery import Cluster
+from kube_resource_report.metrics import get_node_usage
+from kube_resource_report.metrics import get_pod_usage
 from kube_resource_report.report import aggregate_by_team
 from kube_resource_report.report import generate_report
-from kube_resource_report.report import get_node_usage
-from kube_resource_report.report import get_pod_usage
 from kube_resource_report.report import HOURS_PER_MONTH
 from kube_resource_report.report import new_resources
 from kube_resource_report.report import NODE_LABEL_ROLE
