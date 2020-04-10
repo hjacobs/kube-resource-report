@@ -174,8 +174,8 @@
                 <td class="links">
                     <div class="buttons has-addons">
                         {% for link in links['component']: %}
-                        <a href="{{ link.href.format(app=application.id, name=name) }}"
-                           title="{{ link.title.format(app=application.id, name=name) }}"
+                        <a href="{{ link.href.format(application=application.id, name=name) }}"
+                           title="{{ link.title.format(application=application.id, name=name) }}"
                            class="button is-small">
                             <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
                         </a>
