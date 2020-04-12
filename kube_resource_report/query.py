@@ -21,6 +21,7 @@ from .utils import MIN_CPU_USER_REQUESTS
 from .utils import MIN_MEMORY_USER_REQUESTS
 from .utils import ONE_GIBI
 from .utils import parse_resource
+from .vpa import VerticalPodAutoscaler
 from kube_resource_report import __version__
 from kube_resource_report import metrics
 from kube_resource_report import pricing
@@ -248,6 +249,10 @@ def query_cluster(
         for k, v in node["usage"].items():
             cluster_usage[k] += v
 
+    vpas_by_namespace = collections.defaultdict(list)
+    for vpa in VerticalPodAutoscaler.objects(cluster.client, namespace=pykube.all):
+        vpas_by_namespace[vpa.namespace].append(vpa)
+
     cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
     cost_per_memory = cluster_cost / cluster_allocatable["memory"]
 
@@ -264,6 +269,9 @@ def query_cluster(
         if node_name and node_name in nodes:
             for k in ("cpu", "memory"):
                 nodes[node_name]["requests"][k] += pod_["requests"].get(k, 0)
+        for vpa in vpas_by_namespace[pod.namespace]:
+            if vpa.matches_pod(pod):
+                print(vpa.container_recommendations)
         pods[(pod.namespace, pod.name)] = pod_
 
     hourly_cost = cluster_cost / HOURS_PER_MONTH
