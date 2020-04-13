@@ -288,6 +288,7 @@ def generate_report(
                     "pods": 0,
                     "requests": {},
                     "usage": {},
+                    "recommendation": {},
                     "clusters": set(),
                 },
             )
@@ -302,6 +303,13 @@ def generate_report(
                 component["usage"][r] = component["usage"].get(r, 0) + pod.get(
                     "usage", {}
                 ).get(r, 0)
+                if "recommendation" in pod and "recommendation" in component:
+                    component["recommendation"][r] = component["recommendation"].get(
+                        r, 0
+                    ) + pod["recommendation"].get(r, 0)
+                elif "recommendation" in component:
+                    # only recommend resources for the component if all Pods have recommendations
+                    del component["recommendation"]
             app["cost"] += pod["cost"]
             app["slack_cost"] += pod.get("slack_cost", 0)
             app["pods"] += 1

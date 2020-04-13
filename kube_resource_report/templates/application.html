@@ -140,6 +140,9 @@
                         <span>{{ component.usage.cpu|round(2) }}</span> <span>{{ component.requests.cpu|round(2) }}</span>
                     </div>
                     <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        {% if component.recommendation: %}
+                        <div class="recommendation" style="left:{{ component.recommendation.cpu * 100 / component.requests.cpu }}%" title="Recommendation: {{ component.recommendation.cpu|round(2) }} CPUs"></div>
+                        {% endif %}
                         <progress class="progress" value="{{ component.requests.cpu }}" max="{{ component.requests.cpu }}"></progress>
                         <progress class="progress {{ 'is-danger' if component.usage.cpu > component.requests.cpu else 'is-primary' }}" value="{{ component.usage.cpu }}" max="{{ component.requests.cpu }}"></progress>
                     </div>
@@ -149,6 +152,9 @@
                         <span>{{ component.usage.memory|memory('MiB') }}</span> <span>{{ component.requests.memory|memory('MiB') }}</span>
                     </div>
                     <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        {% if component.recommendation: %}
+                        <div class="recommendation" style="left:{{ component.recommendation.memory * 100 / component.requests.memory }}%" title="Recommendation: {{ component.recommendation.memory|memory('MiB') }} MiB"></div>
+                        {% endif %}
                         <progress class="progress" value="{{ component.requests.memory }}" max="{{ component.requests.memory }}"></progress>
                         <progress class="progress {{ 'is-danger' if component.usage.memory > component.requests.memory else 'is-primary' }}" value="{{ component.usage.memory }}" max="{{ component.requests.memory }}"></progress>
                     </div>
