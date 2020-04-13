@@ -1,3 +1,6 @@
+import collections
+import logging
+
 import pykube
 from pykube import Deployment
 from pykube import Pod
@@ -5,6 +8,8 @@ from pykube import StatefulSet
 from pykube.objects import NamespacedAPIObject
 
 CONTROLLER_CLASSES = {Deployment.kind: Deployment, StatefulSet.kind: StatefulSet}
+
+logger = logging.getLogger(__name__)
 
 
 class VerticalPodAutoscaler(NamespacedAPIObject):
@@ -21,23 +26,16 @@ class VerticalPodAutoscaler(NamespacedAPIObject):
 
     target = None
 
+    def get_target_ref(self):
+        target_ref = self.obj["spec"].get("targetRef", {})
+        clazz = CONTROLLER_CLASSES.get(target_ref["kind"])
+        if not clazz:
+            raise ValueError(f"Unsupported controller kind: {target_ref['kind']}")
+
+        return (clazz, target_ref["name"])
+
     @property
     def match_labels(self):
-        if self.target is None:
-            target_ref = self.obj["spec"].get("targetRef", {})
-            clazz = CONTROLLER_CLASSES.get(target_ref["kind"])
-            if not clazz:
-                raise ValueError(f"Unsupported controller kind: {target_ref['kind']}")
-
-            try:
-                self.target = (
-                    clazz.objects(self.api)
-                    .filter(namespace=self.namespace)
-                    .get_by_name(target_ref["name"])
-                )
-            except pykube.exceptions.ObjectDoesNotExist:
-                self.target = False
-
         if self.target:
             return self.target.obj["spec"]["selector"]["matchLabels"]
         else:
@@ -58,3 +56,32 @@ class VerticalPodAutoscaler(NamespacedAPIObject):
             .get("recommendation", {})
             .get("containerRecommendations", [])
         )
+
+
+def get_vpas_by_match_labels(api: pykube.HTTPClient):
+    vpas_by_namespace_target_ref = collections.defaultdict(list)
+    clazzes = set()
+    for vpa in VerticalPodAutoscaler.objects(api, namespace=pykube.all):
+        try:
+            clazz, target_name = vpa.get_target_ref()
+        except Exception as e:
+            logger.warning(
+                f"Failed to get target ref of VPA {vpa.namespace}/{vpa.name}: {e}"
+            )
+            continue
+        clazzes.add(clazz)
+        vpas_by_namespace_target_ref[(vpa.namespace, clazz, target_name)].append(vpa)
+
+    vpas_by_namespace_label = collections.defaultdict(list)
+    for clazz in clazzes:
+        for target in clazz.objects(api, namespace=pykube.all):
+            for vpa in vpas_by_namespace_target_ref[
+                (target.namespace, clazz, target.name)
+            ]:
+                vpa.target = target
+
+                if vpa.match_labels:
+                    for k, v in vpa.match_labels.items():
+                        vpas_by_namespace_label[(vpa.namespace, k, v)].append(vpa)
+
+    return vpas_by_namespace_label

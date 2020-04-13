@@ -3,7 +3,6 @@ import collections
 import concurrent.futures
 import logging
 import os
-import time
 from typing import Any
 from typing import Dict
 
@@ -22,7 +21,7 @@ from .utils import MIN_CPU_USER_REQUESTS
 from .utils import MIN_MEMORY_USER_REQUESTS
 from .utils import ONE_GIBI
 from .utils import parse_resource
-from .vpa import VerticalPodAutoscaler
+from .vpa import get_vpas_by_match_labels
 from kube_resource_report import __version__
 from kube_resource_report import metrics
 from kube_resource_report import pricing
@@ -250,13 +249,11 @@ def query_cluster(
         for k, v in node["usage"].items():
             cluster_usage[k] += v
 
-    vpas_by_namespace_label = collections.defaultdict(list)
-    start = time.time()
-    for vpa in VerticalPodAutoscaler.objects(cluster.client, namespace=pykube.all):
-        if vpa.match_labels:
-            for k, v in vpa.match_labels.items():
-                vpas_by_namespace_label[(vpa.namespace, k, v)].append(vpa)
-    print(f"VPAs took {time.time()-start}s")
+    try:
+        vpas_by_namespace_label = get_vpas_by_match_labels(cluster.client)
+    except Exception as e:
+        logger.warning(f"Failed to query VPAs in cluster {cluster.id}: {e}")
+        vpas_by_namespace_label = collections.defaultdict(list)
 
     cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
     cost_per_memory = cluster_cost / cluster_allocatable["memory"]
