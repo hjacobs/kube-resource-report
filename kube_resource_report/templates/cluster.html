@@ -312,6 +312,9 @@
                         <span>{{ pod.usage.cpu|round(2) }}</span> <span>{{ pod.requests.cpu|round(2) }}</span>
                     </div>
                     <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        {% if pod.recommendation: %}
+                        <div class="recommendation" style="left:{{ pod.recommendation.cpu * 100 / pod.requests.cpu }}%" title="Recommendation: {{ pod.recommendation.cpu|round(2) }} CPUs"></div>
+                        {% endif %}
                         <progress class="progress" value="{{ pod.requests.cpu }}" max="{{ pod.requests.cpu }}"></progress>
                         <progress class="progress {{ 'is-danger' if pod.usage.cpu > pod.requests.cpu else 'is-primary' }}" value="{{ pod.usage.cpu }}" max="{{ pod.requests.cpu }}"></progress>
                     </div>
@@ -321,6 +324,9 @@
                         <span>{{ pod.usage.memory|memory('MiB') }}</span> <span>{{ pod.requests.memory|memory('MiB') }}</span>
                     </div>
                     <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
+                        {% if pod.recommendation: %}
+                        <div class="recommendation" style="left:{{ pod.recommendation.memory * 100 / pod.requests.memory }}%" title="Recommendation: {{ pod.recommendation.memory|memory('MiB') }} MiB"></div>
+                        {% endif %}
                         <progress class="progress" value="{{ pod.requests.memory }}" max="{{ pod.requests.memory }}"></progress>
                         <progress class="progress {{ 'is-danger' if pod.usage.memory > pod.requests.memory else 'is-primary' }}" value="{{ pod.usage.memory }}" max="{{ pod.requests.memory }}"></progress>
                     </div>

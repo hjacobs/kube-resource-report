@@ -3,6 +3,7 @@ import collections
 import concurrent.futures
 import logging
 import os
+import time
 from typing import Any
 from typing import Dict
 
@@ -249,9 +250,13 @@ def query_cluster(
         for k, v in node["usage"].items():
             cluster_usage[k] += v
 
-    vpas_by_namespace = collections.defaultdict(list)
+    vpas_by_namespace_label = collections.defaultdict(list)
+    start = time.time()
     for vpa in VerticalPodAutoscaler.objects(cluster.client, namespace=pykube.all):
-        vpas_by_namespace[vpa.namespace].append(vpa)
+        if vpa.match_labels:
+            for k, v in vpa.match_labels.items():
+                vpas_by_namespace_label[(vpa.namespace, k, v)].append(vpa)
+    print(f"VPAs took {time.time()-start}s")
 
     cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
     cost_per_memory = cluster_cost / cluster_allocatable["memory"]
@@ -269,9 +274,27 @@ def query_cluster(
         if node_name and node_name in nodes:
             for k in ("cpu", "memory"):
                 nodes[node_name]["requests"][k] += pod_["requests"].get(k, 0)
-        for vpa in vpas_by_namespace[pod.namespace]:
-            if vpa.matches_pod(pod):
-                print(vpa.container_recommendations)
+        found_vpa = False
+        for k, v in pod.labels.items():
+            vpas = vpas_by_namespace_label[(pod.namespace, k, v)]
+            for vpa in vpas:
+                if vpa.matches_pod(pod):
+                    recommendation = new_resources()
+                    container_names = set()
+                    for container in pod.obj["spec"]["containers"]:
+                        container_names.add(container["name"])
+                    for container in vpa.container_recommendations:
+                        # VPA might contain recommendations for containers which are no longer there!
+                        if container["containerName"] in container_names:
+                            for k in ("cpu", "memory"):
+                                recommendation[k] += parse_resource(
+                                    container["target"][k]
+                                )
+                    pod_["recommendation"] = recommendation
+                    found_vpa = True
+                    break
+            if found_vpa:
+                break
         pods[(pod.namespace, pod.name)] = pod_
 
     hourly_cost = cluster_cost / HOURS_PER_MONTH

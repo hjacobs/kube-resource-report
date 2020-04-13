@@ -30,10 +30,21 @@ main div.section.is-collapsed table { display: none; }
     text-align: right;
 }
 
-
-
 .resource-bar {
+    position: relative;
     height: 0.4rem;
+}
+.resource-bar .recommendation {
+    position: absolute;
+    top: 0.5rem;
+    /* https://css-tricks.com/snippets/css/css-triangle/ */
+    width: 0;
+    height: 0;
+    margin-left: -0.4rem;
+    border-left: 0.344rem solid transparent;
+    border-right: 0.344rem solid transparent;
+    /* bulma success color */
+    border-bottom: 0.4rem solid hsl(141, 71%, 48%);
 }
 .resource-bar:not(:last-child) {
     margin-bottom: 0.2rem;

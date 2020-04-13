@@ -21,8 +21,9 @@ class VerticalPodAutoscaler(NamespacedAPIObject):
 
     target = None
 
-    def matches_pod(self, pod: Pod):
-        if not self.target:
+    @property
+    def match_labels(self):
+        if self.target is None:
             target_ref = self.obj["spec"].get("targetRef", {})
             clazz = CONTROLLER_CLASSES.get(target_ref["kind"])
             if not clazz:
@@ -35,9 +36,17 @@ class VerticalPodAutoscaler(NamespacedAPIObject):
                     .get_by_name(target_ref["name"])
                 )
             except pykube.exceptions.ObjectDoesNotExist:
-                return False
+                self.target = False
 
-        for k, v in self.target.obj["spec"]["selector"]["matchLabels"].items():
+        if self.target:
+            return self.target.obj["spec"]["selector"]["matchLabels"]
+        else:
+            return None
+
+    def matches_pod(self, pod: Pod):
+        if not self.match_labels:
+            return False
+        for k, v in self.match_labels.items():
             if pod.labels.get(k) != v:
                 return False
         return True
