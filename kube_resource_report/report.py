@@ -618,6 +618,8 @@ def write_report(
                 "Memory Requests",
                 "CPU Usage",
                 "Memory Usage",
+                "CPU Recommendation",
+                "Memory Recommendation",
                 "Cost [USD]",
                 "Slack Cost [USD]",
             ]
@@ -632,6 +634,7 @@ def write_report(
                     requests = pod["requests"]
                     application = pod["application"] or name.rsplit("-", 1)[0]
                     usage = pod.get("usage", collections.defaultdict(float))
+                    recommendation = pod.get("recommendation")
                     cpu_slack[(namespace, application)] += (
                         requests["cpu"] - usage["cpu"]
                     )
@@ -651,6 +654,8 @@ def write_report(
                             requests["memory"],
                             usage["cpu"],
                             usage["memory"],
+                            recommendation["cpu"] if recommendation else "",
+                            recommendation["memory"] if recommendation else "",
                             pod["cost"],
                             pod["slack_cost"],
                         ]
