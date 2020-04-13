@@ -46,6 +46,18 @@ main div.section.is-collapsed table { display: none; }
     /* bulma success color */
     border-bottom: 0.4rem solid hsl(141, 71%, 48%);
 }
+.resource-bar .recommendation-exceeds {
+    position: absolute;
+    left: 100%;
+    top: 0.5rem;
+    width: 0;
+    height: 0;
+    margin-left: -0.4rem;
+    border-left: 0.344rem solid transparent;
+    border-right: 0.344rem solid transparent;
+    /* bulma danger color */
+    border-bottom: 0.4rem solid hsl(348, 100%, 61%);
+}
 .resource-bar:not(:last-child) {
     margin-bottom: 0.2rem;
 }
