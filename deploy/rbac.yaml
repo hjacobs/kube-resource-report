@@ -28,6 +28,11 @@ rules:
   resourceNames: ["heapster"]
   verbs:
     - get
+- apiGroups: ["autoscaling.k8s.io"]
+  resources: ["verticalpodautoscalers"]
+  verbs:
+    - get
+    - list
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
