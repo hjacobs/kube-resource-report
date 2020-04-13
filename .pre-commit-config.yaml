@@ -25,7 +25,7 @@ repos:
       - id: black
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.1.0
+    rev: v2.1.1
     hooks:
       - id: pyupgrade
         stages: [push]
@@ -65,7 +65,7 @@ repos:
         stages: [push]
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.21.0
+    rev: v1.22.0
     hooks:
       - id: yamllint
         args: ["--strict", "-d", "{rules: {line-length: {max: 180}}}"]
