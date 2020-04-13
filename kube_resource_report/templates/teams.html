@@ -41,22 +41,10 @@
             <td data-value="{{ team.requests.memory }}">{{ team.requests.memory|filesizeformat(True) }}</td>
 
             <td style="font-size: 0.75rem" data-value="{{ team.usage.cpu }}">
-                <div class="resource-labels">
-                    <span>{{ team.usage.cpu|round(2) }}</span> <span>{{ team.requests.cpu|round(2) }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                    <progress class="progress" value="{{ team.requests.cpu }}" max="{{ team.requests.cpu }}"></progress>
-                    <progress class="progress {{ 'is-danger' if team.usage.cpu > team.requests.cpu else 'is-primary' }}" value="{{ team.usage.cpu }}" max="{{ team.requests.cpu }}"></progress>
-                </div>
+                {{ elements.resource_bar_cpu(team) }}
             </td>
             <td style="font-size: 0.75rem" data-value="{{ team.usage.memory }}">
-                <div class="resource-labels">
-                    <span>{{ team.usage.memory|memory('MiB') }}</span> <span>{{ team.requests.memory|memory('MiB') }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                    <progress class="progress" value="{{ team.requests.memory }}" max="{{ team.requests.memory }}"></progress>
-                    <progress class="progress {{ 'is-danger' if team.usage.memory > team.requests.memory else 'is-primary' }}" value="{{ team.usage.memory }}" max="{{ team.requests.memory }}"></progress>
-                </div>
+                {{ elements.resource_bar_memory(team) }}
             </td>
 
             <td class="has-text-right">{{ team.cost|money }}</td>

@@ -136,28 +136,10 @@
                 <td data-value="{{ component.requests.memory }}">{{ component.requests.memory|filesizeformat(True) }}</td>
 
                 <td style="font-size: 0.75rem" data-value="{{ component.usage.cpu }}">
-                    <div class="resource-labels">
-                        <span>{{ component.usage.cpu|round(2) }}</span> <span>{{ component.requests.cpu|round(2) }}</span>
-                    </div>
-                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                        {% if component.recommendation: %}
-                        <div class="recommendation" style="left:{{ component.recommendation.cpu * 100 / component.requests.cpu }}%" title="Recommendation: {{ component.recommendation.cpu|round(2) }} CPUs"></div>
-                        {% endif %}
-                        <progress class="progress" value="{{ component.requests.cpu }}" max="{{ component.requests.cpu }}"></progress>
-                        <progress class="progress {{ 'is-danger' if component.usage.cpu > component.requests.cpu else 'is-primary' }}" value="{{ component.usage.cpu }}" max="{{ component.requests.cpu }}"></progress>
-                    </div>
+                    {{ elements.resource_bar_cpu(component) }}
                 </td>
                 <td style="font-size: 0.75rem" data-value="{{ component.usage.memory }}">
-                    <div class="resource-labels">
-                        <span>{{ component.usage.memory|memory('MiB') }}</span> <span>{{ component.requests.memory|memory('MiB') }}</span>
-                    </div>
-                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                        {% if component.recommendation: %}
-                        <div class="recommendation" style="left:{{ component.recommendation.memory * 100 / component.requests.memory }}%" title="Recommendation: {{ component.recommendation.memory|memory('MiB') }} MiB"></div>
-                        {% endif %}
-                        <progress class="progress" value="{{ component.requests.memory }}" max="{{ component.requests.memory }}"></progress>
-                        <progress class="progress {{ 'is-danger' if component.usage.memory > component.requests.memory else 'is-primary' }}" value="{{ component.usage.memory }}" max="{{ component.requests.memory }}"></progress>
-                    </div>
+                    {{ elements.resource_bar_memory(component) }}
                 </td>
 
                 <td class="has-text-right">{{ component.cost|money }}</td>
@@ -232,28 +214,10 @@
                 <td data-value="{{ row.pod.requests.memory }}">{{ row.pod.requests.memory|filesizeformat(True) }}</td>
 
                 <td style="font-size: 0.75rem" data-value="{{ row.pod.usage.cpu }}">
-                    <div class="resource-labels">
-                        <span>{{ row.pod.usage.cpu|round(2) }}</span> <span>{{ row.pod.requests.cpu|round(2) }}</span>
-                    </div>
-                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                        {% if row.pod.recommendation: %}
-                        <div class="recommendation" style="left:{{ row.pod.recommendation.cpu * 100 / row.pod.requests.cpu }}%" title="Recommendation: {{ row.pod.recommendation.cpu|round(2) }} CPUs"></div>
-                        {% endif %}
-                        <progress class="progress" value="{{ row.pod.requests.cpu }}" max="{{ row.pod.requests.cpu }}"></progress>
-                        <progress class="progress {{ 'is-danger' if row.pod.usage.cpu > row.pod.requests.cpu else 'is-primary' }}" value="{{ row.pod.usage.cpu }}" max="{{ row.pod.requests.cpu }}"></progress>
-                    </div>
+                    {{ elements.resource_bar_cpu(row.pod) }}
                 </td>
                 <td style="font-size: 0.75rem" data-value="{{ row.pod.usage.memory }}">
-                    <div class="resource-labels">
-                        <span>{{ row.pod.usage.memory|memory('MiB') }}</span> <span>{{ row.pod.requests.memory|memory('MiB') }}</span>
-                    </div>
-                    <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                        {% if row.pod.recommendation: %}
-                        <div class="recommendation" style="left:{{ row.pod.recommendation.memory * 100 / row.pod.requests.memory }}%" title="Recommendation: {{ row.pod.recommendation.memory|memory('MiB') }} MiB"></div>
-                        {% endif %}
-                        <progress class="progress" value="{{ row.pod.requests.memory }}" max="{{ row.pod.requests.memory }}"></progress>
-                        <progress class="progress {{ 'is-danger' if row.pod.usage.memory > row.pod.requests.memory else 'is-primary' }}" value="{{ row.pod.usage.memory }}" max="{{ row.pod.requests.memory }}"></progress>
-                    </div>
+                    {{ elements.resource_bar_memory(row.pod) }}
                 </td>
 
                 <td class="has-text-right">{{ row.pod.cost|money }}</td>
