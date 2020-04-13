@@ -21,6 +21,7 @@ from .utils import MIN_CPU_USER_REQUESTS
 from .utils import MIN_MEMORY_USER_REQUESTS
 from .utils import ONE_GIBI
 from .utils import parse_resource
+from .vpa import get_vpas_by_match_labels
 from kube_resource_report import __version__
 from kube_resource_report import metrics
 from kube_resource_report import pricing
@@ -248,6 +249,12 @@ def query_cluster(
         for k, v in node["usage"].items():
             cluster_usage[k] += v
 
+    try:
+        vpas_by_namespace_label = get_vpas_by_match_labels(cluster.client)
+    except Exception as e:
+        logger.warning(f"Failed to query VPAs in cluster {cluster.id}: {e}")
+        vpas_by_namespace_label = collections.defaultdict(list)
+
     cost_per_cpu = cluster_cost / cluster_allocatable["cpu"]
     cost_per_memory = cluster_cost / cluster_allocatable["memory"]
 
@@ -264,6 +271,27 @@ def query_cluster(
         if node_name and node_name in nodes:
             for k in ("cpu", "memory"):
                 nodes[node_name]["requests"][k] += pod_["requests"].get(k, 0)
+        found_vpa = False
+        for k, v in pod.labels.items():
+            vpas = vpas_by_namespace_label[(pod.namespace, k, v)]
+            for vpa in vpas:
+                if vpa.matches_pod(pod):
+                    recommendation = new_resources()
+                    container_names = set()
+                    for container in pod.obj["spec"]["containers"]:
+                        container_names.add(container["name"])
+                    for container in vpa.container_recommendations:
+                        # VPA might contain recommendations for containers which are no longer there!
+                        if container["containerName"] in container_names:
+                            for k in ("cpu", "memory"):
+                                recommendation[k] += parse_resource(
+                                    container["target"][k]
+                                )
+                    pod_["recommendation"] = recommendation
+                    found_vpa = True
+                    break
+            if found_vpa:
+                break
         pods[(pod.namespace, pod.name)] = pod_
 
     hourly_cost = cluster_cost / HOURS_PER_MONTH

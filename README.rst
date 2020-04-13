@@ -31,6 +31,7 @@ What the script does:
 * Collect all pods and use the ``application`` or ``app`` label as application ID
 * Get additional information for each app from the application registry (``team_id`` and ``active`` field) OR use the ``team`` label on the pod
 * Group and aggregate resource usage and slack costs per cluster, team and application
+* Read and show VerticalPodAutoscaler (VPA) resource recommendations
 * Allow custom links to existing systems (e.g. link to a monitoring dashboard for each cluster)
 
 The primary goal of Kubernetes Resource Report is to help optimize Kubernetes resource requests and avoid slack.

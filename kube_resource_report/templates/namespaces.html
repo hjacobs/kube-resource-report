@@ -51,22 +51,10 @@
             <td data-value="{{ namespace_data.requests.memory }}">{{ namespace_data.requests.memory|filesizeformat(True) }}</td>
 
             <td style="font-size: 0.75rem" data-value="{{ namespace_data.usage.cpu }}">
-                <div class="resource-labels">
-                    <span>{{ namespace_data.usage.cpu|round(2) }}</span> <span>{{ namespace_data.requests.cpu|round(2) }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                    <progress class="progress" value="{{ namespace_data.requests.cpu }}" max="{{ namespace_data.requests.cpu }}"></progress>
-                    <progress class="progress {{ 'is-danger' if namespace_data.usage.cpu > namespace_data.requests.cpu else 'is-primary' }}" value="{{ namespace_data.usage.cpu }}" max="{{ namespace_data.requests.cpu }}"></progress>
-                </div>
+                {{ elements.resource_bar_cpu(namespace_data) }}
             </td>
             <td style="font-size: 0.75rem" data-value="{{ namespace_data.usage.memory }}">
-                <div class="resource-labels">
-                    <span>{{ namespace_data.usage.memory|memory('MiB') }}</span> <span>{{ namespace_data.requests.memory|memory('MiB') }}</span>
-                </div>
-                <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
-                    <progress class="progress" value="{{ namespace_data.requests.memory }}" max="{{ namespace_data.requests.memory }}"></progress>
-                    <progress class="progress {{ 'is-danger' if namespace_data.usage.memory > namespace_data.requests.memory else 'is-primary' }}" value="{{ namespace_data.usage.memory }}" max="{{ namespace_data.requests.memory }}"></progress>
-                </div>
+                {{ elements.resource_bar_memory(namespace_data) }}
             </td>
 
             <td class="has-text-right">{{ namespace_data.cost|money }}</td>

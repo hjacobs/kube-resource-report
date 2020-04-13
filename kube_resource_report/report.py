@@ -195,6 +195,17 @@ def calculate_metrics(context: dict) -> dict:
     return metrics
 
 
+def aggregate_recommendation(pod, component):
+    if "recommendation" in pod and "recommendation" in component:
+        for r in "cpu", "memory":
+            component["recommendation"][r] = component["recommendation"].get(
+                r, 0
+            ) + pod["recommendation"].get(r, 0)
+    elif "recommendation" in component:
+        # only recommend resources for the component if all Pods have recommendations
+        del component["recommendation"]
+
+
 def generate_report(
     clusters,
     cluster_registry,
@@ -275,6 +286,7 @@ def generate_report(
                     "components": {},
                     "requests": {},
                     "usage": {},
+                    "recommendation": {},
                     "clusters": set(),
                     "team": "",
                     "active": None,
@@ -288,20 +300,18 @@ def generate_report(
                     "pods": 0,
                     "requests": {},
                     "usage": {},
+                    "recommendation": {},
                     "clusters": set(),
                 },
             )
             for r in "cpu", "memory":
-                app["requests"][r] = app["requests"].get(r, 0) + pod["requests"][r]
-                app["usage"][r] = app["usage"].get(r, 0) + pod.get("usage", {}).get(
-                    r, 0
-                )
-                component["requests"][r] = (
-                    component["requests"].get(r, 0) + pod["requests"][r]
-                )
-                component["usage"][r] = component["usage"].get(r, 0) + pod.get(
-                    "usage", {}
-                ).get(r, 0)
+                for key in "requests", "usage":
+                    app[key][r] = app[key].get(r, 0) + pod.get(key, {}).get(r, 0)
+                    component[key][r] = component[key].get(r, 0) + pod.get(key, {}).get(
+                        r, 0
+                    )
+            aggregate_recommendation(pod, app)
+            aggregate_recommendation(pod, component)
             app["cost"] += pod["cost"]
             app["slack_cost"] += pod.get("slack_cost", 0)
             app["pods"] += 1
@@ -326,6 +336,7 @@ def generate_report(
                     "pods": 0,
                     "requests": {},
                     "usage": {},
+                    "recommendation": {},
                     "cluster": "",
                     "email": "",
                     "status": "",
@@ -338,6 +349,7 @@ def generate_report(
                 namespace["usage"][r] = namespace["usage"].get(r, 0) + pod.get(
                     "usage", {}
                 ).get(r, 0)
+            aggregate_recommendation(pod, namespace)
             namespace["cost"] += pod["cost"]
             namespace["slack_cost"] += pod.get("slack_cost", 0)
             namespace["pods"] += 1
@@ -606,6 +618,8 @@ def write_report(
                 "Memory Requests",
                 "CPU Usage",
                 "Memory Usage",
+                "CPU Recommendation",
+                "Memory Recommendation",
                 "Cost [USD]",
                 "Slack Cost [USD]",
             ]
@@ -620,6 +634,7 @@ def write_report(
                     requests = pod["requests"]
                     application = pod["application"] or name.rsplit("-", 1)[0]
                     usage = pod.get("usage", collections.defaultdict(float))
+                    recommendation = pod.get("recommendation")
                     cpu_slack[(namespace, application)] += (
                         requests["cpu"] - usage["cpu"]
                     )
@@ -639,6 +654,8 @@ def write_report(
                             requests["memory"],
                             usage["cpu"],
                             usage["memory"],
+                            recommendation["cpu"] if recommendation else "",
+                            recommendation["memory"] if recommendation else "",
                             pod["cost"],
                             pod["slack_cost"],
                         ]
