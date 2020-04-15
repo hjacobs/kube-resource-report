@@ -57,6 +57,7 @@ def get_cluster_summaries(
     prev_cluster_summaries: dict,
     no_ingress_status: bool,
     node_labels: list,
+    data_path: Path,
 ):
     cluster_summaries = {}
 
@@ -81,6 +82,8 @@ def get_cluster_summaries(
             if (not include_pattern or include_pattern.match(cluster.id)) and (
                 not exclude_pattern or not exclude_pattern.match(cluster.id)
             ):
+                cluster_data_path = data_path / cluster.id
+                cluster_data_path.mkdir(parents=True, exist_ok=True)
                 future_to_cluster[
                     executor.submit(
                         query_cluster,
@@ -92,6 +95,7 @@ def get_cluster_summaries(
                         prev_cluster_summaries.get(cluster.id, {}),
                         no_ingress_status,
                         node_labels,
+                        cluster_data_path,
                     )
                 ] = cluster
 
@@ -268,6 +272,7 @@ def generate_report(
             cluster_summaries,
             no_ingress_status,
             node_labels,
+            out.output_path / "data",
         )
         teams = {}
 

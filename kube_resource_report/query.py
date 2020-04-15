@@ -3,6 +3,7 @@ import collections
 import concurrent.futures
 import logging
 import os
+from pathlib import Path
 from typing import Any
 from typing import Dict
 
@@ -16,6 +17,7 @@ from pykube import Pod
 from pykube import Service
 from requests_futures.sessions import FuturesSession
 
+from .recommender import Recommender
 from .utils import HOURS_PER_MONTH
 from .utils import MIN_CPU_USER_REQUESTS
 from .utils import MIN_MEMORY_USER_REQUESTS
@@ -211,6 +213,7 @@ def query_cluster(
     prev_cluster_summaries,
     no_ingress_status,
     node_labels,
+    data_path: Path,
 ):
     logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
     pods = {}
@@ -224,10 +227,10 @@ def query_cluster(
             "email": email,
         }
 
-    cluster_capacity = collections.defaultdict(float)
-    cluster_allocatable = collections.defaultdict(float)
-    cluster_requests = collections.defaultdict(float)
-    user_requests = collections.defaultdict(float)
+    cluster_capacity: Dict[str, float] = collections.defaultdict(float)
+    cluster_allocatable: Dict[str, float] = collections.defaultdict(float)
+    cluster_requests: Dict[str, float] = collections.defaultdict(float)
+    user_requests: Dict[str, float] = collections.defaultdict(float)
     cluster_cost = additional_cost_per_cluster
 
     for _node in Node.objects(cluster.client):
@@ -244,7 +247,7 @@ def query_cluster(
         cluster, nodes, prev_cluster_summaries.get("nodes", {}), alpha_ema
     )
 
-    cluster_usage = collections.defaultdict(float)
+    cluster_usage: Dict[str, float] = collections.defaultdict(float)
     for node in nodes.values():
         for k, v in node["usage"].items():
             cluster_usage[k] += v
@@ -331,6 +334,10 @@ def query_cluster(
     metrics.get_pod_usage(
         cluster, pods, prev_cluster_summaries.get("pods", {}), alpha_ema
     )
+    recommender = Recommender()
+    recommender.load_from_file(data_path)
+    recommender.update_pods(pods)
+    recommender.save_to_file(data_path)
 
     cluster_slack_cost = 0
     for pod in pods.values():
@@ -344,7 +351,7 @@ def query_cluster(
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
 
     with FuturesSession(max_workers=10, session=session) as futures_session:
-        futures_by_host = {}  # hostname -> future
+        futures_by_host: Dict[str, Any] = {}  # hostname -> future
         futures = collections.defaultdict(list)  # future -> [ingress]
 
         for _ingress in Ingress.objects(cluster.client, namespace=pykube.all):

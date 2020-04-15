@@ -10,32 +10,12 @@ from typing import List
 EPSILON = 0.001
 MAX_CHECKPOINT_WEIGHT = 10000
 
-# func cpuHistogramOptions() util.HistogramOptions {
-#       # CPU histograms use exponential bucketing scheme with the smallest bucket
-#       # size of 0.01 core, max of 1000.0 cores and the relative error of HistogramRelativeError.
-#       #
-#       # When parameters below are changed SupportedCheckpointVersion has to be bumped.
-#       options, err := util.NewExponentialHistogramOptions(1000.0, 0.01, 1.+HistogramBucketSizeGrowth, epsilon)
-#       if err != nil {
-#               panic("Invalid CPU histogram options") # Should not happen.
-#       }
-#       return options
-# }
-#
-# func memoryHistogramOptions() util.HistogramOptions {
-#       # Memory histograms use exponential bucketing scheme with the smallest
-#       # bucket size of 10MB, max of 1TB and the relative error of HistogramRelativeError.
-#       #
-#       # When parameters below are changed SupportedCheckpointVersion has to be bumped.
-#       options, err := util.NewExponentialHistogramOptions(1e12, 1e7, 1.+HistogramBucketSizeGrowth, epsilon)
-#       if err != nil {
-#               panic("Invalid memory histogram options") # Should not happen.
-#       }
-#       return options
-# }
+# When the decay factor exceeds 2^maxDecayExponent the histogram is
+# renormalized by shifting the decay start time forward.
+MAX_DECAY_EXPONENT = 100
 
 
-class ExponentialHistogram:
+class DecayingExponentialHistogram:
 
     """
     Histogram represents an approximate distribution of some variable.
@@ -49,7 +29,9 @@ class ExponentialHistogram:
     bucket_weights: List[float]
     total_weight: float
 
-    def __init__(self, max_value: float, first_bucket_size: float, ratio: float):
+    def __init__(
+        self, max_value: float, first_bucket_size: float, ratio: float, half_life: float
+    ):
         # if max_value <= 0.0 || first_bucket_size <= 0.0 || ratio <= 1.0 || epsilon <= 0.0 {
         #       return nil, errors.New(
         #               "maxValue, firstBucketSize and epsilon must be > 0.0, ratio must be > 1.0")
@@ -70,17 +52,52 @@ class ExponentialHistogram:
         self.max_bucket = 0
         self.bucket_weights = [0] * num_buckets
         self.total_weight = 0.0
+        self.half_life = half_life
+        self.reference_time = 0.0
 
-    def add_sample(self, value: float, weight: float, time):
+    def add_sample(self, value: float, weight: float, time: float):
+        # Max timestamp before the exponent grows too large.
+        max_allowed_time = self.reference_time + (self.half_life * MAX_DECAY_EXPONENT)
+        if time > max_allowed_time:
+            # The exponent has grown too large. Renormalize the histogram by
+            # shifting the referenceTimestamp to the current timestamp and rescaling
+            # the weights accordingly.
+            self.shift_reference_time(time)
+        decay_factor = 2 ** ((time - self.reference_time) / self.half_life)
+        new_weight = weight * decay_factor
         bucket = self.find_bucket(value)
-        self.bucket_weights[bucket] += weight
+        self.bucket_weights[bucket] += new_weight
 
-        self.total_weight += weight
+        self.total_weight += new_weight
 
         if bucket < self.min_bucket and self.bucket_weights[bucket] >= EPSILON:
             self.min_bucket = bucket
         if bucket > self.max_bucket and self.bucket_weights[bucket] >= EPSILON:
             self.max_bucket = bucket
+
+    def update_min_and_max_bucket(self):
+        lastBucket = self.num_buckets - 1
+        while (
+            self.bucket_weights[self.min_bucket] < EPSILON
+            and self.min_bucket < lastBucket
+        ):
+            self.min_bucket += 1
+        while self.bucket_weights[self.max_bucket] < EPSILON and self.max_bucket > 0:
+            self.max_bucket -= 1
+
+    def scale(self, factor: float):
+        for i, v in enumerate(self.bucket_weights):
+            self.bucket_weights[i] = v * factor
+        self.total_weight *= factor
+        # Some buckets might become empty (weight < epsilon), so adjust min and max buckets.
+        self.update_min_and_max_bucket()
+
+    def shift_reference_time(self, new_reference_time: float):
+        # Make sure the decay start is an integer multiple of halfLife.
+        new_reference_time = (new_reference_time // self.half_life) * self.half_life
+        exponent = round((self.reference_time - new_reference_time) / self.half_life)
+        self.scale(2 ** exponent)  # Scale all weights by 2^exponent.
+        self.reference_time = new_reference_time
 
     def find_bucket(self, value: float) -> int:
         if value < self.first_bucket_size:
@@ -143,7 +160,11 @@ class ExponentialHistogram:
                 if new_weight > 0:
                     bucket_weights[i] = new_weight
 
-        return {"total_weight": self.total_weight, "bucket_weights": bucket_weights}
+        return {
+            "total_weight": self.total_weight,
+            "bucket_weights": bucket_weights,
+            "reference_time": self.reference_time,
+        }
 
     def from_checkpoint(self, checkpoint):
         total_weight = checkpoint["total_weight"]
@@ -151,7 +172,7 @@ class ExponentialHistogram:
             raise ValueError(
                 f"Invalid checkpoint data with negative weight {total_weight}"
             )
-        weights_sum = sum(checkpoint.bucket_weights.values())
+        weights_sum = sum(checkpoint["bucket_weights"].values())
         # for bucket, weight := range checkpoint.BucketWeights {
         #        sum += int64(weight)
         #        if bucket >= h.options.NumBuckets() {
@@ -164,10 +185,13 @@ class ExponentialHistogram:
         if weights_sum == 0:
             return None
         ratio = total_weight / weights_sum
-        for bucket, weight in checkpoint.bucket_weights.items():
+        for bucket_str, weight in checkpoint["bucket_weights"].items():
+            # JSON keys are always strings, convert to int
+            bucket = int(bucket_str)
             if bucket < self.min_bucket:
                 self.min_bucket = bucket
             if bucket > self.max_bucket:
                 self.max_bucket = bucket
             self.bucket_weights[bucket] += weight * ratio
         self.total_weight += total_weight
+        self.reference_time = checkpoint["reference_time"]
