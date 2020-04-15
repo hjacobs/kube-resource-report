@@ -68,7 +68,6 @@ class Recommender:
 
         for aggregation_key, pods_ in pods_by_aggregation_key.items():
             cpu_histogram = self.cpu_histograms[aggregation_key]
-            print(cpu_histogram.get_percentile(CPU_PERCENTILE), CPU_SAFETY_MARGIN_FACTOR)
             cpu_recommendation = (
                 cpu_histogram.get_percentile(CPU_PERCENTILE) * CPU_SAFETY_MARGIN_FACTOR
             )
