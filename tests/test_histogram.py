@@ -60,7 +60,7 @@ def test_histogram_decay():
 
 def test_histogram_percentile():
     hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
-    now = time.mktime( (2020, 4, 15, 21, 34, 0, 2, 0, 0))
+    now = time.mktime((2020, 4, 15, 21, 34, 0, 2, 0, 0))
     hist.add_sample(1, 1, now)
     hist.add_sample(2, 1, now)
     hist.add_sample(3, 1, now)
