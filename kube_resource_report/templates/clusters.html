@@ -27,6 +27,7 @@
                   <th>CPU</th>
                   <th>Memory (GiB)</th>
                   <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
                   {% if links['cluster']: %}
                   <th></th>
                   {% endif %}
@@ -67,6 +68,7 @@
                 </div>
             </td>
             <td class="has-text-right">{{ summary.cost|money }}</td>
+            <td class="has-text-right">{{ summary.slack_cost|money }}</td>
             {% if links['cluster']: %}
             <td class="links">
                 <div class="buttons has-addons">
