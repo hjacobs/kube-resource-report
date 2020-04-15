@@ -1,12 +1,15 @@
-{{- if .Values.pricing.enabled }}
+{{- if or .Values.customLinks.enabled .Values.pricing.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: pricing-file
+  name: {{ .Release.Name }}-configs
   labels:
-    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "kube-resource-report.labels" . | nindent 4 }}
 data:
+  {{- if .Values.customLinks.enabled }}
+  links.yaml: {{ .Values.customLinks.data | quote }}
+  {{- end }}
+  {{- if .Values.pricing.enabled }}
   pricing.csv: {{ .Values.pricing.data | quote }}
+  {{- end }}
 {{- end }}

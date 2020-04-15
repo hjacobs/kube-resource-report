@@ -41,3 +41,34 @@ Return the appropriate apiVersion for Ingress.
 {{- print "networking.k8s.io/v1beta1" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "kube-resource-report.labels" -}}
+helm.sh/chart: {{ include "kube-resource-report.chart" . }}
+{{ include "kube-resource-report.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/*
+Selector labels
+*/}}
+{{- define "kube-resource-report.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "kube-resource-report.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "kube-resource-report.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}

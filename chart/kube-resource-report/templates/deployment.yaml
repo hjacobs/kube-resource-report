@@ -3,23 +3,18 @@ kind: Deployment
 metadata:
   name: {{ include "kube-resource-report.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-    helm.sh/chart: {{ include "kube-resource-report.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "kube-resource-report.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "kube-resource-report.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "kube-resource-report.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "kube-resource-report.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccount: {{ include "kube-resource-report.fullname" . }}
+      serviceAccountName: {{ include "kube-resource-report.serviceAccountName" . }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -37,8 +32,11 @@ spec:
         {{- if .Values.addtionalCostPerCluster }}
         - --additional-cost-per-cluster={{ .Values.addtionalCostPerCluster }}
         {{- end }}
+        {{- if .Values.customLinks.enabled }}
+        - "--links-file=/kube_resource_report/config/links.yaml"
+        {{- end }}
         {{- if .Values.pricing.enabled }}
-        - "--pricing-file=/pricing-file/pricing.csv"
+        - "--pricing-file=/kube_resource_report/config/pricing.csv"
         {{- end }}
         {{- range .Values.customArgs }}
         - {{ . | quote }}
@@ -47,9 +45,9 @@ spec:
         volumeMounts:
         - mountPath: /output
           name: report-data
-        {{- if .Values.pricing.enabled }}
-        - mountPath: /pricing-file/
-          name: pricing-file
+        {{- if or .Values.pricing.enabled .Values.customLinks.enabled }}
+        - mountPath: /kube_resource_report/config/
+          name: configs
         {{- end }}
         resources:
           {{- toYaml .Values.resourcesApp | nindent 10 }}
@@ -95,10 +93,10 @@ spec:
         - name: report-data
           emptyDir:
             sizeLimit: 500Mi
-        {{- if .Values.pricing.enabled }}
-        - name: pricing-file
+        {{- if or .Values.customLinks.enabled .Values.pricing.enabled }}
+        - name: configs
           configMap:
-            name: pricing-file
+            name: {{ .Release.Name }}-configs
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

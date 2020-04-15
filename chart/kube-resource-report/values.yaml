@@ -24,6 +24,16 @@ updateInterval: 1
 #   - "--system-namespaces=kube-system,infra-system"
 customArgs: []
 
+# Custom links
+# Ref: https://github.com/hjacobs/kube-resource-report#custom-links
+customLinks:
+  enabled: false
+  data: |
+    team:
+    - href: "https://people.mycorp.example.org/search?q=team:{id}"
+      title: "Search team {id} on people.mycorp"
+      icon: search
+
 # x additional USD/month cluster costs (like ELB, CloudWatch, etc.)
 addtionalCostPerCluster: 0
 
@@ -85,3 +95,12 @@ affinity: {}
 #   NODE_LABEL_SPOT: "a.com/spot"
 #   OBJECT_LABEL_APPLICATION: "app,chart"
 env: {}
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
