@@ -109,10 +109,12 @@ def test_application_report(
     assert data["myapp"]["id"] == "myapp"
     assert data["myapp"]["pods"] == 2
     assert data["myapp"]["requests"] == {"cpu": 0.1, "memory": 512 * 1024 ** 2}
+    # assert data["myapp"]["recommendation"] == {"cpu": 0.05*2, "memory": 512 * 1024 ** 2}
     # the "myapp" pod consumes 1/2 of cluster capacity (512Mi of 1Gi memory)
     assert data["myapp"]["cost"] == 50.0
-    # only 1/2 of requested resources are used => 50% of costs are slack
-    assert data["myapp"]["slack_cost"] == 25.0
+    # only 1/2 of requested resources are used => 50% of costs are slack,
+    # but the recommendation applies to both pods (one pod is failing and has zero usage)
+    assert data["myapp"]["slack_cost"] == 0
 
 
 def test_more_than_one_label(

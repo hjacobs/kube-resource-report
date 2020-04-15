@@ -342,10 +342,10 @@ def query_cluster(
     cluster_slack_cost = 0
     for pod in pods.values():
         usage_cost = max(
-            pod["usage"]["cpu"] * cost_per_cpu,
-            pod["usage"]["memory"] * cost_per_memory,
+            pod["recommendation"]["cpu"] * cost_per_cpu,
+            pod["recommendation"]["memory"] * cost_per_memory,
         )
-        pod["slack_cost"] = pod["cost"] - usage_cost
+        pod["slack_cost"] = max(min(pod["cost"] - usage_cost, pod["cost"]), 0)
         cluster_slack_cost += pod["slack_cost"]
 
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
