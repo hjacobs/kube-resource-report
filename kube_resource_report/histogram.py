@@ -32,10 +32,6 @@ class DecayingExponentialHistogram:
     def __init__(
         self, max_value: float, first_bucket_size: float, ratio: float, half_life: float
     ):
-        # if max_value <= 0.0 || first_bucket_size <= 0.0 || ratio <= 1.0 || epsilon <= 0.0 {
-        #       return nil, errors.New(
-        #               "maxValue, firstBucketSize and epsilon must be > 0.0, ratio must be > 1.0")
-        # }
         self.max_value = max_value
         self.first_bucket_size = first_bucket_size
         self.ratio = ratio
@@ -110,12 +106,7 @@ class DecayingExponentialHistogram:
         return bucket
 
     def get_bucket_start(self, bucket):
-
-        # Returns the start of the bucket with given index, according to the formula:
-        #    bucketStart(bucket) = firstBucketSize * (ratio^bucket - 1) / (ratio - 1).
-        # if bucket < 0 || bucket >= o.numBuckets {
-        #       panic(fmt.Sprintf("index %d out of range [0..%d]", bucket, o.numBuckets-1))
-        # }
+        """Return the start of the bucket with given index."""
         if bucket == 0:
             return 0.0
         return self.first_bucket_size * ((self.ratio ** bucket) - 1) / (self.ratio - 1)
@@ -173,15 +164,6 @@ class DecayingExponentialHistogram:
                 f"Invalid checkpoint data with negative weight {total_weight}"
             )
         weights_sum = sum(checkpoint["bucket_weights"].values())
-        # for bucket, weight := range checkpoint.BucketWeights {
-        #        sum += int64(weight)
-        #        if bucket >= h.options.NumBuckets() {
-        #                return fmt.Errorf("Checkpoint has bucket %v that is exceeding histogram buckets %v", bucket, h.options.NumBuckets())
-        #        }
-        #        if bucket < 0 {
-        #                return fmt.Errorf("Checkpoint has a negative bucket %v", bucket)
-        #        }
-        # }
         if weights_sum == 0:
             return None
         ratio = total_weight / weights_sum
