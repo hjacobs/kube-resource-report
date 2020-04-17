@@ -245,3 +245,25 @@ def test_histogram_percentile_large2():
     assert hist.get_percentile(0.5) == approx(percentile(values, 0.5), abs=0.02)
     assert hist.get_percentile(0.75) == approx(percentile(values, 0.75), abs=0.15)
     assert hist.get_percentile(0.9) == approx(percentile(values, 0.9), abs=0.05)
+
+
+def test_histogram_max_decay():
+    min_value = 10.0 * 1024 * 1024  # 10 MiB
+    max_value = 1024.0 ** 4  # 1 TiB
+    hist = DecayingExponentialHistogram(max_value, min_value, 1.05, ONE_DAY)
+    now = time.mktime((2020, 4, 15, 21, 34, 0, 2, 0, 0))
+
+    old_max = 900.0 * 1024 * 1024
+    new_max = 100.0 * 1014 * 1024
+    hist.add_sample(old_max, 1, now)
+    assert hist.get_percentile(1.0) == approx(old_max, rel=0.01)
+
+    ts = now
+    for i in range(60):
+        ts += ONE_DAY
+        hist.add_sample(new_max, 1, ts)
+        if i < 53:
+            assert hist.get_percentile(1.0) == approx(old_max, rel=0.01)
+        else:
+            # old max decayed too much, the new value prevails
+            assert hist.get_percentile(1.0) == approx(new_max, rel=0.15)
