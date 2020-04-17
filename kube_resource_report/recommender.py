@@ -18,7 +18,7 @@ ONE_DAY = 3600 * 24
 CPU_HISTOGRAM_MIN_VALUE = 0.001  # 1m
 CPU_HISTOGRAM_MAX_VALUE = 100.0
 CPU_HISTOGRAM_DECAY_HALF_LIFE = ONE_DAY
-MEMORY_HISTOGRAM_MIN_VALUE = 10.0 * 1024 * 1024 # 10 MiB
+MEMORY_HISTOGRAM_MIN_VALUE = 10.0 * 1024 * 1024  # 10 MiB
 MEMORY_HISTOGRAM_MAX_VALUE = 1024.0 ** 4  # 1 TiB
 MEMORY_HISTOGRAM_DECAY_HALF_LIFE = ONE_DAY
 
@@ -29,7 +29,10 @@ def new_cpu_histogram():
     # CPU histograms use exponential bucketing scheme with the smallest bucket
     # size of 0.001 core, max of 100.0 cores
     return DecayingExponentialHistogram(
-        CPU_HISTOGRAM_MAX_VALUE, CPU_HISTOGRAM_MIN_VALUE, 1.05, CPU_HISTOGRAM_DECAY_HALF_LIFE
+        CPU_HISTOGRAM_MAX_VALUE,
+        CPU_HISTOGRAM_MIN_VALUE,
+        1.05,
+        CPU_HISTOGRAM_DECAY_HALF_LIFE,
     )
 
 
@@ -37,7 +40,10 @@ def new_memory_histogram():
     # Memory histograms use exponential bucketing scheme with the smallest
     # bucket size of 10MB, max of 1TB
     return DecayingExponentialHistogram(
-        MEMORY_HISTOGRAM_MAX_VALUE, MEMORY_HISTOGRAM_MIN_VALUE, 1.05, MEMORY_HISTOGRAM_DECAY_HALF_LIFE
+        MEMORY_HISTOGRAM_MAX_VALUE,
+        MEMORY_HISTOGRAM_MIN_VALUE,
+        1.05,
+        MEMORY_HISTOGRAM_DECAY_HALF_LIFE,
     )
 
 
