@@ -3,6 +3,7 @@ import collections
 import concurrent.futures
 import logging
 import os
+import time
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -334,10 +335,15 @@ def query_cluster(
     metrics.get_pod_usage(
         cluster, pods, prev_cluster_summaries.get("pods", {}), alpha_ema
     )
+    start = time.time()
     recommender = Recommender()
     recommender.load_from_file(data_path)
     recommender.update_pods(pods)
     recommender.save_to_file(data_path)
+    delta = time.time() - start
+    logger.debug(
+        f"Calculated {len(recommender.cpu_histograms)} resource recommendations for cluster {cluster.id} in {delta:0.3f}s"
+    )
 
     cluster_slack_cost = 0
     for pod in pods.values():
