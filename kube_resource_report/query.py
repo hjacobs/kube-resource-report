@@ -185,7 +185,9 @@ def map_pod(pod: Pod, cost_per_cpu: float, cost_per_memory: float):
     team = get_team_from_labels(pod.labels)
     requests: Dict[str, float] = collections.defaultdict(float)
     container_images = []
+    container_names = []
     for container in pod.obj["spec"]["containers"]:
+        container_names.append(container.get("name", ""))
         # note that the "image" field is optional according to Kubernetes docs
         image = container.get("image")
         if image:
@@ -198,6 +200,7 @@ def map_pod(pod: Pod, cost_per_cpu: float, cost_per_memory: float):
         "requests": requests,
         "application": application,
         "component": component,
+        "container_names": container_names,
         "container_images": container_images,
         "cost": cost,
         "usage": new_resources(),

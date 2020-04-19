@@ -11,6 +11,7 @@ def test_save_load(output_dir):
     pod = {
         "application": "my-app",
         "component": "",
+        "container_names": ["web"],
         "requests": {"cpu": 0.5, "memory": 500 * 1024 * 10124},
         "usage": {"cpu": 0.1, "memory": 200 * 1024 * 1024},
     }
@@ -25,6 +26,7 @@ def test_save_load(output_dir):
     pod = {
         "application": "my-app",
         "component": "",
+        "container_names": ["web"],
         "requests": {"cpu": 0.5, "memory": 500 * 1024 * 10124},
         "usage": {"cpu": 0.01, "memory": 200 * 1024 * 1024},
     }

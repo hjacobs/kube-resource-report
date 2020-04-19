@@ -22,6 +22,8 @@ MEMORY_HISTOGRAM_MIN_VALUE = 10.0 * 1024 * 1024  # 10 MiB
 MEMORY_HISTOGRAM_MAX_VALUE = 1024.0 ** 4  # 1 TiB
 MEMORY_HISTOGRAM_DECAY_HALF_LIFE = ONE_DAY
 
+AGGREGATION_KEY_LENGTH = 4
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,7 +62,12 @@ class Recommender:
 
         for namespace_name, pod in pods.items():
             namespace, name = namespace_name
-            aggregation_key = (namespace, pod["application"], pod["component"])
+            aggregation_key = (
+                namespace,
+                pod["application"],
+                pod["component"],
+                ",".join(sorted(pod["container_names"])),
+            )
             pods_by_aggregation_key[aggregation_key].append(pod)
 
             cpu_usage = pod["usage"]["cpu"]
@@ -104,7 +111,8 @@ class Recommender:
     def load_from_file(self, data_path: Path):
         for path in data_path.rglob(CHECKPOINT_FILE_NAME):
             aggregation_key = tuple(
-                ("" if p == "-" else p) for p in path.parent.parts[-3:]
+                ("" if p == "-" else p)
+                for p in path.parent.parts[-AGGREGATION_KEY_LENGTH:]
             )
             try:
                 with path.open() as fd:
