@@ -219,6 +219,7 @@ def generate_report(
     use_cache,
     no_ingress_status,
     output_dir,
+    data_path,
     system_namespaces,
     include_clusters,
     exclude_clusters,
@@ -272,7 +273,7 @@ def generate_report(
             cluster_summaries,
             no_ingress_status,
             node_labels,
-            out.output_path / "data",
+            data_path,
         )
         teams = {}
 

@@ -115,6 +115,7 @@ class CommaSeparatedValues(click.ParamType):
     default="worker",
 )
 @click.option("--debug", is_flag=True, help="Enable debug logging")
+@click.option("--data-path", type=click.Path(exists=True))
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
     clusters,
@@ -125,6 +126,7 @@ def main(
     use_cache,
     no_ingress_status,
     output_dir,
+    data_path,
     system_namespaces,
     include_clusters,
     exclude_clusters,
@@ -151,6 +153,11 @@ def main(
     if pricing_file:
         pricing_file = Path(pricing_file)
 
+    if data_path:
+        data_path = Path(data_path)
+    else:
+        data_path = Path(str(output_dir)) / "data"
+
     cluster_summaries = {}
 
     while True:
@@ -163,6 +170,7 @@ def main(
             use_cache,
             no_ingress_status,
             output_dir,
+            data_path,
             set(system_namespaces),
             include_clusters,
             exclude_clusters,

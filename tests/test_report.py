@@ -41,6 +41,7 @@ def fake_generate_report(output_dir, monkeypatch, helpers):
             False,
             False,
             str(output_dir),
+            Path(str(output_dir)) / "data",
             set(["kube-system"]),
             None,
             None,
