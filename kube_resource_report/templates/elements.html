@@ -7,7 +7,7 @@
     {% if component.recommendation.cpu > component.requests.cpu: %}
     <div class="recommendation-exceeds" title="Recommendation: {{ component.recommendation.cpu|round(3) }} CPUs"></div>
     {% else: %}
-    <div class="recommendation" style="left:{{ component.recommendation.cpu * 100 / component.requests.cpu }}%" title="Recommendation: {{ component.recommendation.cpu|round(3) }} CPUs"></div>
+    <div class="recommendation" style="left:{{ component.recommendation.cpu * 100 / (component.requests.cpu + 0.001) }}%" title="Recommendation: {{ component.recommendation.cpu|round(3) }} CPUs"></div>
     {% endif %}
     {% endif %}
     <progress class="progress" value="{{ component.requests.cpu }}" max="{{ component.requests.cpu }}"></progress>
@@ -25,7 +25,7 @@
     {% if component.recommendation.memory > component.requests.memory: %}
     <div class="recommendation-exceeds" title="Recommendation: {{ component.recommendation.memory|memory('MiB') }} MiB"></div>
     {% else: %}
-    <div class="recommendation" style="left:{{ component.recommendation.memory * 100 / component.requests.memory }}%" title="Recommendation: {{ component.recommendation.memory|memory('MiB') }} MiB"></div>
+    <div class="recommendation" style="left:{{ component.recommendation.memory * 100 / (component.requests.memory + 1) }}%" title="Recommendation: {{ component.recommendation.memory|memory('MiB') }} MiB"></div>
     {% endif %}
     {% endif %}
     <progress class="progress" value="{{ component.requests.memory }}" max="{{ component.requests.memory }}"></progress>
