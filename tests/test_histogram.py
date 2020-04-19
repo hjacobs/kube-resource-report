@@ -267,3 +267,19 @@ def test_histogram_max_decay():
         else:
             # old max decayed too much, the new value prevails
             assert hist.get_percentile(1.0) == approx(new_max, rel=0.15)
+
+
+def test_histogram_save_load_checkpoint():
+    now = time.mktime((2020, 4, 19, 21, 34, 0, 2, 0, 0))
+
+    start = time.time()
+    hist = DecayingExponentialHistogram(100.0, 0.001, 1.05, ONE_DAY)
+    hist.add_sample(0.5, 1, now)
+    checkpoint = hist.get_checkpoint()
+    for i in range(100):
+        hist = DecayingExponentialHistogram(100.0, 0.001, 1.05, ONE_DAY)
+        hist.from_checkpoint(checkpoint)
+        hist.add_sample(0.1 * i, 1, now + (i * 60))
+        checkpoint = hist.get_checkpoint()
+    delta = time.time() - start
+    assert delta < 0
