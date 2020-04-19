@@ -51,6 +51,7 @@ def test_map_empty_pod():
     assert map_pod(pod, 0, 0) == {
         "application": "",
         "component": "",
+        "container_names": [],
         "container_images": [],
         "team": "",
         "requests": {"cpu": 0, "memory": 0},
@@ -69,6 +70,7 @@ def test_map_pod_with_resources():
             "spec": {
                 "containers": [
                     {
+                        "name": "main",
                         "image": "hjacobs/kube-downscaler:latest",
                         "resources": {"requests": {"cpu": "5m", "memory": "200Mi"}},
                     }
@@ -81,6 +83,7 @@ def test_map_pod_with_resources():
         "application": "myapp",
         "component": "mycomp",
         "team": "myteam",
+        "container_names": ["main"],
         "container_images": ["hjacobs/kube-downscaler:latest"],
         "requests": {"cpu": 0.005, "memory": 200 * 1024 * 1024},
         "usage": {"cpu": 0, "memory": 0},

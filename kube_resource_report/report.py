@@ -28,6 +28,8 @@ from kube_resource_report import __version__
 from kube_resource_report import cluster_discovery
 from kube_resource_report import pricing
 
+MAX_WORKERS = 8
+
 
 session = requests.Session()
 # set a friendly user agent for outgoing HTTP requests
@@ -57,6 +59,7 @@ def get_cluster_summaries(
     prev_cluster_summaries: dict,
     no_ingress_status: bool,
     node_labels: list,
+    data_path: Path,
 ):
     cluster_summaries = {}
 
@@ -75,12 +78,14 @@ def get_cluster_summaries(
     include_pattern = include_clusters and re.compile(include_clusters)
     exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_cluster = {}
         for cluster in discoverer.get_clusters():
             if (not include_pattern or include_pattern.match(cluster.id)) and (
                 not exclude_pattern or not exclude_pattern.match(cluster.id)
             ):
+                cluster_data_path = data_path / cluster.id
+                cluster_data_path.mkdir(parents=True, exist_ok=True)
                 future_to_cluster[
                     executor.submit(
                         query_cluster,
@@ -92,6 +97,7 @@ def get_cluster_summaries(
                         prev_cluster_summaries.get(cluster.id, {}),
                         no_ingress_status,
                         node_labels,
+                        cluster_data_path,
                     )
                 ] = cluster
 
@@ -215,6 +221,7 @@ def generate_report(
     use_cache,
     no_ingress_status,
     output_dir,
+    data_path,
     system_namespaces,
     include_clusters,
     exclude_clusters,
@@ -268,6 +275,7 @@ def generate_report(
             cluster_summaries,
             no_ingress_status,
             node_labels,
+            data_path,
         )
         teams = {}
 
