@@ -5,9 +5,9 @@
 <div class="resource-bar" title="Usage in green; requested in black; usage > requested in red.">
     {% if component.recommendation: %}
     {% if component.recommendation.cpu > component.requests.cpu: %}
-    <div class="recommendation-exceeds" title="Recommendation: {{ component.recommendation.cpu|round(2) }} CPUs"></div>
+    <div class="recommendation-exceeds" title="Recommendation: {{ component.recommendation.cpu|round(3) }} CPUs"></div>
     {% else: %}
-    <div class="recommendation" style="left:{{ component.recommendation.cpu * 100 / component.requests.cpu }}%" title="Recommendation: {{ component.recommendation.cpu|round(2) }} CPUs"></div>
+    <div class="recommendation" style="left:{{ component.recommendation.cpu * 100 / component.requests.cpu }}%" title="Recommendation: {{ component.recommendation.cpu|round(3) }} CPUs"></div>
     {% endif %}
     {% endif %}
     <progress class="progress" value="{{ component.requests.cpu }}" max="{{ component.requests.cpu }}"></progress>

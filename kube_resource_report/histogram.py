@@ -50,7 +50,7 @@ class DecayingExponentialHistogram:
         self.bucket_weights = collections.defaultdict(float)
         self.total_weight = 0.0
         self.half_life = half_life
-        self.reference_time = 0.0
+        self.reference_time = 0
 
     def add_sample(self, value: float, weight: float, time: float):
         # Max timestamp before the exponent grows too large.
@@ -91,7 +91,9 @@ class DecayingExponentialHistogram:
 
     def shift_reference_time(self, new_reference_time: float):
         # Make sure the decay start is an integer multiple of halfLife.
-        new_reference_time = (new_reference_time // self.half_life) * self.half_life
+        new_reference_time = int(
+            (new_reference_time // self.half_life) * self.half_life
+        )
         exponent = round((self.reference_time - new_reference_time) / self.half_life)
         self.scale(2 ** exponent)  # Scale all weights by 2^exponent.
         self.reference_time = new_reference_time

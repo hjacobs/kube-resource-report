@@ -40,7 +40,7 @@ main div.section.is-collapsed table { display: none; }
     /* https://css-tricks.com/snippets/css/css-triangle/ */
     width: 0;
     height: 0;
-    margin-left: -0.4rem;
+    margin-left: -0.344rem;
     border-left: 0.344rem solid transparent;
     border-right: 0.344rem solid transparent;
     /* bulma success color */
@@ -52,7 +52,7 @@ main div.section.is-collapsed table { display: none; }
     top: 0.5rem;
     width: 0;
     height: 0;
-    margin-left: -0.4rem;
+    margin-left: -0.344rem;
     border-left: 0.344rem solid transparent;
     border-right: 0.344rem solid transparent;
     /* bulma danger color */

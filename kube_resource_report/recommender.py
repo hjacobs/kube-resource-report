@@ -51,6 +51,8 @@ class Recommender:
     def __init__(self):
         self.cpu_histograms = collections.defaultdict(new_cpu_histogram)
         self.memory_histograms = collections.defaultdict(new_memory_histogram)
+        self.first_sample_times = collections.defaultdict(int)
+        self.total_sample_counts = collections.defaultdict(int)
 
     def update_pods(self, pods: dict):
         pods_by_aggregation_key = collections.defaultdict(list)
@@ -75,6 +77,9 @@ class Recommender:
 
             memory_histogram = self.memory_histograms[aggregation_key]
             memory_histogram.add_sample(memory_usage, 1.0, now)
+            self.total_sample_counts[aggregation_key] += 1
+            if aggregation_key not in self.first_sample_times:
+                self.first_sample_times[aggregation_key] = int(now)
 
         for aggregation_key, pods_ in pods_by_aggregation_key.items():
             cpu_histogram = self.cpu_histograms[aggregation_key]
@@ -98,10 +103,14 @@ class Recommender:
 
     def load_from_file(self, data_path: Path):
         for path in data_path.rglob(CHECKPOINT_FILE_NAME):
-            aggregation_key = tuple(path.parent.parts[-3:])
+            aggregation_key = tuple(
+                ("" if p == "-" else p) for p in path.parent.parts[-3:]
+            )
             try:
                 with path.open() as fd:
                     data = json.load(fd)
+                self.first_sample_times[aggregation_key] = data["first_sample_time"]
+                self.total_sample_counts[aggregation_key] = data["total_samples_count"]
                 self.cpu_histograms[aggregation_key].from_checkpoint(
                     data["cpu_histogram"]
                 )
@@ -117,9 +126,11 @@ class Recommender:
         for aggregation_key, cpu_histogram in self.cpu_histograms.items():
             folder = data_path
             for part in aggregation_key:
-                folder /= part
+                folder /= part if part else "-"
             folder.mkdir(parents=True, exist_ok=True)
             data = {
+                "first_sample_time": self.first_sample_times[aggregation_key],
+                "total_samples_count": self.total_sample_counts[aggregation_key],
                 "cpu_histogram": cpu_histogram.get_checkpoint(),
                 "memory_histogram": self.memory_histograms[
                     aggregation_key
