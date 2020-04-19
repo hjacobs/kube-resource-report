@@ -3,8 +3,9 @@ Implementation of exponential histogram from Vertical Pod Autoscaler (VPA).
 
 VPA source: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
 """
+import collections
 import math
-from typing import List
+from typing import Dict
 
 
 EPSILON = 0.001
@@ -26,7 +27,7 @@ class DecayingExponentialHistogram:
     num_buckets: int
     min_bucket: int
     max_bucket: int
-    bucket_weights: List[float]
+    bucket_weights: Dict[int, float]
     total_weight: float
 
     def __init__(
@@ -46,7 +47,7 @@ class DecayingExponentialHistogram:
         self.num_buckets = num_buckets
         self.min_bucket = num_buckets - 1
         self.max_bucket = 0
-        self.bucket_weights = [0] * num_buckets
+        self.bucket_weights = collections.defaultdict(float)
         self.total_weight = 0.0
         self.half_life = half_life
         self.reference_time = 0.0
@@ -82,7 +83,7 @@ class DecayingExponentialHistogram:
             self.max_bucket -= 1
 
     def scale(self, factor: float):
-        for i, v in enumerate(self.bucket_weights):
+        for i, v in self.bucket_weights.items():
             self.bucket_weights[i] = v * factor
         self.total_weight *= factor
         # Some buckets might become empty (weight < epsilon), so adjust min and max buckets.
@@ -117,11 +118,15 @@ class DecayingExponentialHistogram:
         partial_sum = 0.0
         threshold = percentile * self.total_weight
         bucket = self.min_bucket
-        while bucket < self.max_bucket:
-            partial_sum += self.bucket_weights[bucket]
-            if partial_sum >= threshold:
+        for i, w in sorted(self.bucket_weights.items()):
+            if i >= self.max_bucket:
+                bucket = i
                 break
-            bucket += 1
+            elif i >= bucket:
+                partial_sum += w
+                if partial_sum >= threshold:
+                    bucket = i
+                    break
         if bucket < self.num_buckets - 1:
             # Return the end of the bucket.
             return self.get_bucket_start(bucket + 1)
@@ -133,27 +138,11 @@ class DecayingExponentialHistogram:
         return self.bucket_weights[self.min_bucket] < EPSILON
 
     def get_checkpoint(self):
-        bucket_weights = {}
-
-        # we can't process empty histograms
-        if not self.is_empty():
-            # Find max
-            max_weight = 0.0
-            for i in range(self.min_bucket, self.max_bucket + 1):
-                if self.bucket_weights[i] > max_weight:
-                    max_weight = self.bucket_weights[i]
-            # Compute ratio
-            ratio = MAX_CHECKPOINT_WEIGHT / max_weight
-
-            # Convert weights and drop near-zero weights
-            for i in range(self.min_bucket, self.max_bucket + 1):
-                new_weight = round(self.bucket_weights[i] * ratio)
-                if new_weight > 0:
-                    bucket_weights[i] = new_weight
-
         return {
             "total_weight": self.total_weight,
-            "bucket_weights": bucket_weights,
+            "bucket_weights": {
+                b: w for b, w in self.bucket_weights.items() if w > EPSILON
+            },
             "reference_time": self.reference_time,
         }
 
@@ -166,7 +155,6 @@ class DecayingExponentialHistogram:
         weights_sum = sum(checkpoint["bucket_weights"].values())
         if weights_sum == 0:
             return None
-        ratio = total_weight / weights_sum
         for bucket_str, weight in checkpoint["bucket_weights"].items():
             # JSON keys are always strings, convert to int
             bucket = int(bucket_str)
@@ -174,6 +162,6 @@ class DecayingExponentialHistogram:
                 self.min_bucket = bucket
             if bucket > self.max_bucket:
                 self.max_bucket = bucket
-            self.bucket_weights[bucket] += weight * ratio
+            self.bucket_weights[bucket] += weight
         self.total_weight += total_weight
         self.reference_time = checkpoint["reference_time"]
