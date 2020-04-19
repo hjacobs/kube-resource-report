@@ -124,6 +124,10 @@ class Recommender:
 
     def save_to_file(self, data_path: Path):
         for aggregation_key, cpu_histogram in self.cpu_histograms.items():
+            if cpu_histogram.is_empty():
+                # don't store empty histograms
+                continue
+
             folder = data_path
             for part in aggregation_key:
                 folder /= part if part else "-"
