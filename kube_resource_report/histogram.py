@@ -152,9 +152,6 @@ class DecayingExponentialHistogram:
             raise ValueError(
                 f"Invalid checkpoint data with negative weight {total_weight}"
             )
-        weights_sum = sum(checkpoint["bucket_weights"].values())
-        if weights_sum == 0:
-            return None
         for bucket_str, weight in checkpoint["bucket_weights"].items():
             # JSON keys are always strings, convert to int
             bucket = int(bucket_str)
