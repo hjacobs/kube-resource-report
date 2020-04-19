@@ -28,6 +28,8 @@ from kube_resource_report import __version__
 from kube_resource_report import cluster_discovery
 from kube_resource_report import pricing
 
+MAX_WORKERS = 8
+
 
 session = requests.Session()
 # set a friendly user agent for outgoing HTTP requests
@@ -76,7 +78,7 @@ def get_cluster_summaries(
     include_pattern = include_clusters and re.compile(include_clusters)
     exclude_pattern = exclude_clusters and re.compile(exclude_clusters)
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_cluster = {}
         for cluster in discoverer.get_clusters():
             if (not include_pattern or include_pattern.match(cluster.id)) and (
