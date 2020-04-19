@@ -1,3 +1,8 @@
+"""
+Recommend CPU/memory resource values for Pods based on some (hard-coded) aggregation logic with decaying exponential histograms.
+
+The histogram decay algorithm is similar to VerticalPodAutoscaler (VPA), i.e. resource metrics are weighted half after one day (24 hours).
+"""
 import collections
 import json
 import logging
