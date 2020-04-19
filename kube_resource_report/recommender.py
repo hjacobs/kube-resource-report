@@ -24,6 +24,9 @@ MEMORY_HISTOGRAM_DECAY_HALF_LIFE = ONE_DAY
 
 AGGREGATION_KEY_LENGTH = 4
 
+# delete checkpoint files without updates after 14 days
+MAX_STALE_FILE_AGE_SECONDS = 14 * 24 * 3600
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,6 +58,8 @@ class Recommender:
         self.memory_histograms = collections.defaultdict(new_memory_histogram)
         self.first_sample_times = collections.defaultdict(int)
         self.total_sample_counts = collections.defaultdict(int)
+        self._stale_aggregation_keys = set()
+        self._updated_aggregation_keys = set()
 
     def update_pods(self, pods: dict):
         pods_by_aggregation_key = collections.defaultdict(list)
@@ -87,6 +92,7 @@ class Recommender:
             self.total_sample_counts[aggregation_key] += 1
             if aggregation_key not in self.first_sample_times:
                 self.first_sample_times[aggregation_key] = int(now)
+            self._updated_aggregation_keys.add(aggregation_key)
 
         for aggregation_key, pods_ in pods_by_aggregation_key.items():
             cpu_histogram = self.cpu_histograms[aggregation_key]
@@ -109,12 +115,15 @@ class Recommender:
                     }
 
     def load_from_file(self, data_path: Path):
+        oldest_mtime = time.time() - MAX_STALE_FILE_AGE_SECONDS
         for path in data_path.rglob(CHECKPOINT_FILE_NAME):
             aggregation_key = tuple(
                 ("" if p == "-" else p)
                 for p in path.parent.parts[-AGGREGATION_KEY_LENGTH:]
             )
             try:
+                if path.stat().st_mtime < oldest_mtime:
+                    self._stale_aggregation_keys.add(aggregation_key)
                 with path.open() as fd:
                     data = json.load(fd)
                 self.first_sample_times[aggregation_key] = data["first_sample_time"]
@@ -130,20 +139,23 @@ class Recommender:
                     f"Failed to load recommender checkpoint from {path}: {e}"
                 )
 
-    def save_to_file(self, data_path: Path):
-        for aggregation_key, cpu_histogram in self.cpu_histograms.items():
-            if cpu_histogram.is_empty():
-                # don't store empty histograms
-                continue
+    def _get_folder(self, data_path: Path, aggregation_key):
+        folder = data_path
+        for part in aggregation_key:
+            folder /= part if part else "-"
+        return folder
 
-            folder = data_path
-            for part in aggregation_key:
-                folder /= part if part else "-"
+    def save_to_file(self, data_path: Path):
+        for aggregation_key in self._updated_aggregation_keys:
+            if aggregation_key in self._stale_aggregation_keys:
+                self._stale_aggregation_keys.remove(aggregation_key)
+
+            folder = self._get_folder(data_path, aggregation_key)
             folder.mkdir(parents=True, exist_ok=True)
             data = {
                 "first_sample_time": self.first_sample_times[aggregation_key],
                 "total_samples_count": self.total_sample_counts[aggregation_key],
-                "cpu_histogram": cpu_histogram.get_checkpoint(),
+                "cpu_histogram": self.cpu_histograms[aggregation_key].get_checkpoint(),
                 "memory_histogram": self.memory_histograms[
                     aggregation_key
                 ].get_checkpoint(),
@@ -151,3 +163,8 @@ class Recommender:
             path = folder / CHECKPOINT_FILE_NAME
             with path.open("w") as fd:
                 json.dump(data, fd)
+
+        for aggregation_key in self._stale_aggregation_keys:
+            folder = self._get_folder(data_path, aggregation_key)
+            path = folder / CHECKPOINT_FILE_NAME
+            path.unlink(missing_ok=True)
