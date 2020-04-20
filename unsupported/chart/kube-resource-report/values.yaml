@@ -37,6 +37,15 @@ customLinks:
 # x additional USD/month cluster costs (like ELB, CloudWatch, etc.)
 addtionalCostPerCluster: 0
 
+# you can use pricing csv, embedded in the container image
+# listed in the order of priority of enabling
+gcpPricing:
+  enabled: true
+awsPricing:
+  enabled: false
+awsSpotPricing:
+  enabled: false
+# or pass it via a configMap
 pricing:
   enabled: false
   # CSV with columns region,instance-type,monthly-price-usd

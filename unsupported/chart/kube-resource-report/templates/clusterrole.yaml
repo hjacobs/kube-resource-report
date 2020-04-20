@@ -29,4 +29,16 @@ rules:
   resourceNames: ["heapster"]
   verbs:
     - get
+# allow reading VPAs to get resource recommendations
+- apiGroups: ["autoscaling.k8s.io"]
+  resources: ["verticalpodautoscalers"]
+  verbs:
+    - get
+    - list
+# allow reading Deployments and StatefulSets to get matching Pods for VPAs
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "replicasets", "daemonsets"]
+  verbs:
+    - get
+    - list
 {{- end }}

@@ -35,9 +35,7 @@ spec:
         {{- if .Values.customLinks.enabled }}
         - "--links-file=/kube_resource_report/config/links.yaml"
         {{- end }}
-        {{- if .Values.pricing.enabled }}
-        - "--pricing-file=/kube_resource_report/config/pricing.csv"
-        {{- end }}
+        {{- include "kube-resource-report.pricing" . | nindent 8 }}
         {{- range .Values.customArgs }}
         - {{ . | quote }}
         {{- end }}

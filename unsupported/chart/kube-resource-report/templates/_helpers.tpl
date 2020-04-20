@@ -72,3 +72,18 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Configure pricing to use
+*/}}
+{{- define "kube-resource-report.pricing" -}}
+{{- if .Values.gcpPricing.enabled -}}
+- --pricing-file=/kube_resource_report/gcp-costs-monthly.csv
+{{- else if .Values.awsPricing.enabled -}}
+- --pricing-file=/kube_resource_report/aws-ec2-costs-monthly.csv
+{{- else if .Values.awsSpotPricing.enabled -}}
+- --pricing-file=/kube_resource_report/aws-ec2-costs-monthly.csv
+{{- else if .Values.pricing.enabled -}}
+- --pricing-file=/kube_resource_report/config/pricing.csv
+{{- end -}}
+{{- end -}}

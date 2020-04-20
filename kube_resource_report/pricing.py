@@ -19,7 +19,6 @@ _path = Path(__file__).parent / "aws-ec2-costs-monthly.csv"
 _path_gcp = Path(__file__).parent / "gcp-costs-monthly.csv"
 _spot_path = Path(__file__).parent / "aws-ec2-spot-costs-monthly.csv"
 
-
 # from https://docs.aws.amazon.com/general/latest/gr/ec2-service.html
 # did not find a mapping of region names elsewhere :-(
 # entries are sorted!
@@ -117,7 +116,7 @@ def generate_gcp_price_list():
         writer = csv.writer(fd, lineterminator="\n")
         for product, data in sorted(response.json()["gcp_price_list"].items()):
             if product.startswith(prefix):
-                instance_type = product[len(prefix) :].lower()
+                instance_type = product[len(prefix):].lower()
                 for region, hourly_price in sorted(data.items()):
                     if "-" in region and isinstance(hourly_price, float):
                         monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
@@ -126,13 +125,13 @@ def generate_gcp_price_list():
                                 region,
                                 instance_type,
                                 "{:.4f}".format(monthly_price),
-                                data.get("cores"),
-                                data.get("memory"),
+                                # data.get("cores"),
+                                # data.get("memory"),
                             ]
                         )
 
             elif product.startswith(custom_prefix):
-                _type = product[len(custom_prefix) :].lower()
+                _type = product[len(custom_prefix):].lower()
                 if _type == "core":
                     instance_type = "custom-per-cpu-core"
                 elif _type == "ram":
@@ -162,12 +161,12 @@ def generate_ec2_spot_price_list():
     for location in sorted(AWS_LOCATIONS.values()):
         # some regions are not available
         if location in (
-            "ap-northeast-3",
-            "cn-north-1",
-            "cn-northwest-1",
-            "us-gov-west-1",
-            "us-gov-east-1",
-            "ap-east-1",
+                "ap-northeast-3",
+                "cn-north-1",
+                "cn-northwest-1",
+                "us-gov-west-1",
+                "us-gov-east-1",
+                "ap-east-1",
         ):
             continue
         print(location)
@@ -253,10 +252,10 @@ def generate_ec2_price_list():
             usagetype = entry["product"]["attributes"]["usagetype"]
 
             if (
-                tenancy == "Shared"
-                and os == "Linux"
-                and sw == "NA"
-                and "BoxUsage:" in usagetype
+                    tenancy == "Shared"
+                    and os == "Linux"
+                    and sw == "NA"
+                    and "BoxUsage:" in usagetype
             ):
                 for _k, v in entry["terms"]["OnDemand"].items():
                     for _, v_ in v["priceDimensions"].items():
@@ -275,8 +274,8 @@ def generate_ec2_price_list():
 
                             previous_price = pricing_data.get(key)
                             if (
-                                previous_price is not None
-                                and previous_price != monthly_price
+                                    previous_price is not None
+                                    and previous_price != monthly_price
                             ):
                                 raise Exception(
                                     "Duplicate data for {}/{}: {:.4f} and {:.4f}".format(

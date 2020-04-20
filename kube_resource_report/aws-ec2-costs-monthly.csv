@@ -3071,6 +3071,12 @@ us-gov-east-1,d2.2xlarge,1209.7080
 us-gov-east-1,d2.4xlarge,2419.4160
 us-gov-east-1,d2.8xlarge,4838.8320
 us-gov-east-1,d2.xlarge,604.8540
+us-gov-east-1,g4dn.12xlarge,3602.0955
+us-gov-east-1,g4dn.16xlarge,4007.5230
+us-gov-east-1,g4dn.2xlarge,692.5140
+us-gov-east-1,g4dn.4xlarge,1108.8990
+us-gov-east-1,g4dn.8xlarge,2003.7615
+us-gov-east-1,g4dn.xlarge,484.3215
 us-gov-east-1,i3.16xlarge,4394.6880
 us-gov-east-1,i3.2xlarge,549.3360
 us-gov-east-1,i3.4xlarge,1098.6720
