@@ -25,6 +25,8 @@ spec:
         - --update-interval-minutes=1
         # this is just an example, e.g. for Minikube: assume 30 USD/month cluster costs
         - --additional-cost-per-cluster=30.0
+        # optional: use a custom CSV with node/server prices
+        # - --pricing-file=/pricing-file/pricing.csv
         - /output
         volumeMounts:
         - mountPath: /output
@@ -61,3 +63,6 @@ spec:
           - name: report-data
             emptyDir:
               sizeLimit: 500Mi
+          - name: pricing-file
+            configMap:
+              name: pricing-file
