@@ -25,11 +25,14 @@ spec:
         # you can also add any cloud fees here (cost per control plane)
         - --additional-cost-per-cluster=30.0
         # optional: use a custom CSV with node/server prices
-        # - --pricing-file=/pricing-file/pricing.csv
+        # - --pricing-file=/config/pricing.csv
         - /output
         volumeMounts:
         - mountPath: /output
           name: report-data
+        # optional: configuration
+        # - mountPath: /config
+        #   name: config
         resources:
           limits:
             memory: 100Mi
@@ -63,6 +66,6 @@ spec:
             emptyDir:
               sizeLimit: 500Mi
           # optional: use a custom CSV with node/server prices
-          # - name: pricing-file
+          # - name: config
           #   configMap:
-          #     name: pricing-file
+          #     name: kube-resource-report
