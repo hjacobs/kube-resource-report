@@ -9,6 +9,7 @@ spec:
     application: kube-resource-report
   type: ClusterIP
   ports:
-  - port: 80
+  - name: "kube-resource-report-frontend"
+    port: 80
     protocol: TCP
     targetPort: 80

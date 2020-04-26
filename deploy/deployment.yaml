@@ -16,7 +16,7 @@ spec:
         application: kube-resource-report
         version: v20.4.3
     spec:
-      serviceAccount: kube-resource-report
+      serviceAccountName: kube-resource-report
       containers:
       - name: kube-resource-report
         # see https://github.com/hjacobs/kube-resource-report/releases
@@ -24,7 +24,7 @@ spec:
         args:
         - --update-interval-minutes=1
         # this is just an example, e.g. for Minikube: assume 30 USD/month cluster costs
-        - --additional-cost-per-cluster=30.0
+        # - --additional-cost-per-cluster=30.0
         # optional: use a custom CSV with node/server prices
         # - --pricing-file=/pricing-file/pricing.csv
         - /output
@@ -63,6 +63,7 @@ spec:
           - name: report-data
             emptyDir:
               sizeLimit: 500Mi
-          - name: pricing-file
-            configMap:
-              name: pricing-file
+          # optional: use a custom CSV with node/server prices
+          # - name: pricing-file
+          #   configMap:
+          #     name: pricing-file
