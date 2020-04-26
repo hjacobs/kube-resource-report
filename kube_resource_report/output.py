@@ -1,6 +1,7 @@
 import logging
 import shutil
 from pathlib import Path
+from typing import Optional
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
@@ -14,12 +15,17 @@ logger = logging.getLogger(__name__)
 
 
 class OutputManager:
-    def __init__(self, output_path: Path):
+    def __init__(self, output_path: Path, templates_path: Optional[Path] = None):
         self.output_path = output_path
         self.written_paths: set = set()
 
+        templates_paths = [str(TEMPLATES_PATH)]
+        if templates_path:
+            # prepend the custom template path so custom templates will overwrite any default ones
+            templates_paths.insert(0, str(templates_path))
+
         env = Environment(
-            loader=FileSystemLoader(str(TEMPLATES_PATH)),
+            loader=FileSystemLoader(templates_paths),
             autoescape=select_autoescape(["html", "xml"]),
             trim_blocks=True,
             lstrip_blocks=True,
