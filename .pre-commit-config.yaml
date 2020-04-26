@@ -11,7 +11,7 @@ repos:
     rev: 0.2.0
     hooks:
       - id: kube-manifest-lint
-        exclude: ^chart/kube-resource-report/templates/.*$|kustomization.yaml
+        exclude: ^unsupported/chart/kube-resource-report/templates/.*$|kustomization.yaml
 
   # formatters
   - repo: https://github.com/asottile/reorder_python_imports
@@ -72,7 +72,7 @@ repos:
         #
         exclude: >
             (?x)^(
-                ^chart/kube-resource-report/templates/.*$
+                ^unsupported/chart/kube-resource-report/templates/.*$
             )
         #
 
