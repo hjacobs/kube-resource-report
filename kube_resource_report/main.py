@@ -116,6 +116,11 @@ class CommaSeparatedValues(click.ParamType):
 )
 @click.option("--debug", is_flag=True, help="Enable debug logging")
 @click.option("--data-path", type=click.Path(exists=True))
+@click.option(
+    "--templates-path",
+    type=click.Path(exists=True),
+    help="Path to directory with custom HTML/Jinja2 templates",
+)
 @click.argument("output_dir", type=click.Path(exists=True))
 def main(
     clusters,
@@ -137,6 +142,7 @@ def main(
     links_file,
     node_labels,
     debug,
+    templates_path,
 ):
     """Kubernetes Resource Report generates a static HTML report to OUTPUT_DIR for all clusters in ~/.kube/config or Cluster Registry."""
 
@@ -157,6 +163,9 @@ def main(
         data_path = Path(data_path)
     else:
         data_path = Path(str(output_dir)) / "data"
+
+    if templates_path:
+        templates_path = Path(templates_path)
 
     cluster_summaries = {}
 
@@ -180,6 +189,7 @@ def main(
             pricing_file,
             links_file,
             node_labels,
+            templates_path,
         )
         if update_interval_minutes > 0:
             time.sleep(update_interval_minutes * 60)

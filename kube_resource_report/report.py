@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
 
 import requests
 import yaml
@@ -231,6 +232,7 @@ def generate_report(
     pricing_file,
     links_file,
     node_labels,
+    templates_path: Optional[Path] = None,
 ):
     notifications: List[tuple] = []
 
@@ -245,7 +247,7 @@ def generate_report(
 
     start = datetime.datetime.utcnow()
 
-    out = OutputManager(Path(output_dir))
+    out = OutputManager(Path(output_dir), templates_path)
     # the data collection might take a long time, so first write index.html
     # to give users feedback that Kubernetes Resource Report has started
     # first copy CSS/JS/..

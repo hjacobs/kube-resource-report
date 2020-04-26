@@ -4,36 +4,36 @@
 
 <h1 class="title">All Applications
     <span class="links">
-            <a href="./applications.tsv"
-            title="Download Applications as Tab-Separated-Values (TSV)"
-            class="button is-light">
-                <span class="icon"><i class="fas fa-file-download"></i></span>
-            </a>
-      </span>
+        <a href="./applications.tsv"
+           title="Download Applications as Tab-Separated-Values (TSV)"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-file-download"></i></span>
+        </a>
+    </span>
 </h1>
 
-      <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
-          <thead>
-              <tr>
-                  <th>ID</th>
-                  <th>Team</th>
-                  <th><abbr title="Active?">A?</abbr></th>
-                  <th><abbr title="Clusters">C</abbr></th>
-                  <th><abbr title="Pods">P</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th>CPU</th>
-                  <th>Memory (MiB)</th>
-                  <th class="has-text-right">Cost</th>
-                  <th class="has-text-right">Slack Cost</th>
-                  {% if links['application']: %}
-                  <th></th>
-                  {% endif %}
-              </tr>
-          </thead>
-          <tbody>
-          {% for application_id, app in applications.items()|sort: %}
-          <tr>
+<table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Team</th>
+            <th><abbr title="Active?">A?</abbr></th>
+            <th><abbr title="Clusters">C</abbr></th>
+            <th><abbr title="Pods">P</abbr></th>
+            <th><abbr title="CPU Requests">CR</abbr></th>
+            <th><abbr title="Memory Requests">MR</abbr></th>
+            <th>CPU</th>
+            <th>Memory (MiB)</th>
+            <th class="has-text-right">Cost</th>
+            <th class="has-text-right">Slack Cost</th>
+            {% if links['application']: %}
+            <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for application_id, app in applications.items()|sort: %}
+        <tr>
             <td><a href="application-{{ application_id }}.html">{{ application_id }}</a></td>
             <td><a href="team-{{ app.team }}.html">{{ app.team }}</a></td>
             <td>
@@ -46,7 +46,7 @@
                 {% endif %}
                 {% endif %}
 
-                </td>
+            </td>
             <td>{{ app.clusters|count }}</td>
             <td>{{ app.pods }}</td>
             <td>{{ app.requests.cpu|round(3) }}</td>
@@ -65,20 +65,20 @@
             {% if links['application']: %}
             <td class="links">
                 <div class="buttons has-addons">
-                {% for link in links['application']: %}
+                    {% for link in links['application']: %}
                     <a href="{{ link.href.format(**app) }}"
-                        title="{{ link.title.format(**app) }}"
-                        class="button is-small">
+                       title="{{ link.title.format(**app) }}"
+                       class="button is-small">
                         <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
                     </a>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </td>
             {% endif %}
-          </tr>
+        </tr>
 
-          {%endfor %}
-          </tbody>
+        {%endfor %}
+    </tbody>
 
-        </table>
+</table>
 {% endblock %}

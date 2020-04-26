@@ -74,16 +74,16 @@
                 <td>{{ ingress.name }}</td>
                 <td>{{ ingress.host }}</td>
                 <td><span class="tag
-                {% if ingress.status >= 500 %}
-                is-danger
-                {% elif ingress.status >= 400 %}
-                is-info
-                {% elif ingress.status >= 200 %}
-                is-success
-                {% else: %}
-                is-info
-                {% endif %}
-                ">{{ ingress[4] }}</span></td>
+                                 {% if ingress.status >= 500 %}
+                                 is-danger
+                                 {% elif ingress.status >= 400 %}
+                                 is-info
+                                 {% elif ingress.status >= 200 %}
+                                 is-success
+                                 {% else: %}
+                                 is-info
+                                 {% endif %}
+                                 ">{{ ingress[4] }}</span></td>
                 {% if links['ingress']: %}
                 <td class="links">
                     <div class="buttons has-addons">

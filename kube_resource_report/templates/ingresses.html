@@ -4,66 +4,66 @@
 
 <h1 class="title">All Ingresses
     <span class="links">
-            <a href="./ingresses.tsv"
-            title="Download Ingresses as Tab-Separated-Values (TSV)"
-            class="button is-light">
-                <span class="icon"><i class="fas fa-file-download"></i></span>
-            </a>
-      </span>
+        <a href="./ingresses.tsv"
+           title="Download Ingresses as Tab-Separated-Values (TSV)"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-file-download"></i></span>
+        </a>
+    </span>
 </h1>
 
-      <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
-          <thead>
-              <tr>
-                  <th>Cluster</th>
-                  <th>Namespace</th>
-                  <th>Name</th>
-                  <th>Application</th>
-                  <th>Host</th>
-                  <th>Status</th>
-                  {% if links['ingress']: %}
-                  <th></th>
-                  {% endif %}
-              </tr>
-          </thead>
-          <tbody>
-          {% for cluster_id, summary in cluster_summaries.items(): %}
-          {% for ingress in summary.ingresses: %}
-          <tr>
+<table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+    <thead>
+        <tr>
+            <th>Cluster</th>
+            <th>Namespace</th>
+            <th>Name</th>
+            <th>Application</th>
+            <th>Host</th>
+            <th>Status</th>
+            {% if links['ingress']: %}
+            <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for cluster_id, summary in cluster_summaries.items(): %}
+        {% for ingress in summary.ingresses: %}
+        <tr>
             <td><a href="./cluster-{{ cluster_id }}.html">{{ summary["cluster"].name }}</a></td>
             <td>{{ ingress[0] }}</td>
             <td>{{ ingress[1] }}</td>
             <td><a href="./application-{{ ingress[2] }}.html">{{ ingress[2] }}</a></td>
             <td>{{ ingress[3] }}</td>
             <td><span class="tag
-                    {% if ingress[4] >= 500 %}
-                       is-danger
-                    {% elif ingress[4] >= 400 %}
-                       is-info
-                    {% elif ingress[4] >= 200 %}
-                       is-success
-                    {% else: %}
-                       is-info
-                    {% endif %}
-            ">{{ ingress[4] }}</span></td>
+                             {% if ingress[4] >= 500 %}
+                             is-danger
+                             {% elif ingress[4] >= 400 %}
+                             is-info
+                             {% elif ingress[4] >= 200 %}
+                             is-success
+                             {% else: %}
+                             is-info
+                             {% endif %}
+                             ">{{ ingress[4] }}</span></td>
             {% if links['ingress']: %}
             <td class="links">
                 <div class="buttons has-addons">
-                {% for link in links['ingress']: %}
+                    {% for link in links['ingress']: %}
                     <a href="{{ link.href.format(cluster=summary["cluster"].name, namespace=ingress[0], name=ingress[1], application=ingress[2], host=ingress[3]) }}"
-                        title="{{ link.title.format(cluster=summary["cluster"].name, namespace=ingress[0], name=ingress[1], application=ingress[2], host=ingress[3]) }}"
-                        class="button is-small">
+                       title="{{ link.title.format(cluster=summary["cluster"].name, namespace=ingress[0], name=ingress[1], application=ingress[2], host=ingress[3]) }}"
+                       class="button is-small">
                         <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
                     </a>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </td>
             {% endif %}
-          </tr>
-          {%endfor %}
-          {%endfor %}
-          </tbody>
+        </tr>
+        {%endfor %}
+        {%endfor %}
+    </tbody>
 
-        </table>
+</table>
 
 {% endblock %}
