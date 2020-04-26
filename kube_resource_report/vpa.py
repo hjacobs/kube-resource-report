@@ -2,12 +2,19 @@ import collections
 import logging
 
 import pykube
+from pykube import CronJob
+from pykube import DaemonSet
 from pykube import Deployment
+from pykube import Job
 from pykube import Pod
+from pykube import ReplicaSet
 from pykube import StatefulSet
 from pykube.objects import NamespacedAPIObject
 
-CONTROLLER_CLASSES = {Deployment.kind: Deployment, StatefulSet.kind: StatefulSet}
+CONTROLLER_CLASSES = {
+    clazz.kind: clazz
+    for clazz in [Deployment, StatefulSet, DaemonSet, ReplicaSet, Job, CronJob]
+}
 
 logger = logging.getLogger(__name__)
 
