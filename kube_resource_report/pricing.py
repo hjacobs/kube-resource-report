@@ -24,6 +24,7 @@ _spot_path = Path(__file__).parent / "aws-ec2-spot-costs-monthly.csv"
 # did not find a mapping of region names elsewhere :-(
 # entries are sorted!
 AWS_LOCATIONS = {
+    "Africa (Cape Town)": "af-south-1",
     "Asia Pacific (Hong Kong)": "ap-east-1",
     "Asia Pacific (Mumbai)": "ap-south-1",
     "Asia Pacific (Osaka-Local)": "ap-northeast-3",
@@ -162,54 +163,60 @@ def generate_ec2_spot_price_list():
     for location in sorted(AWS_LOCATIONS.values()):
         # some regions are not available
         if location in (
+            "af-south-1",
+            "ap-east-1",
             "ap-northeast-3",
             "cn-north-1",
             "cn-northwest-1",
-            "us-gov-west-1",
+            "me-south-1",
             "us-gov-east-1",
-            "ap-east-1",
+            "us-gov-west-1",
+            "us-west-2-lax-1a",
         ):
             continue
         print(location)
-        ec2 = boto3.client("ec2", location)
+        try:
+            ec2 = boto3.client("ec2", location)
 
-        today = datetime.date.today()
-        start = today - datetime.timedelta(days=3)
+            today = datetime.date.today()
+            start = today - datetime.timedelta(days=3)
 
-        instance_types_required = set(
-            [x[1] for x in NODE_COSTS_MONTHLY.keys() if x[0] == location]
-        )
-        # instances not available as Spot..
-        instance_types_required -= set(["hs1.8xlarge", "t2.nano"])
-        instance_types_seen = set()
-
-        next_token = ""
-        i = 0
-        while next_token is not None:
-            data = ec2.describe_spot_price_history(
-                Filters=[{"Name": "product-description", "Values": ["Linux/UNIX"]}],
-                StartTime=start.isoformat(),
-                EndTime=today.isoformat(),
-                NextToken=next_token,
+            instance_types_required = set(
+                [x[1] for x in NODE_COSTS_MONTHLY.keys() if x[0] == location]
             )
-            print(". ", end="")
-            for entry in data["SpotPriceHistory"]:
-                print(entry)
-                instance_type = entry["InstanceType"]
-                instance_types_seen.add(instance_type)
-                price = float(entry["SpotPrice"])
-                monthly_price = price * 24 * AVG_DAYS_PER_MONTH
-                max_price[(location, instance_type)] = max(
-                    max_price.get((location, instance_type), 0), monthly_price
+            # instances not available as Spot..
+            instance_types_required -= set(["hs1.8xlarge", "t2.nano"])
+            instance_types_seen = set()
+
+            next_token = ""
+            i = 0
+            while next_token is not None:
+                data = ec2.describe_spot_price_history(
+                    Filters=[{"Name": "product-description", "Values": ["Linux/UNIX"]}],
+                    StartTime=start.isoformat(),
+                    EndTime=today.isoformat(),
+                    NextToken=next_token,
                 )
-            i += 1
-            if instance_types_seen >= instance_types_required or i > 4:
-                next_token = None
-            else:
-                print(
-                    f"Waiting to see instance types {instance_types_required - instance_types_seen}"
-                )
-                next_token = data.get("NextToken")
+                print(". ", end="")
+                for entry in data["SpotPriceHistory"]:
+                    print(entry)
+                    instance_type = entry["InstanceType"]
+                    instance_types_seen.add(instance_type)
+                    price = float(entry["SpotPrice"])
+                    monthly_price = price * 24 * AVG_DAYS_PER_MONTH
+                    max_price[(location, instance_type)] = max(
+                        max_price.get((location, instance_type), 0), monthly_price
+                    )
+                i += 1
+                if instance_types_seen >= instance_types_required or i > 4:
+                    next_token = None
+                else:
+                    print(
+                        f"Waiting to see instance types {instance_types_required - instance_types_seen}"
+                    )
+                    next_token = data.get("NextToken")
+        except Exception as e:
+            print(f"Could not get EC2 Spot prices for {location}: {e}")
 
     with _spot_path.open("w") as fd:
         writer = csv.writer(fd, lineterminator="\n")
