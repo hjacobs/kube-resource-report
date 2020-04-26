@@ -4,38 +4,38 @@
 
 <h1 class="title">All Clusters
     <span class="links">
-            <a href="./clusters.tsv"
-            title="Download Clusters as Tab-Separated-Values (TSV)"
-            class="button is-light">
-                <span class="icon"><i class="fas fa-file-download"></i></span>
-            </a>
-      </span>
+        <a href="./clusters.tsv"
+           title="Download Clusters as Tab-Separated-Values (TSV)"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-file-download"></i></span>
+        </a>
+    </span>
 </h1>
 
-      <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
-          <thead>
-              <tr>
-                  <th>Cluster</th>
-                  <th><abbr title="Master Nodes">MN</abbr></th>
-                  <th><abbr title="Worker Nodes">WN</abbr></th>
-                  <th>Inst. Types</th>
-                  <th><abbr title="Spot Instances?">S?</abbr></th>
-                  <th>Version</th>
-                  <th><abbr title="Ingresses">I</abbr></th>
-                  <th><abbr title="Pods">P</abbr></th>
-                  <th><abbr title="User Pods">UP</abbr></th>
-                  <th>CPU</th>
-                  <th>Memory (GiB)</th>
-                  <th class="has-text-right">Cost</th>
-                  <th class="has-text-right">Slack Cost</th>
-                  {% if links['cluster']: %}
-                  <th></th>
-                  {% endif %}
-              </tr>
-          </thead>
-          <tbody>
-          {% for cluster_id, summary in cluster_summaries.items() %}
-          <tr>
+<table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+    <thead>
+        <tr>
+            <th>Cluster</th>
+            <th><abbr title="Master Nodes">MN</abbr></th>
+            <th><abbr title="Worker Nodes">WN</abbr></th>
+            <th>Inst. Types</th>
+            <th><abbr title="Spot Instances?">S?</abbr></th>
+            <th>Version</th>
+            <th><abbr title="Ingresses">I</abbr></th>
+            <th><abbr title="Pods">P</abbr></th>
+            <th><abbr title="User Pods">UP</abbr></th>
+            <th>CPU</th>
+            <th>Memory (GiB)</th>
+            <th class="has-text-right">Cost</th>
+            <th class="has-text-right">Slack Cost</th>
+            {% if links['cluster']: %}
+            <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for cluster_id, summary in cluster_summaries.items() %}
+        <tr>
             <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
             <td class="has-text-right">{{ summary.master_nodes }}</td>
             <td class="has-text-right">{{ summary.worker_nodes }}</td>
@@ -72,21 +72,21 @@
             {% if links['cluster']: %}
             <td class="links">
                 <div class="buttons has-addons">
-                {% for link in links['cluster']: %}
+                    {% for link in links['cluster']: %}
                     <a href="{{ link.href.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
-                        title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
-                        class="button is-small">
+                       title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
+                       class="button is-small">
                         <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
                     </a>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </td>
             {% endif %}
 
-          </tr>
+        </tr>
 
-          {%endfor %}
-          </tbody>
+        {%endfor %}
+    </tbody>
 
-        </table>
+</table>
 {% endblock %}

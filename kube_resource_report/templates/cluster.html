@@ -161,16 +161,16 @@
                 <td><a href="./application-{{ ingress[2] }}.html">{{ ingress[2] }}</a></td>
                 <td>{{ ingress[3] }}</td>
                 <td><span class="tag
-                {% if ingress[4] >= 500 %}
-                is-danger
-                {% elif ingress[4] >= 400 %}
-                is-info
-                {% elif ingress[4] >= 200 %}
-                is-success
-                {% else: %}
-                is-info
-                {% endif %}
-                ">{{ ingress[4] }}</span></td>
+                                 {% if ingress[4] >= 500 %}
+                                 is-danger
+                                 {% elif ingress[4] >= 400 %}
+                                 is-info
+                                 {% elif ingress[4] >= 200 %}
+                                 is-success
+                                 {% else: %}
+                                 is-info
+                                 {% endif %}
+                                 ">{{ ingress[4] }}</span></td>
                 {% if links['ingress']: %}
                 <td class="links">
                     <div class="buttons has-addons">

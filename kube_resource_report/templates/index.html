@@ -3,42 +3,42 @@
 {% block content %}
 
 <nav class="level">
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Clusters</p>
-      <p class="title">{{ cluster_summaries|count }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Clusters</p>
+            <p class="title">{{ cluster_summaries|count }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Worker Nodes</p>
-      <p class="title">{{ total_worker_nodes }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Worker Nodes</p>
+            <p class="title">{{ total_worker_nodes }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Teams</p>
-      <p class="title">{{ teams|count }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Teams</p>
+            <p class="title">{{ teams|count }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Applications</p>
-      <p class="title">{{ applications|count }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Applications</p>
+            <p class="title">{{ applications|count }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Pods</p>
-      <p class="title">{{ total_pods }}</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Pods</p>
+            <p class="title">{{ total_pods }}</p>
+        </div>
     </div>
-  </div>
-  <div class="level-item has-text-centered">
-    <div>
-      <p class="heading">Monthly Cost</p>
-      <p class="title">{{ total_cost|money }} USD</p>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Monthly Cost</p>
+            <p class="title">{{ total_cost|money }} USD</p>
+        </div>
     </div>
-  </div>
 </nav>
 
 <div class="notification is-warning">
@@ -46,9 +46,9 @@
 </div>
 
 {% if alpha_ema < 1 %}
-  <div class="notification">
-      Remember that you are using EMA (<a href="https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">Exponential Moving Average</a>). What you see are not current values, these values are averaged.
-  </div>
+<div class="notification">
+    Remember that you are using EMA (<a href="https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">Exponential Moving Average</a>). What you see are not current values, these values are averaged.
+</div>
 {% endif %}
 
 <h2 class="title is-5">CPU</h2>

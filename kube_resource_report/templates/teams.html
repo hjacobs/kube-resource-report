@@ -4,36 +4,36 @@
 
 <h1 class="title">All Teams
     <span class="links">
-            <a href="./teams.tsv"
-            title="Download Teams as Tab-Separated-Values (TSV)"
-            class="button is-light">
-                <span class="icon"><i class="fas fa-file-download"></i></span>
-            </a>
-      </span>
+        <a href="./teams.tsv"
+           title="Download Teams as Tab-Separated-Values (TSV)"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-file-download"></i></span>
+        </a>
+    </span>
 </h1>
 
-      <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
-          <thead>
-              <tr>
-                  <th>ID</th>
-                  <th><abbr title="Clusters">C</abbr></th>
-                  <th><abbr title="Applications">A</abbr></th>
-                  <th><abbr title="Pods">P</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th>CPU</th>
-                  <th>Memory (MiB)</th>
-                  <th class="has-text-right">Cost</th>
-                  <th class="has-text-right">Slack Cost</th>
-                  {% if links['team']: %}
-                  <th></th>
-                  {% endif %}
-              </tr>
-          </thead>
-          <tbody>
-          {% for team_id, team in teams.items()|sort: %}
-          <tr>
-              <td><a href="team-{{ team_id }}.html" class="{{ 'is-italic' if not team_id }}">{{ team_id if team_id else '?unknown?' }}</a></td>
+<table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th><abbr title="Clusters">C</abbr></th>
+            <th><abbr title="Applications">A</abbr></th>
+            <th><abbr title="Pods">P</abbr></th>
+            <th><abbr title="CPU Requests">CR</abbr></th>
+            <th><abbr title="Memory Requests">MR</abbr></th>
+            <th>CPU</th>
+            <th>Memory (MiB)</th>
+            <th class="has-text-right">Cost</th>
+            <th class="has-text-right">Slack Cost</th>
+            {% if links['team']: %}
+            <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for team_id, team in teams.items()|sort: %}
+        <tr>
+            <td><a href="team-{{ team_id }}.html" class="{{ 'is-italic' if not team_id }}">{{ team_id if team_id else '?unknown?' }}</a></td>
             <td>{{ team.clusters|count }}</td>
             <td>{{ team.applications|count }}</td>
             <td>{{ team.pods }}</td>
@@ -53,21 +53,21 @@
             {% if links['team']: %}
             <td class="links">
                 <div class="buttons has-addons">
-                {% for link in links['team']: %}
+                    {% for link in links['team']: %}
                     <a href="{{ link.href.format(id=team_id) }}"
-                        title="{{ link.title.format(id=team_id) }}"
-                        class="button is-small">
+                       title="{{ link.title.format(id=team_id) }}"
+                       class="button is-small">
                         <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
                     </a>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </td>
             {% endif %}
 
-          </tr>
+        </tr>
 
-          {%endfor %}
-          </tbody>
+        {%endfor %}
+    </tbody>
 
-        </table>
+</table>
 {% endblock %}

@@ -1,0 +1,10 @@
+<footer class="footer">
+    <div class="container">
+        <div class="has-text-centered">
+            <p><a href="https://github.com/hjacobs/kube-resource-report">Kubernetes Resource Report</a> {{ version }}</p>
+            <p class="has-text-grey is-size-7">Page generated on {{ now.strftime('%Y-%m-%d %H:%M UTC') }}. {% if duration: %} Data collection took {{ duration|round(1) }}s. {% endif %}</p>
+        </div>
+    </div>
+</footer>
+<!-- https://www.bryanbraun.com/anchorjs/#basic-usage -->
+<script>anchors.add('h2.title'); </script>

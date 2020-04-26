@@ -4,35 +4,35 @@
 
 <h1 class="title">All Namespaces
     <span class="links">
-            <a href="./namespaces.tsv"
-            title="Download Namespaces as Tab-Separated-Values (TSV)"
-            class="button is-light">
-                <span class="icon"><i class="fas fa-file-download"></i></span>
-            </a>
-      </span>
+        <a href="./namespaces.tsv"
+           title="Download Namespaces as Tab-Separated-Values (TSV)"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-file-download"></i></span>
+        </a>
+    </span>
 </h1>
 
-      <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
-          <thead>
-              <tr>
-                  <th>ID</th>
-                  <th><abbr title="Active?">A?</abbr></th>
-                  <th><abbr title="Cluster">Cluster</abbr></th>
-                  <th><abbr title="Pods">P</abbr></th>
-                  <th><abbr title="CPU Requests">CR</abbr></th>
-                  <th><abbr title="Memory Requests">MR</abbr></th>
-                  <th>CPU</th>
-                  <th>Memory (MiB)</th>
-                  <th class="has-text-right">Cost</th>
-                  <th class="has-text-right">Slack Cost</th>
-                  {% if links['namespace']: %}
-                  <th></th>
-                  {% endif %}
-              </tr>
-          </thead>
-          <tbody>
-          {% for namespace_id, namespace_data in namespace_usage.items()|sort: %}
-          <tr>
+<table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th><abbr title="Active?">A?</abbr></th>
+            <th><abbr title="Cluster">Cluster</abbr></th>
+            <th><abbr title="Pods">P</abbr></th>
+            <th><abbr title="CPU Requests">CR</abbr></th>
+            <th><abbr title="Memory Requests">MR</abbr></th>
+            <th>CPU</th>
+            <th>Memory (MiB)</th>
+            <th class="has-text-right">Cost</th>
+            <th class="has-text-right">Slack Cost</th>
+            {% if links['namespace']: %}
+            <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for namespace_id, namespace_data in namespace_usage.items()|sort: %}
+        <tr>
             <td>{{ namespace_id[0] }}</td>
             <td>
                 {% if namespace_data.status is not none: %}
@@ -44,7 +44,7 @@
                 {% endif %}
                 {% endif %}
 
-                </td>
+            </td>
             <td><a href="./cluster-{{ namespace_data.cluster.id }}.html">{{ namespace_data.cluster.name }}</a></td>
             <td>{{ namespace_data.pods }}</td>
             <td>{{ namespace_data.requests.cpu|round(3) }}</td>
@@ -63,21 +63,21 @@
             {% if links['namespace']: %}
             <td class="links">
                 <div class="buttons has-addons">
-                {% for link in links['namespace']: %}
+                    {% for link in links['namespace']: %}
                     <a href="{{ link.href.format(cluster=namespace_data.cluster.name, name=namespace_id[0]) }}"
-                        title="{{ link.title.format(cluster=namespace_data.cluster.name, name=namespace_id[0]) }}"
-                        class="button is-small">
+                       title="{{ link.title.format(cluster=namespace_data.cluster.name, name=namespace_id[0]) }}"
+                       class="button is-small">
                         <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
                     </a>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </td>
             {% endif %}
 
-          </tr>
+        </tr>
 
-          {%endfor %}
-          </tbody>
+        {%endfor %}
+    </tbody>
 
-        </table>
+</table>
 {% endblock %}
