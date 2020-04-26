@@ -23,13 +23,13 @@ spec:
         image: hjacobs/kube-resource-report:20.4.3
         args:
         - --update-interval-minutes=1
-        - --pricing-file=/kube_resource_report/gcp-costs-monthly.csv
-        # - --pricing-file=/kube_resource_report/aws-ec2-costs-monthly.csv
-        # - --pricing-file=/kube_resource_report/aws-ec2-spot-costs-monthly.csv
         # this is just an example, e.g. for Minikube: assume 30 USD/month cluster costs
         - --additional-cost-per-cluster=30.0
         # optional: use a custom CSV with node/server prices
         # - --pricing-file=/pricing-file/pricing.csv
+        # - --pricing-file=/kube_resource_report/gcp-costs-monthly.csv
+        # - --pricing-file=/kube_resource_report/aws-ec2-costs-monthly.csv
+        # - --pricing-file=/kube_resource_report/aws-ec2-spot-costs-monthly.csv
         - /output
         volumeMounts:
         - mountPath: /output
