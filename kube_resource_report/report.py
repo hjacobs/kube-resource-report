@@ -10,6 +10,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -233,6 +234,7 @@ def generate_report(
     links_file,
     node_labels,
     templates_path: Optional[Path] = None,
+    prerender_hook: Optional[Callable[[str, dict], None]] = None,
 ):
     notifications: List[tuple] = []
 
@@ -247,7 +249,7 @@ def generate_report(
 
     start = datetime.datetime.utcnow()
 
-    out = OutputManager(Path(output_dir), templates_path)
+    out = OutputManager(Path(output_dir), templates_path, prerender_hook)
     # the data collection might take a long time, so first write index.html
     # to give users feedback that Kubernetes Resource Report has started
     # first copy CSS/JS/..
