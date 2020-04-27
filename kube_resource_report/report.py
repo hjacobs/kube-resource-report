@@ -436,30 +436,15 @@ def write_loading_page(out):
         out.render_template("loading.html", context, file_name)
 
 
-def write_report(
+def write_tsv_files(
     out: OutputManager,
-    start,
-    notifications,
     cluster_summaries,
     namespace_usage,
     applications,
     teams,
     node_labels,
-    links,
-    alpha_ema: float,
 ):
-    total_allocatable: dict = collections.defaultdict(int)
-    total_requests: dict = collections.defaultdict(int)
-    total_user_requests: dict = collections.defaultdict(int)
-
-    for summary in cluster_summaries.values():
-        for r in "cpu", "memory":
-            total_allocatable[r] += summary["allocatable"][r]
-            total_requests[r] += summary["requests"][r]
-            total_user_requests[r] += summary["user_requests"][r]
-
     resource_categories = ["capacity", "allocatable", "requests", "usage"]
-
     with out.open("clusters.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         headers = [
@@ -702,6 +687,33 @@ def write_report(
                             ),
                         ]
                     )
+
+
+def write_report(
+    out: OutputManager,
+    start,
+    notifications,
+    cluster_summaries,
+    namespace_usage,
+    applications,
+    teams,
+    node_labels,
+    links,
+    alpha_ema: float,
+):
+    write_tsv_files(
+        out, cluster_summaries, namespace_usage, applications, teams, node_labels
+    )
+
+    total_allocatable: dict = collections.defaultdict(int)
+    total_requests: dict = collections.defaultdict(int)
+    total_user_requests: dict = collections.defaultdict(int)
+
+    for summary in cluster_summaries.values():
+        for r in "cpu", "memory":
+            total_allocatable[r] += summary["allocatable"][r]
+            total_requests[r] += summary["requests"][r]
+            total_user_requests[r] += summary["user_requests"][r]
 
     total_cost = sum([s["cost"] for s in cluster_summaries.values()])
     total_hourly_cost = total_cost / HOURS_PER_MONTH
