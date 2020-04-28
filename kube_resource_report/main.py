@@ -145,10 +145,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     if args.kubeconfig_path:
         kubeconfig_path = args.kubeconfig_path
@@ -158,7 +155,7 @@ def main():
     if args.data_path:
         data_path = args.data_path
     else:
-        data_path = Path(str(args.output_dir)) / "data"
+        data_path = args.output_dir / "data"
 
     cluster_summaries = {}
 
