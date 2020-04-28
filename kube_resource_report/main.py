@@ -150,6 +150,16 @@ def get_parser():
         type=hook_function,
         help="Optional hook (name of a function like 'mymodule.myfunc') to process/enrich template context for HTML page rendering",
     )
+    parser.add_argument(
+        "--map-node-hook",
+        type=hook_function,
+        help="Optional hook (name of a function like 'mymodule.myfunc') to map a Kubernetes Node object",
+    )
+    parser.add_argument(
+        "--map-pod-hook",
+        type=hook_function,
+        help="Optional hook (name of a function like 'mymodule.myfunc') to map a Kubernetes Pod object",
+    )
     parser.add_argument("output_dir", type=existing_path)
     return parser
 
@@ -196,6 +206,8 @@ def main():
             args.node_labels,
             args.templates_path,
             args.prerender_hook,
+            args.map_node_hook,
+            args.map_pod_hook,
         )
         if args.update_interval_minutes > 0:
             time.sleep(args.update_interval_minutes * 60)

@@ -6,7 +6,9 @@ import os
 import time
 from pathlib import Path
 from typing import Any
+from typing import Callable
 from typing import Dict
+from typing import Optional
 
 import pykube
 import requests
@@ -218,6 +220,8 @@ def query_cluster(
     no_ingress_status,
     node_labels,
     data_path: Path,
+    map_node_hook=Optional[Callable[[Node, dict], None]],
+    map_pod_hook=Optional[Callable[[Pod, dict], None]],
 ):
     logger.info(f"Querying cluster {cluster.id} ({cluster.api_server_url})..")
     pods = {}
@@ -239,6 +243,8 @@ def query_cluster(
 
     for _node in Node.objects(cluster.client):
         node = map_node(_node)
+        if map_node_hook:
+            map_node_hook(_node, node)
         nodes[_node.name] = node
 
         for k, v in node["capacity"].items():
@@ -270,6 +276,8 @@ def query_cluster(
         if not pod_active(pod):
             continue
         pod_ = map_pod(pod, cost_per_cpu, cost_per_memory)
+        if map_pod_hook:
+            map_pod_hook(pod, pod_)
         for k, v in pod_["requests"].items():
             cluster_requests[k] += v
             if pod.namespace not in system_namespaces:

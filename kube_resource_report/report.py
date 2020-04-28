@@ -17,6 +17,8 @@ from typing import Optional
 
 import requests
 import yaml
+from pykube import Node
+from pykube import Pod
 from requests_futures.sessions import FuturesSession
 
 from .output import OutputManager
@@ -62,6 +64,8 @@ def get_cluster_summaries(
     no_ingress_status: bool,
     node_labels: list,
     data_path: Path,
+    map_node_hook=None,
+    map_pod_hook=None,
 ):
     cluster_summaries = {}
 
@@ -100,6 +104,8 @@ def get_cluster_summaries(
                         no_ingress_status,
                         node_labels,
                         cluster_data_path,
+                        map_node_hook,
+                        map_pod_hook,
                     )
                 ] = cluster
 
@@ -235,6 +241,8 @@ def generate_report(
     node_labels,
     templates_path: Optional[Path] = None,
     prerender_hook: Optional[Callable[[str, dict], None]] = None,
+    map_node_hook: Optional[Callable[[Node, dict], None]] = None,
+    map_pod_hook: Optional[Callable[[Pod, dict], None]] = None,
 ):
     notifications: List[tuple] = []
 
@@ -280,6 +288,8 @@ def generate_report(
             no_ingress_status,
             node_labels,
             data_path,
+            map_node_hook,
+            map_pod_hook,
         )
         teams = {}
 
