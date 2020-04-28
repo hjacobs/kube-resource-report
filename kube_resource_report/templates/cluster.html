@@ -6,7 +6,7 @@
         {% for link in links['cluster']: %}
         <a href="{{ link.href.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
            title="{{ link.title.format(id=summary.cluster.id, name=summary.cluster.name, api_server_url=summary.cluster.api_server_url) }}"
-           class="button is-light">
+           class="button {{ link.class or 'is-light' }}">
             <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
         </a>
         {% endfor %}
