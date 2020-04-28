@@ -193,6 +193,16 @@ with the links per entity. Example file:
 
 For available icon names, see the `Font Awesome gallery with free icons <https://fontawesome.com/icons?d=gallery&m=free>`_.
 
+-------------------
+Customization Hooks
+-------------------
+
+Kubernetes Resource Report allows customizing behavior by using Python hook functions.
+The following CLI options exist:
+
+* ``--prerender-hook``: function to modify the HTML template context, e.g. to add arbitrary links
+* ``--map-node-hook``: function to map Kubernetes Node objects and enrich them (e.g. with custom pricing)
+* ``--map-pod-hook``: function to map Kubernetes Pod objects and enrich them (e.g. applying a custom logic to set the ``application``)
 
 --------
 Settings
