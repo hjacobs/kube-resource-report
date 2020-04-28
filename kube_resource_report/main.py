@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import logging
 import os
 import time
@@ -21,6 +22,15 @@ def existing_path(value):
     if not path.exists():
         raise ValueError(f"Path does not exist: {path}")
     return path
+
+
+def hook_function(value):
+    module_name, attr_path = value.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    function = getattr(module, attr_path)
+    if not callable(function):
+        raise ValueError(f"Not a callable function: {value}")
+    return function
 
 
 def get_parser():
@@ -135,6 +145,11 @@ def get_parser():
         type=existing_path,
         help="Path to directory with custom HTML/Jinja2 templates",
     )
+    parser.add_argument(
+        "--prerender-hook",
+        type=hook_function,
+        help="Optional hook (name of a function like 'mymodule.myfunc') to process/enrich template context for HTML page rendering",
+    )
     parser.add_argument("output_dir", type=existing_path)
     return parser
 
@@ -180,6 +195,7 @@ def main():
             args.links_file,
             args.node_labels,
             args.templates_path,
+            args.prerender_hook,
         )
         if args.update_interval_minutes > 0:
             time.sleep(args.update_interval_minutes * 60)
