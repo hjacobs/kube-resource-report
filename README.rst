@@ -122,7 +122,7 @@ Running as Docker container
 
     $ kubectl proxy & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output
-    $ docker run --rm -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:20.4.3 /output
+    $ docker run --rm -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:20.4.4 /output
 
 **For macOS**:
 
@@ -130,7 +130,7 @@ Running as Docker container
 
     $ kubectl proxy --accept-hosts '.*' & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output
-    $ docker run --rm -it -e CLUSTERS=http://docker.for.mac.localhost:8001 --user=$(id -u) -v $(pwd)/output:/output hjacobs/kube-resource-report:20.4.3 /output
+    $ docker run --rm -it -e CLUSTERS=http://docker.for.mac.localhost:8001 --user=$(id -u) -v $(pwd)/output:/output hjacobs/kube-resource-report:20.4.4 /output
 
 --------------------
 Application Registry
@@ -211,7 +211,7 @@ Reference the functions via ``{module-name}.{function-name}``, e.g. ``--map-pod-
 Settings
 --------
 
-You can run ``docker run --rm hjacobs/kube-resource-report:20.4.3 --help`` to find out information.
+You can run ``docker run --rm hjacobs/kube-resource-report:20.4.4 --help`` to find out information.
 
 Besides this, you can also pass environment variables:
 

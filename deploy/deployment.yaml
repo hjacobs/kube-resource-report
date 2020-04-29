@@ -18,7 +18,7 @@ spec:
       containers:
       - name: kube-resource-report
         # see https://github.com/hjacobs/kube-resource-report/releases
-        image: hjacobs/kube-resource-report:20.4.3
+        image: hjacobs/kube-resource-report:20.4.4
         args:
         - --update-interval-minutes=1
         # this is just an example, e.g. for Minikube: assume 30 USD/month cluster costs
