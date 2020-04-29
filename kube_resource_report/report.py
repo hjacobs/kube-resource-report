@@ -10,12 +10,15 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
 
 import requests
 import yaml
+from pykube import Node
+from pykube import Pod
 from requests_futures.sessions import FuturesSession
 
 from .output import OutputManager
@@ -61,6 +64,8 @@ def get_cluster_summaries(
     no_ingress_status: bool,
     node_labels: list,
     data_path: Path,
+    map_node_hook=None,
+    map_pod_hook=None,
 ):
     cluster_summaries = {}
 
@@ -99,6 +104,8 @@ def get_cluster_summaries(
                         no_ingress_status,
                         node_labels,
                         cluster_data_path,
+                        map_node_hook,
+                        map_pod_hook,
                     )
                 ] = cluster
 
@@ -233,6 +240,9 @@ def generate_report(
     links_file,
     node_labels,
     templates_path: Optional[Path] = None,
+    prerender_hook: Optional[Callable[[str, dict], None]] = None,
+    map_node_hook: Optional[Callable[[Node, dict], None]] = None,
+    map_pod_hook: Optional[Callable[[Pod, dict], None]] = None,
 ):
     notifications: List[tuple] = []
 
@@ -247,7 +257,7 @@ def generate_report(
 
     start = datetime.datetime.utcnow()
 
-    out = OutputManager(Path(output_dir), templates_path)
+    out = OutputManager(Path(output_dir), templates_path, prerender_hook)
     # the data collection might take a long time, so first write index.html
     # to give users feedback that Kubernetes Resource Report has started
     # first copy CSS/JS/..
@@ -278,6 +288,8 @@ def generate_report(
             no_ingress_status,
             node_labels,
             data_path,
+            map_node_hook,
+            map_pod_hook,
         )
         teams = {}
 
@@ -436,30 +448,17 @@ def write_loading_page(out):
         out.render_template("loading.html", context, file_name)
 
 
-def write_report(
+def write_tsv_files(
     out: OutputManager,
-    start,
-    notifications,
     cluster_summaries,
     namespace_usage,
     applications,
     teams,
     node_labels,
-    links,
-    alpha_ema: float,
 ):
-    total_allocatable: dict = collections.defaultdict(int)
-    total_requests: dict = collections.defaultdict(int)
-    total_user_requests: dict = collections.defaultdict(int)
-
-    for summary in cluster_summaries.values():
-        for r in "cpu", "memory":
-            total_allocatable[r] += summary["allocatable"][r]
-            total_requests[r] += summary["requests"][r]
-            total_user_requests[r] += summary["user_requests"][r]
+    """Write Tab-Separated-Values (TSV) files."""
 
     resource_categories = ["capacity", "allocatable", "requests", "usage"]
-
     with out.open("clusters.tsv") as csvfile:
         writer = csv.writer(csvfile, delimiter="\t")
         headers = [
@@ -703,6 +702,193 @@ def write_report(
                         ]
                     )
 
+
+def write_json_files(
+    out: OutputManager,
+    metrics,
+    cluster_summaries,
+    applications,
+    teams,
+    ingresses_by_application,
+    pods_by_application,
+):
+    with out.open("metrics.json") as fd:
+        json.dump(metrics, fd)
+
+    with out.open("cluster-metrics.json") as fd:
+        json.dump(
+            {
+                cluster_id: {
+                    key: {
+                        k if isinstance(k, str) else "/".join(k): v
+                        for k, v in value.items()
+                    }
+                    if hasattr(value, "items")
+                    else value
+                    for key, value in summary.items()
+                    if key != "cluster"
+                }
+                for cluster_id, summary in cluster_summaries.items()
+            },
+            fd,
+            default=json_default,
+        )
+
+    with out.open("team-metrics.json") as fd:
+        json.dump(
+            {
+                team_id: {
+                    **team,
+                    "application": {
+                        app_id: app
+                        for app_id, app in applications.items()
+                        if app["team"] == team_id
+                    },
+                }
+                for team_id, team in teams.items()
+            },
+            fd,
+            default=json_default,
+        )
+
+    with out.open("application-metrics.json") as fd:
+        json.dump(applications, fd, default=json_default)
+
+    for app_id, application in applications.items():
+        file_name = f"application-{app_id}.json"
+        with out.open(file_name) as fd:
+            json.dump(
+                {
+                    **application,
+                    "ingresses": [
+                        {
+                            "cluster": row["cluster_id"],
+                            "namespace": row["namespace"],
+                            "name": row["name"],
+                            "host": row["host"],
+                            "status": row["status"],
+                        }
+                        for row in ingresses_by_application[app_id]
+                    ],
+                    "pods": [
+                        {
+                            **row["pod"],
+                            "cluster": row["cluster_id"],
+                            "namespace": row["namespace"],
+                            "name": row["name"],
+                        }
+                        for row in pods_by_application[app_id]
+                    ],
+                },
+                fd,
+                default=json_default,
+            )
+
+
+def write_html_files(
+    out,
+    context,
+    alpha_ema,
+    cluster_summaries,
+    teams,
+    applications,
+    ingresses_by_application,
+    pods_by_application,
+):
+    for page in [
+        "index",
+        "clusters",
+        "ingresses",
+        "teams",
+        "applications",
+        "namespaces",
+        "pods",
+    ]:
+        file_name = f"{page}.html"
+        context["page"] = page
+        context["alpha_ema"] = alpha_ema
+        out.render_template(file_name, context, file_name)
+
+    for cluster_id, summary in cluster_summaries.items():
+        page = "clusters"
+        file_name = f"cluster-{cluster_id}.html"
+        context["page"] = page
+        context["cluster_id"] = cluster_id
+        context["summary"] = summary
+        out.render_template("cluster.html", context, file_name)
+
+    for team_id, team in teams.items():
+        page = "teams"
+        file_name = f"team-{team_id}.html"
+        context["page"] = page
+        context["team_id"] = team_id
+        context["team"] = team
+        out.render_template("team.html", context, file_name)
+
+    for app_id, application in applications.items():
+        page = "applications"
+        file_name = f"application-{app_id}.html"
+        context["page"] = page
+        context["application"] = application
+        context["ingresses_by_application"] = ingresses_by_application
+        context["pods_by_application"] = pods_by_application
+        out.render_template("application.html", context, file_name)
+
+
+def write_report(
+    out: OutputManager,
+    start,
+    notifications,
+    cluster_summaries,
+    namespace_usage,
+    applications,
+    teams,
+    node_labels,
+    links,
+    alpha_ema: float,
+):
+    write_tsv_files(
+        out, cluster_summaries, namespace_usage, applications, teams, node_labels
+    )
+
+    total_allocatable: dict = collections.defaultdict(int)
+    total_requests: dict = collections.defaultdict(int)
+    total_user_requests: dict = collections.defaultdict(int)
+
+    for summary in cluster_summaries.values():
+        for r in "cpu", "memory":
+            total_allocatable[r] += summary["allocatable"][r]
+            total_requests[r] += summary["requests"][r]
+            total_user_requests[r] += summary["user_requests"][r]
+
+    ingresses_by_application: Dict[str, list] = collections.defaultdict(list)
+    for cluster_id, summary in cluster_summaries.items():
+        for ingress in summary["ingresses"]:
+            ingresses_by_application[ingress[2]].append(
+                {
+                    "cluster_id": cluster_id,
+                    "cluster_summary": summary,
+                    "namespace": ingress[0],
+                    "name": ingress[1],
+                    "host": ingress[3],
+                    "status": ingress[4],
+                }
+            )
+
+    pods_by_application: Dict[str, list] = collections.defaultdict(list)
+    for cluster_id, summary in cluster_summaries.items():
+        for namespace_name, pod in summary["pods"].items():
+            namespace, name = namespace_name
+            pods_by_application[pod["application"]].append(
+                {
+                    "cluster_id": cluster_id,
+                    "cluster_summary": summary,
+                    "namespace": namespace,
+                    "name": name,
+                    "pod": pod,
+                }
+            )
+
     total_cost = sum([s["cost"] for s in cluster_summaries.values()])
     total_hourly_cost = total_cost / HOURS_PER_MONTH
     now = datetime.datetime.utcnow()
@@ -740,144 +926,25 @@ def write_report(
     }
 
     metrics = calculate_metrics(context)
+    write_json_files(
+        out,
+        metrics,
+        cluster_summaries,
+        applications,
+        teams,
+        ingresses_by_application,
+        pods_by_application,
+    )
 
-    with out.open("metrics.json") as fd:
-        json.dump(metrics, fd)
-
-    for page in [
-        "index",
-        "clusters",
-        "ingresses",
-        "teams",
-        "applications",
-        "namespaces",
-        "pods",
-    ]:
-        file_name = f"{page}.html"
-        context["page"] = page
-        context["alpha_ema"] = alpha_ema
-        out.render_template(file_name, context, file_name)
-
-    for cluster_id, summary in cluster_summaries.items():
-        page = "clusters"
-        file_name = f"cluster-{cluster_id}.html"
-        context["page"] = page
-        context["cluster_id"] = cluster_id
-        context["summary"] = summary
-        out.render_template("cluster.html", context, file_name)
-
-    with out.open("cluster-metrics.json") as fd:
-        json.dump(
-            {
-                cluster_id: {
-                    key: {
-                        k if isinstance(k, str) else "/".join(k): v
-                        for k, v in value.items()
-                    }
-                    if hasattr(value, "items")
-                    else value
-                    for key, value in summary.items()
-                    if key != "cluster"
-                }
-                for cluster_id, summary in cluster_summaries.items()
-            },
-            fd,
-            default=json_default,
-        )
-
-    for team_id, team in teams.items():
-        page = "teams"
-        file_name = f"team-{team_id}.html"
-        context["page"] = page
-        context["team_id"] = team_id
-        context["team"] = team
-        out.render_template("team.html", context, file_name)
-
-    with out.open("team-metrics.json") as fd:
-        json.dump(
-            {
-                team_id: {
-                    **team,
-                    "application": {
-                        app_id: app
-                        for app_id, app in applications.items()
-                        if app["team"] == team_id
-                    },
-                }
-                for team_id, team in teams.items()
-            },
-            fd,
-            default=json_default,
-        )
-
-    with out.open("application-metrics.json") as fd:
-        json.dump(applications, fd, default=json_default)
-
-    ingresses_by_application: Dict[str, list] = collections.defaultdict(list)
-    for cluster_id, summary in cluster_summaries.items():
-        for ingress in summary["ingresses"]:
-            ingresses_by_application[ingress[2]].append(
-                {
-                    "cluster_id": cluster_id,
-                    "cluster_summary": summary,
-                    "namespace": ingress[0],
-                    "name": ingress[1],
-                    "host": ingress[3],
-                    "status": ingress[4],
-                }
-            )
-
-    pods_by_application: Dict[str, list] = collections.defaultdict(list)
-    for cluster_id, summary in cluster_summaries.items():
-        for namespace_name, pod in summary["pods"].items():
-            namespace, name = namespace_name
-            pods_by_application[pod["application"]].append(
-                {
-                    "cluster_id": cluster_id,
-                    "cluster_summary": summary,
-                    "namespace": namespace,
-                    "name": name,
-                    "pod": pod,
-                }
-            )
-
-    for app_id, application in applications.items():
-        file_name = f"application-{app_id}.json"
-        with out.open(file_name) as fd:
-            json.dump(
-                {
-                    **application,
-                    "ingresses": [
-                        {
-                            "cluster": row["cluster_id"],
-                            "namespace": row["namespace"],
-                            "name": row["name"],
-                            "host": row["host"],
-                            "status": row["status"],
-                        }
-                        for row in ingresses_by_application[app_id]
-                    ],
-                    "pods": [
-                        {
-                            **row["pod"],
-                            "cluster": row["cluster_id"],
-                            "namespace": row["namespace"],
-                            "name": row["name"],
-                        }
-                        for row in pods_by_application[app_id]
-                    ],
-                },
-                fd,
-                default=json_default,
-            )
-
-    for app_id, application in applications.items():
-        page = "applications"
-        file_name = f"application-{app_id}.html"
-        context["page"] = page
-        context["application"] = application
-        context["ingresses_by_application"] = ingresses_by_application
-        context["pods_by_application"] = pods_by_application
-        out.render_template("application.html", context, file_name)
+    write_html_files(
+        out,
+        context,
+        alpha_ema,
+        cluster_summaries,
+        teams,
+        applications,
+        ingresses_by_application,
+        pods_by_application,
+    )
 
     out.clean_up_stale_files()

@@ -193,6 +193,19 @@ with the links per entity. Example file:
 
 For available icon names, see the `Font Awesome gallery with free icons <https://fontawesome.com/icons?d=gallery&m=free>`_.
 
+-------------------
+Customization Hooks
+-------------------
+
+Kubernetes Resource Report allows customizing behavior by using Python hook functions.
+The following CLI options exist:
+
+* ``--prerender-hook``: function to modify the HTML template context, e.g. to add arbitrary links. Example usage (built-in): ``--prerender-hook=kube_resource_report.example_hooks.prerender``.
+* ``--map-node-hook``: function to map Kubernetes Node objects and enrich them (e.g. with custom pricing). Example usage (built-in): ``--map-node-hook=kube_resource_report.example_hooks.map_node``.
+* ``--map-pod-hook``: function to map Kubernetes Pod objects and enrich them (e.g. applying a custom logic to set the ``application``). Example usage (built-in): ``--map-pod-hooks=kube_resource_report.example_hooks.map_pod``.
+
+The hooks are Python functions which you need to define in a module (e.g. ``hooks.py``). The module can either be add to the Dockerfile or mounted as a volume.
+Reference the functions via ``{module-name}.{function-name}``, e.g. ``--map-pod-hook=hooks.map_pod`` when you defined the ``map_pod`` function in ``hooks.py``.
 
 --------
 Settings

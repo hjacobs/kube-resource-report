@@ -15,7 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 class OutputManager:
-    def __init__(self, output_path: Path, templates_path: Optional[Path] = None):
+    def __init__(
+        self,
+        output_path: Path,
+        templates_path: Optional[Path] = None,
+        prerender_hook=None,
+    ):
         self.output_path = output_path
         self.written_paths: set = set()
 
@@ -23,6 +28,8 @@ class OutputManager:
         if templates_path:
             # prepend the custom template path so custom templates will overwrite any default ones
             templates_paths.insert(0, str(templates_path))
+
+        self.prerender_hook = prerender_hook
 
         env = Environment(
             loader=FileSystemLoader(templates_paths),
@@ -60,6 +67,9 @@ class OutputManager:
     def render_template(self, template_name: str, context: dict, output_file_name: str):
         path = self.output_path / output_file_name
         self.written_paths.add(path)
+
+        if self.prerender_hook:
+            self.prerender_hook(template_name, context)
 
         logger.info(f"Generating {output_file_name}..")
         template = self.env.get_template(template_name)
