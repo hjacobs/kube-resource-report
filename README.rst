@@ -216,6 +216,7 @@ You can run ``docker run --rm hjacobs/kube-resource-report:20.4.4 --help`` to fi
 Besides this, you can also pass environment variables:
 
 - ``NODE_LABEL_SPOT`` (default: ``"aws.amazon.com/spot"``)
+- ``NODE_LABEL_SPOT_VALUE`` (default: ``"true"``)
 - ``NODE_LABEL_PREEMPTIBLE`` (default: ``cloud.google.com/gke-preemptible``)
 - ``NODE_LABEL_ROLE`` (default: ``"kubernetes.io/role"``)
 - ``NODE_LABEL_REGION`` (default: ``"failure-domain.beta.kubernetes.io/region"``)
