@@ -66,18 +66,26 @@ class Recommender:
         self._stale_aggregation_keys = set()
         self._updated_aggregation_keys = set()
 
+    def get_aggregation_key(self, namespace: str, name: str, pod: dict):
+        aggregation_key = pod.get("aggregation_key")
+        if aggregation_key and len(aggregation_key) == AGGREGATION_KEY_LENGTH:
+            # custom aggregation key was set for this Pod
+            return aggregation_key
+        aggregation_key = (
+            namespace,
+            pod["application"],
+            pod["component"],
+            ",".join(sorted(pod["container_names"])),
+        )
+        return aggregation_key
+
     def update_pods(self, pods: dict):
         pods_by_aggregation_key = collections.defaultdict(list)
         now = time.time()
 
         for namespace_name, pod in pods.items():
             namespace, name = namespace_name
-            aggregation_key = (
-                namespace,
-                pod["application"],
-                pod["component"],
-                ",".join(sorted(pod["container_names"])),
-            )
+            aggregation_key = self.get_aggregation_key(namespace, name, pod)
             pods_by_aggregation_key[aggregation_key].append(pod)
 
             cpu_usage = pod["usage"]["cpu"]
