@@ -33,8 +33,6 @@ version:
 	poetry version $(VERSION)
 	sed -i 's,$(IMAGE):[0-9.]*,$(IMAGE):$(TAG),g' README.rst deploy/*.yaml
 	sed -i 's,version: v[0-9.]*,version: v$(VERSION),g' deploy/*.yaml
-	sed -i 's,tag: "[0-9.]*",tag: "$(VERSION)",g' chart/*/values.yaml
-	sed -i 's,appVersion: "[0-9.]*",appVersion: "$(VERSION)",g' chart/*/Chart.yaml
 
 .PHONY: release
 release: push version
