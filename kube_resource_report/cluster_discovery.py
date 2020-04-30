@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import time
 from pathlib import Path
@@ -13,6 +14,7 @@ from requests.auth import AuthBase
 
 # default URL points to kubectl proxy
 DEFAULT_CLUSTERS = "http://localhost:8001/"
+DEFAULT_CLUSTER_NAME = os.environ.get("DEFAULT_CLUSTER_NAME", "cluster")
 CLUSTER_ID_INVALID_CHARS = re.compile("[^a-z0-9:-]")
 
 logger = logging.getLogger(__name__)
@@ -64,7 +66,7 @@ class StaticClusterDiscoverer:
                 client = HTTPClient(config)
                 cluster = Cluster(
                     generate_cluster_id(DEFAULT_CLUSTERS),
-                    "cluster",
+                    DEFAULT_CLUSTER_NAME,
                     DEFAULT_CLUSTERS,
                     client,
                 )
@@ -72,7 +74,7 @@ class StaticClusterDiscoverer:
                 client = HTTPClient(config)
                 cluster = Cluster(
                     generate_cluster_id(config.cluster["server"]),
-                    "cluster",
+                    DEFAULT_CLUSTER_NAME,
                     config.cluster["server"],
                     client,
                 )
