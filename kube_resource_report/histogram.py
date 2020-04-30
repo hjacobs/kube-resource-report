@@ -5,6 +5,7 @@ VPA source: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-au
 """
 import collections
 import math
+from typing import Any
 from typing import Dict
 
 
@@ -71,13 +72,13 @@ class DecayingExponentialHistogram:
         )
         return bucket
 
-    def get_bucket_start(self, bucket):
+    def get_bucket_start(self, bucket: int) -> float:
         """Return the start of the bucket with given index."""
         if bucket == 0:
             return 0.0
         return self.first_bucket_size * ((self.ratio ** bucket) - 1) / (self.ratio - 1)
 
-    def get_percentile(self, percentile: float):
+    def get_percentile(self, percentile: float) -> float:
         if self.is_empty():
             return 0.0
         partial_sum = 0.0
@@ -99,7 +100,7 @@ class DecayingExponentialHistogram:
             len(self.bucket_weights) == 0 or max(self.bucket_weights.values()) < EPSILON
         )
 
-    def get_checkpoint(self):
+    def get_checkpoint(self) -> Dict[str, Any]:
         return {
             "total_weight": self.total_weight,
             "bucket_weights": {
@@ -108,7 +109,7 @@ class DecayingExponentialHistogram:
             "reference_time": self.reference_time,
         }
 
-    def from_checkpoint(self, checkpoint):
+    def from_checkpoint(self, checkpoint: Dict[str, Any]):
         total_weight = checkpoint["total_weight"]
         if total_weight < 0.0:
             raise ValueError(
