@@ -30,13 +30,13 @@ def percentile(N, percent):
 
 
 def test_histogram_empty():
-    hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.01, 1.05, ONE_DAY)
     assert hist.is_empty()
     assert hist.get_percentile(0.9) == 0
 
 
 def test_histogram_checkpoint_empty():
-    hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.01, 1.05, ONE_DAY)
     assert hist.get_checkpoint() == {
         "total_weight": 0,
         "bucket_weights": {},
@@ -45,7 +45,7 @@ def test_histogram_checkpoint_empty():
 
 
 def test_histogram_checkpoint_single_bucket():
-    hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.01, 1.05, ONE_DAY)
     now = time.mktime((2020, 4, 15, 21, 34, 0, 2, 0, 0))
     hist.add_sample(0.001, 1, now)
     assert hist.get_checkpoint() == {
@@ -56,7 +56,7 @@ def test_histogram_checkpoint_single_bucket():
 
 
 def test_histogram_from_checkpoint():
-    hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.01, 1.05, ONE_DAY)
     hist.from_checkpoint(
         {"total_weight": 1, "bucket_weights": {0: 10000}, "reference_time": 123}
     )
@@ -64,7 +64,7 @@ def test_histogram_from_checkpoint():
 
 
 def test_histogram_decay():
-    hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.01, 1.05, ONE_DAY)
     now = time.time()
     hist.add_sample(10, 1, now)
     expected_ref_time = (now // ONE_DAY) * ONE_DAY
@@ -81,14 +81,14 @@ def test_histogram_decay():
 
 
 def test_histogram_percentile():
-    hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.01, 1.05, ONE_DAY)
     now = time.mktime((2020, 4, 15, 21, 34, 0, 2, 0, 0))
     hist.add_sample(1, 1, now)
     hist.add_sample(2, 1, now)
     hist.add_sample(3, 1, now)
     assert hist.get_percentile(0.5) == approx(2, rel=0.1)
 
-    hist = DecayingExponentialHistogram(1000.0, 0.01, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.01, 1.05, ONE_DAY)
     for i in range(1, 11):
         hist.add_sample(i, 1, now)
     assert hist.get_percentile(0.5) == approx(5, rel=0.1)
@@ -96,7 +96,7 @@ def test_histogram_percentile():
 
 
 def test_histogram_percentile_large1():
-    hist = DecayingExponentialHistogram(100.0, 0.001, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.001, 1.05, ONE_DAY)
     now = time.mktime((2020, 4, 15, 21, 34, 0, 2, 0, 0))
 
     values = [
@@ -234,7 +234,7 @@ def test_histogram_percentile_large1():
 
 
 def test_histogram_percentile_large2():
-    hist = DecayingExponentialHistogram(100.0, 0.001, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.001, 1.05, ONE_DAY)
     now = time.mktime((2020, 4, 15, 21, 34, 0, 2, 0, 0))
 
     values = [0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.42, 0.51, 0.7, 1.2, 1.4]
@@ -249,8 +249,7 @@ def test_histogram_percentile_large2():
 
 def test_histogram_max_decay():
     min_value = 10.0 * 1024 * 1024  # 10 MiB
-    max_value = 1024.0 ** 4  # 1 TiB
-    hist = DecayingExponentialHistogram(max_value, min_value, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(min_value, 1.05, ONE_DAY)
     now = time.mktime((2020, 4, 15, 21, 34, 0, 2, 0, 0))
 
     old_max = 900.0 * 1024 * 1024
@@ -273,11 +272,11 @@ def test_histogram_save_load_checkpoint():
     now = time.mktime((2020, 4, 19, 21, 34, 0, 2, 0, 0))
 
     start = time.time()
-    hist = DecayingExponentialHistogram(100.0, 0.001, 1.05, ONE_DAY)
+    hist = DecayingExponentialHistogram(0.001, 1.05, ONE_DAY)
     hist.add_sample(0.5, 1, now)
     checkpoint = hist.get_checkpoint()
     for i in range(100):
-        hist = DecayingExponentialHistogram(100.0, 0.001, 1.05, ONE_DAY)
+        hist = DecayingExponentialHistogram(0.001, 1.05, ONE_DAY)
         hist.from_checkpoint(checkpoint)
         hist.add_sample(0.1 * i, 1, now + (i * 60))
         hist.add_sample(0.1 * i, 1, now + (i * 60))
