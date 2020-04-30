@@ -32,6 +32,7 @@ from kube_resource_report import metrics
 from kube_resource_report import pricing
 
 NODE_LABEL_SPOT = os.environ.get("NODE_LABEL_SPOT", "aws.amazon.com/spot")
+NODE_LABEL_SPOT_VALUE = os.environ.get("NODE_LABEL_SPOT_VALUE", "true")
 NODE_LABEL_PREEMPTIBLE = os.environ.get(
     "NODE_LABEL_PREEMPTIBLE", "cloud.google.com/gke-preemptible"
 )
@@ -161,7 +162,7 @@ def map_node(_node: Node):
     role = _node.labels.get(NODE_LABEL_ROLE) or "worker"
     region = _node.labels.get(NODE_LABEL_REGION, "unknown")
     instance_type = _node.labels.get(NODE_LABEL_INSTANCE_TYPE, "unknown")
-    is_spot = _node.labels.get(NODE_LABEL_SPOT) == "true"
+    is_spot = _node.labels.get(NODE_LABEL_SPOT) == NODE_LABEL_SPOT_VALUE
     is_preemptible = _node.labels.get(NODE_LABEL_PREEMPTIBLE, "false") == "true"
     if is_preemptible:
         instance_type = instance_type + "-preemptible"
