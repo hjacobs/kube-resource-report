@@ -52,7 +52,7 @@ service:
   portName: http
 
 container:
-  port: 80
+  port: 8080
   portName: http
   portProtocol: TCP
 
