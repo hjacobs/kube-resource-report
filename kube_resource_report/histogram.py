@@ -27,10 +27,7 @@ class DecayingExponentialHistogram:
     bucket_weights: Dict[int, float]
     total_weight: float
 
-    def __init__(
-        self, max_value: float, first_bucket_size: float, ratio: float, half_life: float
-    ):
-        self.max_value = max_value
+    def __init__(self, first_bucket_size: float, ratio: float, half_life: float):
         self.first_bucket_size = first_bucket_size
         self.ratio = ratio
         self.bucket_weights = collections.defaultdict(float)
