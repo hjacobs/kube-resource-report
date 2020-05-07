@@ -295,6 +295,7 @@ def generate_report(
 
     applications: Dict[str, dict] = {}
     namespace_usage: Dict[tuple, dict] = {}
+    nodes: Dict[str, dict] = {}
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for _k, pod in summary["pods"].items():
@@ -378,6 +379,11 @@ def generate_report(
             namespace["cluster"] = summary["cluster"]
             namespace_usage[(ns_pod[0], cluster_id)] = namespace
 
+        for node_name, node in summary["nodes"].items():
+            node["node_name"] = node_name
+            node["cluster"] = cluster_id
+            nodes[f"{cluster_id}.{node_name}"] = node
+
     if application_registry:
         resolve_application_ids(applications, application_registry)
 
@@ -425,6 +431,7 @@ def generate_report(
         start,
         notifications,
         cluster_summaries,
+        nodes,
         namespace_usage,
         applications,
         teams,
@@ -451,6 +458,7 @@ def write_loading_page(out):
 def write_tsv_files(
     out: OutputManager,
     cluster_summaries,
+    nodes,
     namespace_usage,
     applications,
     teams,
@@ -496,6 +504,43 @@ def write_tsv_files(
                 ]
             fields += [round(summary["cost"], 2)]
             fields += [round(summary["slack_cost"], 2)]
+            writer.writerow(fields)
+
+    with out.open("nodes.tsv") as csvfile:
+        writer = csv.writer(csvfile, delimiter="\t")
+        headers = [
+            "Cluster ID",
+            "Node",
+            "Role",
+            "Instance Type",
+            "Spot Instance",
+            "Kubelet Version",
+        ]
+        for x in resource_categories:
+            headers.extend([f"CPU {x.capitalize()}", f"Memory {x.capitalize()} [MiB]"])
+        headers.append("Cost [USD]")
+        writer.writerow(headers)
+        for _, node in sorted(nodes.items()):
+            instance_type = set()
+            kubelet_version = set()
+            if node["role"] in node_labels:
+                instance_type.add(node["instance_type"])
+            kubelet_version.add(node["kubelet_version"])
+
+            fields = [
+                node["cluster"],
+                node["node_name"],
+                node["role"],
+                node["instance_type"],
+                "Yes" if node["spot"] else "No",
+                node["kubelet_version"],
+            ]
+            for x in resource_categories:
+                fields += [
+                    round(node[x]["cpu"], 2),
+                    int(node[x]["memory"] / ONE_MEBI),
+                ]
+            fields += [round(node["cost"], 2)]
             writer.writerow(fields)
 
     with out.open("ingresses.tsv") as csvfile:
@@ -790,6 +835,8 @@ def write_html_files(
     context,
     alpha_ema,
     cluster_summaries,
+    nodes,
+    pods_by_node,
     teams,
     applications,
     ingresses_by_application,
@@ -798,6 +845,7 @@ def write_html_files(
     for page in [
         "index",
         "clusters",
+        "nodes",
         "ingresses",
         "teams",
         "applications",
@@ -816,6 +864,15 @@ def write_html_files(
         context["cluster_id"] = cluster_id
         context["summary"] = summary
         out.render_template("cluster.html", context, file_name)
+
+    for node_id, node in nodes.items():
+        page = "nodes"
+        file_name = f"node-{node_id}.html"
+        context["page"] = page
+        context["cluster_id"] = cluster_id
+        context["node"] = node
+        context["pods"] = pods_by_node[node_id]
+        out.render_template("node.html", context, file_name)
 
     for team_id, team in teams.items():
         page = "teams"
@@ -840,6 +897,7 @@ def write_report(
     start,
     notifications,
     cluster_summaries,
+    nodes,
     namespace_usage,
     applications,
     teams,
@@ -848,7 +906,7 @@ def write_report(
     alpha_ema: float,
 ):
     write_tsv_files(
-        out, cluster_summaries, namespace_usage, applications, teams, node_labels
+        out, cluster_summaries, nodes, namespace_usage, applications, teams, node_labels
     )
 
     total_allocatable: dict = collections.defaultdict(int)
@@ -889,6 +947,24 @@ def write_report(
                 }
             )
 
+    pods_by_node: Dict[str, list] = collections.defaultdict(list)
+    for cluster_id, summary in cluster_summaries.items():
+        for namespace_name, pod in summary["pods"].items():
+            namespace, name = namespace_name
+            if "node" not in pod.keys():
+                continue
+            node_name = pod["node"]
+            node_id = f"{cluster_id}.{node_name}"
+            pods_by_node[node_id].append(
+                {
+                    "cluster_id": cluster_id,
+                    "node": nodes[node_id],
+                    "namespace": namespace,
+                    "name": name,
+                    "pod": pod,
+                }
+            )
+
     total_cost = sum([s["cost"] for s in cluster_summaries.values()])
     total_hourly_cost = total_cost / HOURS_PER_MONTH
     now = datetime.datetime.utcnow()
@@ -896,6 +972,7 @@ def write_report(
         "links": links,
         "notifications": notifications,
         "cluster_summaries": cluster_summaries,
+        "nodes": nodes,
         "teams": teams,
         "applications": applications,
         "namespace_usage": namespace_usage,
@@ -941,6 +1018,8 @@ def write_report(
         context,
         alpha_ema,
         cluster_summaries,
+        nodes,
+        pods_by_node,
         teams,
         applications,
         ingresses_by_application,

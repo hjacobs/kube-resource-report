@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Node {{ node.node_name }}{% endblock %}
+{% block content %}
+<h1 class="title">Node {{ node.node_name }}
+    <span class="links">
+        {% for link in links['node']: %}
+        <a href="{{ link.href.format(cluster=summary.cluster.name, name=node_name) }}"
+           title="{{ link.title.format(cluster=summary.cluster.name, name=node_name) }}"
+           class="button {{ link.class or 'is-light' }}">
+            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+        </a>
+        {% endfor %}
+    </span>
+</h1>
+<h2 class="subtitle"><a href="./cluster-{{ summary.cluster.id }}.html">{{ summary.cluster.name }}</a> / {{ node.instance_type }}</h2>
+
+<nav class="level">
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Pods</p>
+            <p class="title">{{ pods|count }}</p>
+        </div>
+    </div>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">CPU Requests / Allocatable</p>
+            <p class="title">{{ node.requests.cpu|cpu }} / {{ node.allocatable.cpu|cpu }}</p>
+        </div>
+    </div>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Memory Requests / Allocatable</p>
+            <p class="title">{{ node.requests.memory|filesizeformat(True) }} / {{ node.allocatable.memory|filesizeformat(True) }}</p>
+        </div>
+    </div>
+    <div class="level-item has-text-centered">
+        <div>
+            <p class="heading">Monthly Cost</p>
+            <p class="title">{{ node.cost|money }} USD</p>
+        </div>
+    </div>
+</nav>
+<div class="notification is-warning">
+    You can potentially save <strong>{{ node.slack_cost|money }} USD</strong> every month by optimizing resource requests and reducing slack.
+</div>
+
+<div class="section collapsible" data-name="pods">
+    <h2 class="title is-5">Pods</h2>
+    <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+        <thead>
+            <tr>
+                <th>Cluster</th>
+                <th>Namespace</th>
+                <th>Component</th>
+                <th>Name</th>
+                <th><abbr title="Container Images">Cont.</abbr></th>
+                <th><abbr title="CPU Requests">CR</abbr></th>
+                <th><abbr title="Memory Requests">MR</abbr></th>
+                <th>CPU</th>
+                <th>Memory (MiB)</th>
+                <th class="has-text-right">Cost</th>
+                <th class="has-text-right">Slack Cost</th>
+                {% if links['pod']: %}
+                <th></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in pods: %}
+            <tr>
+                <td><a href="./cluster-{{ row.cluster_id }}.html">{{ summary.cluster.name }}</a></td>
+                <td>{{ row.namespace }}</td>
+                <td>{{ row.pod.component }}</td>
+                <td>{{ row.name }}</td>
+                <td title="{{ row.pod.container_images|join(', ') }}">{{ row.pod.container_images|count }}</td>
+                <td>{{ row.pod.requests.cpu|round(3) }}</td>
+                <td data-value="{{ row.pod.requests.memory }}">{{ row.pod.requests.memory|filesizeformat(True) }}</td>
+
+                <td style="font-size: 0.75rem" data-value="{{ row.pod.usage.cpu }}">
+                    {{ elements.resource_bar_cpu(row.pod) }}
+                </td>
+                <td style="font-size: 0.75rem" data-value="{{ row.pod.usage.memory }}">
+                    {{ elements.resource_bar_memory(row.pod) }}
+                </td>
+
+                <td class="has-text-right">{{ row.pod.cost|money }}</td>
+                <td class="has-text-right">{{ row.pod.slack_cost|money }}</td>
+
+                {% if links['pod']: %}
+                <td class="links">
+                    <div class="buttons has-addons">
+                        {% for link in links['pod']: %}
+                        <a href="{{ link.href.format(cluster=summary.cluster.name, namespace=row.namespace, name=row.name) }}"
+                           title="{{ link.title.format(cluster=summary.cluster.name, namespace=row.namespace, name=row.name) }}"
+                           class="button is-small">
+                            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {%endfor %}
+        </tbody>
+
+    </table>
+</div>
+{% endblock %}
