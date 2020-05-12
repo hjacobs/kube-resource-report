@@ -382,6 +382,7 @@ def generate_report(
         for node_name, node in summary["nodes"].items():
             node["node_name"] = node_name
             node["cluster"] = cluster_id
+            node["cluster_name"] = cluster_summaries[cluster_id]["cluster"].name
             nodes[f"{cluster_id}.{node_name}"] = node
 
     if application_registry:

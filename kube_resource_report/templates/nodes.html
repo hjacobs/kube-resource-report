@@ -34,7 +34,7 @@
     <tbody>
         {% for node_id, node in nodes.items()|sort: %}
             <tr>
-                <td><a href="./cluster-{{ node.cluster }}.html">{{ node.cluster }}</a></td>
+                <td><a href="./cluster-{{ node.cluster }}.html">{{ node.cluster_name }}</a></td>
                 <td><a href="./node-{{ node_id }}.html">{{ node.node_name }}</a></td>
                 <td>{{ node.role }}</td>
                 <td>{{ node.instance_type }}</td>
