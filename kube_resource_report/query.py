@@ -131,6 +131,7 @@ def convert(lst):
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
     return res_dct
 
+
 def exclude_node(node, node_exclude_labels):
     logger.debug(f"node_exclusions are {node_exclude_labels}")
     for label in node_exclude_labels:
@@ -144,6 +145,7 @@ def exclude_node(node, node_exclude_labels):
                 logger.debug(f"node_labels {node_labels} found on node {node}. Excluding this node.")
                 return True
     return False
+
 
 def pod_active(pod):
     pod_status = pod.obj["status"]
