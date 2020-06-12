@@ -104,8 +104,8 @@ def get_cluster_summaries(
                         prev_cluster_summaries.get(cluster.id, {}),
                         no_ingress_status,
                         node_labels,
-						node_exclude_labels,
-						cluster_data_path,
+                        node_exclude_labels,
+                        cluster_data_path,
                         map_node_hook,
                         map_pod_hook,
                     )
