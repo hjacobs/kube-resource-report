@@ -51,6 +51,7 @@ def fake_generate_report(output_dir, monkeypatch, helpers):
             None,
             None,
             ["worker", "node"],
+            None,
         )
         assert len(cluster_summaries) == 1
         return cluster_summaries
