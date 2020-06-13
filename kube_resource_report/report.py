@@ -445,10 +445,7 @@ def write_loading_page(out):
 
     if not out.exists(file_name):
         now = datetime.datetime.utcnow()
-        context = {
-            "now": now,
-            "version": __version__,
-        }
+        context = {"now": now, "version": __version__}
         out.render_template("loading.html", context, file_name)
 
 

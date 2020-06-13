@@ -203,7 +203,7 @@ def fake_node_metric_responses():
                 {
                     "metadata": {"name": "node-1"},
                     "usage": {"cpu": "16", "memory": "128Gi"},
-                },
+                }
             ]
         }
     }

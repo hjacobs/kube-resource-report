@@ -121,7 +121,7 @@ def get_parser():
         default=0,
     )
     parser.add_argument(
-        "--pricing-file", type=existing_path, help="Path to alternate pricing file",
+        "--pricing-file", type=existing_path, help="Path to alternate pricing file"
     )
     parser.add_argument(
         "--links-file",
