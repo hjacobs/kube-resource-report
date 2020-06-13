@@ -134,18 +134,17 @@ def convert(lst):
 
 def exclude_node(node, node_exclude_labels):
     logger.debug(f"node_exclusions are {node_exclude_labels}")
-    for label in node_exclude_labels:
-        label_pair = label.split("=")
-        label_dict = convert(label_pair)
-        logger.debug(f"node_exclusion label_dict is {label_dict}")
-        for k in label_dict:
-            logger.debug(f"label_pair k is {k} value is {label_dict[k]}")
-            node_labels = node.labels.get(k)
-            if node_labels is not None and node_labels in label_dict[k]:
-                logger.debug(
-                    f"node_labels {node_labels} found on node {node}. Excluding this node."
-                )
-                return True
+    if node_exclude_labels is not None:
+        for label in node_exclude_labels:
+            label_pair = label.split('=')
+            label_dict = convert(label_pair)
+            logger.debug(f"node_exclusion label_dict is {label_dict}")
+            for k in label_dict:
+                logger.debug(f"label_pair k is {k} value is {label_dict[k]}")
+                node_labels = node.labels.get(k)
+                if node_labels is not None and node_labels in label_dict[k]:
+                    logger.debug(f"node_labels {node_labels} found on node {node}. Excluding this node.")
+                    return True
     return False
 
 
