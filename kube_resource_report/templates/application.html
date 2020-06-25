@@ -106,6 +106,49 @@
     {% endif %}
 </div>
 
+<div class="section collapsible" data-name="routegroups">
+    <h2 class="title is-5">RouteGroups</h2>
+    {% if routegroups_by_application[application.id]: %}
+    <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+        <thead>
+            <tr>
+                <th>Cluster</th>
+                <th>Namespace</th>
+                <th>Name</th>
+                <th>Hosts</th>
+                <th></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for rg in routegroups_by_application[application.id]: %}
+            <tr>
+                <td><a href="./cluster-{{ rg.cluster_id }}.html">{{ rg.cluster_summary.cluster.name }}</a></td>
+                <td>{{ rg.namespace }}</td>
+                <td>{{ rg.name }}</td>
+                <td>{{ rg.hosts }}</td>
+                {% if links['routegroups']: %}
+                <td class="links">
+                    <div class="buttons has-addons">
+                        {% for link in links['routegroups']: %}
+                        <a href="{{ link.href.format(cluster=rg.cluster_summary.cluster.name, namespace=rg.namespace, name=rg.name, application=application.id, hosts=rg.hosts) }}"
+                           title="{{ link.title.format(cluster=rg.cluster_summary.cluster.name, namespace=rg.namespace, name=rg.name, application=application.id, hosts=rg.hosts) }}"
+                           class="button is-small">
+                            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {%endfor %}
+        </tbody>
+    </table>
+    {% else: %}
+    <p class="content"><em>No Routegroups found for application {{ application.id }}.</em></p>
+    {% endif %}
+</div>
+
 <div class="section collapsible" data-name="components">
     <h2 class="title is-5">Components</h2>
     <table class="table is-striped is-hoverable is-fullwidth" data-sortable>

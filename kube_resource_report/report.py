@@ -710,6 +710,7 @@ def write_json_files(
     applications,
     teams,
     ingresses_by_application,
+    routegroups_by_application,
     pods_by_application,
 ):
     with out.open("metrics.json") as fd:
@@ -770,6 +771,15 @@ def write_json_files(
                         }
                         for row in ingresses_by_application[app_id]
                     ],
+                    "routegroups": [
+                        {
+                            "cluster": row["cluster_id"],
+                            "namespace": row["namespace"],
+                            "name": row["name"],
+                            "hosts": row["hosts"],
+                        }
+                        for row in routegroups_by_application[app_id]
+                    ],
                     "pods": [
                         {
                             **row["pod"],
@@ -793,12 +803,14 @@ def write_html_files(
     teams,
     applications,
     ingresses_by_application,
+    routegroups_by_application,
     pods_by_application,
 ):
     for page in [
         "index",
         "clusters",
         "ingresses",
+        "routegroups",
         "teams",
         "applications",
         "namespaces",
@@ -831,6 +843,7 @@ def write_html_files(
         context["page"] = page
         context["application"] = application
         context["ingresses_by_application"] = ingresses_by_application
+        context["routegroups_by_application"] = routegroups_by_application
         context["pods_by_application"] = pods_by_application
         out.render_template("application.html", context, file_name)
 
@@ -872,6 +885,19 @@ def write_report(
                     "name": ingress[1],
                     "host": ingress[3],
                     "status": ingress[4],
+                }
+            )
+
+    routegroup_by_application: Dict[str, list] = collections.defaultdict(list)
+    for cluster_id, summary in cluster_summaries.items():
+        for rg in summary["routegroups"]:
+            routegroup_by_application[rg[2]].append(
+                {
+                    "cluster_id": cluster_id,
+                    "cluster_summary": summary,
+                    "namespace": rg[0],
+                    "name": rg[1],
+                    "host": rg[3],
                 }
             )
 
@@ -933,6 +959,7 @@ def write_report(
         applications,
         teams,
         ingresses_by_application,
+        routegroups_by_application,
         pods_by_application,
     )
 
@@ -944,6 +971,7 @@ def write_report(
         teams,
         applications,
         ingresses_by_application,
+        routegroups_by_application,
         pods_by_application,
     )
 

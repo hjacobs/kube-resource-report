@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}RouteGroups{% endblock %}
+{% block content %}
+
+<h1 class="title">All RouteGroups
+    <span class="links">
+        <a href="./routegroups.tsv"
+           title="Download RouteGroups as Tab-Separated-Values (TSV)"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-file-download"></i></span>
+        </a>
+    </span>
+</h1>
+
+<table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+    <thead>
+        <tr>
+            <th>Cluster</th>
+            <th>Namespace</th>
+            <th>Name</th>
+            <th>Application</th>
+            <th>Hosts</th>
+            {% if links['routegroup']: %}
+            <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for cluster_id, summary in cluster_summaries.items(): %}
+        {% for routegroup in summary.routegroups: %}
+        <tr>
+            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary["cluster"].name }}</a></td>
+            <td>{{ routegroup[0] }}</td>
+            <td>{{ routegroup[1] }}</td>
+            <td><a href="./application-{{ routegroup[2] }}.html">{{ routegroup[2] }}</a></td>
+            <td>{{ routegroup[3] }}</td>
+            {% if links['routegroup']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                    {% for link in links['routegroup']: %}
+                    <a href="{{ link.href.format(cluster=summary["cluster"].name, namespace=routegroup[0], name=routegroup[1], application=routegroup[2], host=routegroup[3]) }}"
+                       title="{{ link.title.format(cluster=summary["cluster"].name, namespace=routegroup[0], name=routegroup[1], application=routegroup[2], host=routegroup[3]) }}"
+                       class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </td>
+            {% endif %}
+        </tr>
+        {%endfor %}
+        {%endfor %}
+    </tbody>
+
+</table>
+
+{% endblock %}
