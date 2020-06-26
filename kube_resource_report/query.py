@@ -454,7 +454,7 @@ def query_cluster(
         application = get_application_from_labels(_rg.labels)
         hosts = _rg.obj["spec"]["hosts"]
 
-        for backend in rg.obj["spec"]["backends"]:
+        for backend in _rg.obj["spec"]["backends"]:
             if not application:
                 # find the application by getting labels from pods
                 backend_application = find_routegroup_backend_application(
