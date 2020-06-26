@@ -120,7 +120,7 @@ def fake_responses():
                 }
             ]
         },
-        ("routegroups.zalando.org/v1", "routegroups"): {
+        ("zalando.org/v1", "routegroups"): {
             "items": [
                 {
                     "metadata": {"name": "rg-1", "namespace": "default"},
