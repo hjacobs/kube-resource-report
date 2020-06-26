@@ -888,10 +888,10 @@ def write_report(
                 }
             )
 
-    routegroup_by_application: Dict[str, list] = collections.defaultdict(list)
+    routegroups_by_application: Dict[str, list] = collections.defaultdict(list)
     for cluster_id, summary in cluster_summaries.items():
         for rg in summary["routegroups"]:
-            routegroup_by_application[rg[2]].append(
+            routegroups_by_application[rg[2]].append(
                 {
                     "cluster_id": cluster_id,
                     "cluster_summary": summary,
