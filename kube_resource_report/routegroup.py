@@ -1,5 +1,6 @@
 from pykube.objects import NamespacedAPIObject
 
+
 class RouteGroup(NamespacedAPIObject):
 
     """

@@ -99,7 +99,9 @@ def find_ingress_backend_application(client: pykube.HTTPClient, ingress: Ingress
     for path in paths:
         service_name = path.get("backend", {}).get("serviceName")
         if service_name:
-            application, selector = get_application_label_from_service(client, ingress.namespace, service_name)
+            application, selector = get_application_label_from_service(
+                client, ingress.namespace, service_name
+            )
             if application:
                 return application
             selectors.append(selector)
@@ -107,25 +109,31 @@ def find_ingress_backend_application(client: pykube.HTTPClient, ingress: Ingress
     # we still haven't found the application, let's look up pods by label selectors
     return find_application_by_selector(client, ingress.namespace, selectors)
 
-def find_routegroup_backend_application(client: pykube.HTTPClient, rg: RouteGroup, backend):
+
+def find_routegroup_backend_application(
+    client: pykube.HTTPClient, rg: RouteGroup, backend
+):
     """
     Find the application ID for a given RouteGroup object.
 
     The RouteGroup object might not have a "application" label, so let's try to find the application by looking at the backend service and its pods
     """
-    if backend['type'] != "service":
+    if backend["type"] != "service":
         return ""
 
     selectors = []
-    service_name = backend['serviceName']
+    service_name = backend["serviceName"]
     if service_name:
-        application, selector = get_application_label_from_service(client, rg.namespace, service_name)
+        application, selector = get_application_label_from_service(
+            client, rg.namespace, service_name
+        )
         if application:
             return application
         selectors.append(selector)
 
     # we still haven't found the application, let's look up pods by label selectors
     return find_application_by_selector(client, rg.namespace, selectors)
+
 
 def find_application_by_selector(client: pykube.HTTPClient, namespace, selectors):
     for selector in selectors:
@@ -134,11 +142,10 @@ def find_application_by_selector(client: pykube.HTTPClient, namespace, selectors
             return application
     return ""
 
+
 def get_application_label_from_pods(client: pykube.HTTPClient, namespace, selector):
     application_candidates = set()
-    for pod in Pod.objects(client).filter(
-            namespace=namespace, selector=selector
-    ):
+    for pod in Pod.objects(client).filter(namespace=namespace, selector=selector):
         application = get_application_from_labels(pod.labels)
         if application:
             application_candidates.add(application)
@@ -147,21 +154,21 @@ def get_application_label_from_pods(client: pykube.HTTPClient, namespace, select
         return application_candidates.pop()
     return ""
 
-def get_application_label_from_service(client: pykube.HTTPClient, namespace, service_name):
+
+def get_application_label_from_service(
+    client: pykube.HTTPClient, namespace, service_name
+):
     try:
-        service = Service.objects(client, namespace=namespace).get(
-            name=service_name
-        )
+        service = Service.objects(client, namespace=namespace).get(name=service_name)
     except ObjectDoesNotExist:
-        logger.debug(
-            f"Referenced service does not exist: {namespace}/{service_name}"
-        )
+        logger.debug(f"Referenced service does not exist: {namespace}/{service_name}")
     else:
         selector = service.obj["spec"].get("selector", {})
         application = get_application_from_labels(selector)
         if application:
             return application, []
         return "", selector
+
 
 def pod_active(pod):
     pod_status = pod.obj["status"]
