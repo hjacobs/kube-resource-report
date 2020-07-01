@@ -162,6 +162,7 @@ def get_application_label_from_service(
         service = Service.objects(client, namespace=namespace).get(name=service_name)
     except ObjectDoesNotExist:
         logger.debug(f"Referenced service does not exist: {namespace}/{service_name}")
+        return None, None
     else:
         selector = service.obj["spec"].get("selector", {})
         application = get_application_from_labels(selector)
