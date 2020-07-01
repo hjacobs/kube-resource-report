@@ -22,6 +22,7 @@ from requests_futures.sessions import FuturesSession
 
 from .recommender import Recommender
 from .routegroup import RouteGroup
+
 from .utils import HOURS_PER_MONTH
 from .utils import MIN_CPU_USER_REQUESTS
 from .utils import MIN_MEMORY_USER_REQUESTS
@@ -262,6 +263,7 @@ def query_cluster(
     alpha_ema,
     prev_cluster_summaries,
     no_ingress_status,
+    enable_routegroups,
     node_labels,
     data_path: Path,
     map_node_hook=Optional[Callable[[Node, dict], None]],
@@ -457,25 +459,26 @@ def query_cluster(
                 for ingress in ingresses:
                     ingress[4] = status
 
-    for _rg in RouteGroup.objects(cluster.client, namespace=pykube.all):
-        application = get_application_from_labels(_rg.labels)
-        hosts = _rg.obj["spec"]["hosts"]
+    if enable_routegroups:
+        for _rg in RouteGroup.objects(cluster.client, namespace=pykube.all):
+            application = get_application_from_labels(_rg.labels)
+            hosts = _rg.obj["spec"]["hosts"]
 
-        for backend in _rg.obj["spec"]["backends"]:
-            if not application:
-                # find the application by getting labels from pods
-                backend_application = find_routegroup_backend_application(
-                    cluster.client, _rg, backend
-                )
-            else:
-                backend_application = None
+            for backend in _rg.obj["spec"]["backends"]:
+                if not application:
+                    # find the application by getting labels from pods
+                    backend_application = find_routegroup_backend_application(
+                        cluster.client, _rg, backend
+                    )
+                else:
+                    backend_application = None
 
-            routegroup = [
-                _rg.namespace,
-                _rg.name,
-                application or backend_application,
-                hosts,
-            ]
-            cluster_summary["routegroups"].append(routegroup)
+                routegroup = [
+                    _rg.namespace,
+                    _rg.name,
+                    application or backend_application,
+                    hosts,
+                ]
+                cluster_summary["routegroups"].append(routegroup)
 
     return cluster_summary

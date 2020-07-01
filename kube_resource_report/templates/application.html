@@ -108,7 +108,7 @@
 
 <div class="section collapsible" data-name="routegroups">
     <h2 class="title is-5">RouteGroups</h2>
-    {% if routegroups_by_application[application.id]: %}
+    {% if routegroups_by_application and routegroups_by_application[application.id]: %}
     <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
         <thead>
             <tr>
@@ -120,6 +120,7 @@
             </tr>
         </thead>
         <tbody>
+
             {% for rg in routegroups_by_application[application.id]: %}
             <tr>
                 <td><a href="./cluster-{{ rg.cluster_id }}.html">{{ rg.cluster_summary.cluster.name }}</a></td>

@@ -33,7 +33,7 @@
             <td>{{ routegroup[0] }}</td>
             <td>{{ routegroup[1] }}</td>
             <td><a href="./application-{{ routegroup[2] }}.html">{{ routegroup[2] }}</a></td>
-            <td>{{ routegroup[3] }}</td>
+            <td>{{ routegroup[3]|join(', ') }}</td>
             {% if links['routegroup']: %}
             <td class="links">
                 <div class="buttons has-addons">
