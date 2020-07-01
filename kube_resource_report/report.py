@@ -942,7 +942,7 @@ def write_report(
                     }
                 )
     else:
-        routegroups_by_application = False
+        routegroups_by_application = collections.defaultdict(list)
 
     pods_by_application: Dict[str, list] = collections.defaultdict(list)
     for cluster_id, summary in cluster_summaries.items():
