@@ -120,6 +120,19 @@ def fake_responses():
                 }
             ]
         },
+        ("zalando.org/v1", "routegroups"): {
+            "items": [
+                {
+                    "metadata": {"name": "rg-1", "namespace": "default"},
+                    "spec": {
+                        "backends": [],
+                        "default_backends": [],
+                        "hosts": [],
+                        "routes": [],
+                    },
+                }
+            ]
+        },
         ("v1", "namespaces"): {"items": []},
     }
 

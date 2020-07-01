@@ -62,6 +62,7 @@ def get_cluster_summaries(
     alpha_ema: float,
     prev_cluster_summaries: dict,
     no_ingress_status: bool,
+    enable_routegroups: bool,
     node_labels: list,
     data_path: Path,
     map_node_hook=None,
@@ -102,6 +103,7 @@ def get_cluster_summaries(
                         alpha_ema,
                         prev_cluster_summaries.get(cluster.id, {}),
                         no_ingress_status,
+                        enable_routegroups,
                         node_labels,
                         cluster_data_path,
                         map_node_hook,
@@ -228,6 +230,7 @@ def generate_report(
     application_registry,
     use_cache,
     no_ingress_status,
+    enable_routegroups,
     output_dir,
     data_path,
     system_namespaces,
@@ -286,6 +289,7 @@ def generate_report(
             alpha_ema,
             cluster_summaries,
             no_ingress_status,
+            enable_routegroups,
             node_labels,
             data_path,
             map_node_hook,
@@ -431,6 +435,7 @@ def generate_report(
         node_labels,
         links,
         alpha_ema,
+        enable_routegroups,
     )
 
     return cluster_summaries
@@ -710,6 +715,7 @@ def write_json_files(
     applications,
     teams,
     ingresses_by_application,
+    routegroups_by_application,
     pods_by_application,
 ):
     with out.open("metrics.json") as fd:
@@ -757,33 +763,69 @@ def write_json_files(
     for app_id, application in applications.items():
         file_name = f"application-{app_id}.json"
         with out.open(file_name) as fd:
-            json.dump(
-                {
-                    **application,
-                    "ingresses": [
-                        {
-                            "cluster": row["cluster_id"],
-                            "namespace": row["namespace"],
-                            "name": row["name"],
-                            "host": row["host"],
-                            "status": row["status"],
-                        }
+            if routegroups_by_application:
+                json.dump(
+                    {
+                        **application,
+                        "ingresses": [
+                            {
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                                "host": row["host"],
+                                "status": row["status"],
+                            }
                         for row in ingresses_by_application[app_id]
-                    ],
-                    "pods": [
-                        {
-                            **row["pod"],
-                            "cluster": row["cluster_id"],
-                            "namespace": row["namespace"],
-                            "name": row["name"],
-                        }
+                        ],
+                        "routegroups": [
+                            {
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                                "hosts": row["hosts"],
+                            }
+                        for row in routegroups_by_application[app_id]
+                        ],
+                        "pods": [
+                            {
+                                **row["pod"],
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                            }
                         for row in pods_by_application[app_id]
-                    ],
-                },
-                fd,
-                default=json_default,
-            )
-
+                        ],
+                    },
+                    fd,
+                    default=json_default,
+                )
+            else:
+                json.dump(
+                    {
+                        **application,
+                        "ingresses": [
+                            {
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                                "host": row["host"],
+                                "status": row["status"],
+                            }
+                        for row in ingresses_by_application[app_id]
+                        ],
+                        "pods": [
+                            {
+                                **row["pod"],
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                            }
+                        for row in pods_by_application[app_id]
+                        ],
+                    },
+                    fd,
+                    default=json_default,
+                )
 
 def write_html_files(
     out,
@@ -793,17 +835,25 @@ def write_html_files(
     teams,
     applications,
     ingresses_by_application,
+    routegroups_by_application,
     pods_by_application,
 ):
+    context["enable_routegroups"] = False
+    if routegroups_by_application:
+        context["enable_routegroups"] = True
+
     for page in [
         "index",
         "clusters",
         "ingresses",
+        "routegroups",
         "teams",
         "applications",
         "namespaces",
         "pods",
     ]:
+        if page == "routegroups" and not context["enable_routegroups"]:
+            continue
         file_name = f"{page}.html"
         context["page"] = page
         context["alpha_ema"] = alpha_ema
@@ -831,6 +881,8 @@ def write_html_files(
         context["page"] = page
         context["application"] = application
         context["ingresses_by_application"] = ingresses_by_application
+        if context["enable_routegroups"]:
+            context["routegroups_by_application"] = routegroups_by_application
         context["pods_by_application"] = pods_by_application
         out.render_template("application.html", context, file_name)
 
@@ -846,6 +898,7 @@ def write_report(
     node_labels,
     links,
     alpha_ema: float,
+    enable_routegroups: bool,
 ):
     write_tsv_files(
         out, cluster_summaries, namespace_usage, applications, teams, node_labels
@@ -874,6 +927,22 @@ def write_report(
                     "status": ingress[4],
                 }
             )
+
+    routegroups_by_application: Dict[str, list] = collections.defaultdict(list)
+    if enable_routegroups:
+        for cluster_id, summary in cluster_summaries.items():
+            for rg in summary["routegroups"]:
+                routegroups_by_application[rg[2]].append(
+                    {
+                        "cluster_id": cluster_id,
+                        "cluster_summary": summary,
+                        "namespace": rg[0],
+                        "name": rg[1],
+                        "host": rg[3],
+                    }
+                )
+    else:
+        routegroups_by_application = collections.defaultdict(list)
 
     pods_by_application: Dict[str, list] = collections.defaultdict(list)
     for cluster_id, summary in cluster_summaries.items():
@@ -933,6 +1002,7 @@ def write_report(
         applications,
         teams,
         ingresses_by_application,
+        routegroups_by_application,
         pods_by_application,
     )
 
@@ -944,6 +1014,7 @@ def write_report(
         teams,
         applications,
         ingresses_by_application,
+        routegroups_by_application,
         pods_by_application,
     )
 
