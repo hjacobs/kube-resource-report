@@ -193,6 +193,8 @@ def map_node(_node: Node):
     node["allocatable"] = {}
     node["requests"] = new_resources()
     node["usage"] = new_resources()
+    node["pods"] = {}
+    node["slack_cost"] = 0
 
     status = _node.obj["status"]
     for k, v in status.get("capacity", {}).items():
@@ -330,6 +332,7 @@ def query_cluster(
                 user_requests[k] += v
         node_name = pod.obj["spec"].get("nodeName")
         if node_name and node_name in nodes:
+            pod_["node"] = node_name
             for k in ("cpu", "memory"):
                 nodes[node_name]["requests"][k] += pod_["requests"].get(k, 0)
         found_vpa = False
@@ -410,6 +413,11 @@ def query_cluster(
             pod["recommendation"]["memory"] * cost_per_memory,
         )
         pod["slack_cost"] = max(min(pod["cost"] - usage_cost, pod["cost"]), 0)
+        if "node" in pod.keys():
+            node_name = pod["node"]
+            if node_name and node_name in nodes:
+                node = nodes[node_name]
+                node["slack_cost"] += pod["slack_cost"]
         cluster_slack_cost += pod["slack_cost"]
 
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)

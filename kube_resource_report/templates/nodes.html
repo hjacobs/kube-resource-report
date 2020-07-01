@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Nodes{% endblock %}
+{% block content %}
+
+<h1 class="title">All Nodes
+    <span class="links">
+        <a href="./nodes.tsv"
+           title="Download Nodes as Tab-Separated-Values (TSV)"
+           class="button is-light">
+            <span class="icon"><i class="fas fa-file-download"></i></span>
+        </a>
+    </span>
+</h1>
+
+<table class="table is-striped is-hoverable is-fullwidth" data-sortable>
+    <thead>
+        <tr>
+            <th>Cluster</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Instance Type</th>
+            <th><abbr title="Spot Instance?">S?</abbr></th>
+            <th>Version</th>
+            <th><abbr title="CPU Capacity">CC</abbr></th>
+            <th><abbr title="Memory Capacity">MC</abbr></th>
+            <th>CPU</th>
+            <th>Memory (GiB)</th>
+            <th>Cost</th>
+            {% if links['node']: %}
+            <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for node_id, node in nodes.items()|sort: %}
+            <tr>
+                <td><a href="./cluster-{{ node.cluster }}.html">{{ node.cluster_name }}</a></td>
+                <td><a href="./node-{{ node_id }}.html">{{ node.node_name }}</a></td>
+                <td>{{ node.role }}</td>
+                <td>{{ node.instance_type }}</td>
+                <td>{% if node.spot: %}
+                    <span class="icon"><i class="fas fa-percentage has-text-success"></i></span>
+                    {% endif %}
+                </td>
+                <td>{{ node.kubelet_version }}</td>
+                <td class="has-text-right">{{ node.capacity.cpu|round(1) }}</td>
+                <td class="has-text-right">{{ node.capacity.memory|filesizeformat(True) }}</td>
+
+                <td style="font-size: 0.75rem" data-value="{{ node.usage.cpu }}">
+                    <div class="resource-labels">
+                        <span>{{ node.usage.cpu|round(1) }}</span>
+                        <span>{{ node.requests.cpu|round(1) }}</span>
+                        <span>{{ node.allocatable.cpu|round(1) }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
+                        <progress class="progress" value="{{ node.requests.cpu }}" max="{{ node.allocatable.cpu }}"></progress>
+                        <progress class="progress is-primary" value="{{ node.usage.cpu }}" max="{{ node.allocatable.cpu }}"></progress>
+                    </div>
+                </td>
+                <td style="font-size: 0.75rem" data-value="{{ node.usage.memory }}">
+                    <div class="resource-labels">
+                        <span>{{ node.usage.memory|memory('GiB') }}</span>
+                        <span>{{ node.requests.memory|memory('GiB') }}</span>
+                        <span>{{ node.allocatable.memory|memory('GiB') }}</span>
+                    </div>
+                    <div class="resource-bar" title="Usage in green; requested in black; allocatable in grey.">
+                        <progress class="progress" value="{{ node.requests.memory }}" max="{{ node.allocatable.memory }}"></progress>
+                        <progress class="progress is-primary" value="{{ node.usage.memory }}" max="{{ node.allocatable.memory }}"></progress>
+                    </div>
+                </td>
+                <td class="has-text-right">{{ node.cost|money }}</td>
+
+                {% if links['node']: %}
+                <td class="links">
+                    <div class="buttons has-addons">
+                        {% for link in links['node']: %}
+                        <a href="{{ link.href.format(cluster=summary.cluster.name, name=node_name) }}"
+                           title="{{ link.title.format(cluster=summary.cluster.name, name=node_name) }}"
+                           class="button is-small">
+                            <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {%endfor %}
+    </tbody>
+
+</table>
+{% endblock %}
