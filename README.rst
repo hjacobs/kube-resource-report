@@ -64,6 +64,8 @@ The output will be HTML files plus multiple tab-separated files:
     List of potential savings (CPU/memory slack).
 ``output/ingresses.tsv``
     List of ingress host rules (informational).
+``output/routegroups.tsv``
+    List of routegroups host rules (informational).
 ``output/pods.tsv``
     List of all pods and their CPU/memory requests, usage, and recommendations.
 
@@ -177,6 +179,10 @@ with the links per entity. Example file:
     ingress:
     - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/namespaces/{namespace}/ingresses/{name}"
       title: "View ingress {name} in Kubernetes Web View"
+      icon: external-link-alt
+    routegroups:
+    - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/namespaces/{namespace}/routegroups/{name}"
+      title: "View routegroup {name} in Kubernetes Web View"
       icon: external-link-alt
     node:
     - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/nodes/{name}"
