@@ -775,7 +775,7 @@ def write_json_files(
                                 "host": row["host"],
                                 "status": row["status"],
                             }
-                        for row in ingresses_by_application[app_id]
+                            for row in ingresses_by_application[app_id]
                         ],
                         "routegroups": [
                             {
@@ -784,7 +784,7 @@ def write_json_files(
                                 "name": row["name"],
                                 "hosts": row["hosts"],
                             }
-                        for row in routegroups_by_application[app_id]
+                            for row in routegroups_by_application[app_id]
                         ],
                         "pods": [
                             {
@@ -793,7 +793,7 @@ def write_json_files(
                                 "namespace": row["namespace"],
                                 "name": row["name"],
                             }
-                        for row in pods_by_application[app_id]
+                            for row in pods_by_application[app_id]
                         ],
                     },
                     fd,
@@ -811,7 +811,7 @@ def write_json_files(
                                 "host": row["host"],
                                 "status": row["status"],
                             }
-                        for row in ingresses_by_application[app_id]
+                            for row in ingresses_by_application[app_id]
                         ],
                         "pods": [
                             {
@@ -820,12 +820,13 @@ def write_json_files(
                                 "namespace": row["namespace"],
                                 "name": row["name"],
                             }
-                        for row in pods_by_application[app_id]
+                            for row in pods_by_application[app_id]
                         ],
                     },
                     fd,
                     default=json_default,
                 )
+
 
 def write_html_files(
     out,

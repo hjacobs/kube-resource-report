@@ -22,7 +22,6 @@ from requests_futures.sessions import FuturesSession
 
 from .recommender import Recommender
 from .routegroup import RouteGroup
-
 from .utils import HOURS_PER_MONTH
 from .utils import MIN_CPU_USER_REQUESTS
 from .utils import MIN_MEMORY_USER_REQUESTS
