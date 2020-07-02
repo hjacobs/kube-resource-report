@@ -74,8 +74,8 @@
                 <td class="links">
                     <div class="buttons has-addons">
                         {% for link in links['node']: %}
-                        <a href="{{ link.href.format(cluster=summary.cluster.name, name=node_name) }}"
-                           title="{{ link.title.format(cluster=summary.cluster.name, name=node_name) }}"
+                        <a href="{{ link.href.format(cluster=node.cluster_name, name=node.node_name) }}"
+                           title="{{ link.title.format(cluster=node.cluster_name, name=node.node_name) }}"
                            class="button is-small">
                             <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
                         </a>
