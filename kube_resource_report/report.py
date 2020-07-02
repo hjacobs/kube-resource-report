@@ -62,6 +62,7 @@ def get_cluster_summaries(
     alpha_ema: float,
     prev_cluster_summaries: dict,
     no_ingress_status: bool,
+    enable_routegroups: bool,
     node_labels: list,
     node_exclude_labels: list,
     data_path: Path,
@@ -103,6 +104,7 @@ def get_cluster_summaries(
                         alpha_ema,
                         prev_cluster_summaries.get(cluster.id, {}),
                         no_ingress_status,
+                        enable_routegroups,
                         node_labels,
                         node_exclude_labels,
                         cluster_data_path,
@@ -230,6 +232,7 @@ def generate_report(
     application_registry,
     use_cache,
     no_ingress_status,
+    enable_routegroups,
     output_dir,
     data_path,
     system_namespaces,
@@ -289,6 +292,7 @@ def generate_report(
             alpha_ema,
             cluster_summaries,
             no_ingress_status,
+            enable_routegroups,
             node_labels,
             node_exclude_labels,
             data_path,
@@ -299,6 +303,7 @@ def generate_report(
 
     applications: Dict[str, dict] = {}
     namespace_usage: Dict[tuple, dict] = {}
+    nodes: Dict[str, dict] = {}
 
     for cluster_id, summary in sorted(cluster_summaries.items()):
         for _k, pod in summary["pods"].items():
@@ -382,6 +387,12 @@ def generate_report(
             namespace["cluster"] = summary["cluster"]
             namespace_usage[(ns_pod[0], cluster_id)] = namespace
 
+        for node_name, node in summary["nodes"].items():
+            node["node_name"] = node_name
+            node["cluster"] = cluster_id
+            node["cluster_name"] = cluster_summaries[cluster_id]["cluster"].name
+            nodes[f"{cluster_id}.{node_name}"] = node
+
     if application_registry:
         resolve_application_ids(applications, application_registry)
 
@@ -429,12 +440,14 @@ def generate_report(
         start,
         notifications,
         cluster_summaries,
+        nodes,
         namespace_usage,
         applications,
         teams,
         node_labels,
         links,
         alpha_ema,
+        enable_routegroups,
     )
 
     return cluster_summaries
@@ -452,6 +465,7 @@ def write_loading_page(out):
 def write_tsv_files(
     out: OutputManager,
     cluster_summaries,
+    nodes,
     namespace_usage,
     applications,
     teams,
@@ -497,6 +511,43 @@ def write_tsv_files(
                 ]
             fields += [round(summary["cost"], 2)]
             fields += [round(summary["slack_cost"], 2)]
+            writer.writerow(fields)
+
+    with out.open("nodes.tsv") as csvfile:
+        writer = csv.writer(csvfile, delimiter="\t")
+        headers = [
+            "Cluster ID",
+            "Node",
+            "Role",
+            "Instance Type",
+            "Spot Instance",
+            "Kubelet Version",
+        ]
+        for x in resource_categories:
+            headers.extend([f"CPU {x.capitalize()}", f"Memory {x.capitalize()} [MiB]"])
+        headers.append("Cost [USD]")
+        writer.writerow(headers)
+        for _, node in sorted(nodes.items()):
+            instance_type = set()
+            kubelet_version = set()
+            if node["role"] in node_labels:
+                instance_type.add(node["instance_type"])
+            kubelet_version.add(node["kubelet_version"])
+
+            fields = [
+                node["cluster"],
+                node["node_name"],
+                node["role"],
+                node["instance_type"],
+                "Yes" if node["spot"] else "No",
+                node["kubelet_version"],
+            ]
+            for x in resource_categories:
+                fields += [
+                    round(node[x]["cpu"], 2),
+                    int(node[x]["memory"] / ONE_MEBI),
+                ]
+            fields += [round(node["cost"], 2)]
             writer.writerow(fields)
 
     with out.open("ingresses.tsv") as csvfile:
@@ -711,6 +762,7 @@ def write_json_files(
     applications,
     teams,
     ingresses_by_application,
+    routegroups_by_application,
     pods_by_application,
 ):
     with out.open("metrics.json") as fd:
@@ -758,32 +810,69 @@ def write_json_files(
     for app_id, application in applications.items():
         file_name = f"application-{app_id}.json"
         with out.open(file_name) as fd:
-            json.dump(
-                {
-                    **application,
-                    "ingresses": [
-                        {
-                            "cluster": row["cluster_id"],
-                            "namespace": row["namespace"],
-                            "name": row["name"],
-                            "host": row["host"],
-                            "status": row["status"],
-                        }
-                        for row in ingresses_by_application[app_id]
-                    ],
-                    "pods": [
-                        {
-                            **row["pod"],
-                            "cluster": row["cluster_id"],
-                            "namespace": row["namespace"],
-                            "name": row["name"],
-                        }
-                        for row in pods_by_application[app_id]
-                    ],
-                },
-                fd,
-                default=json_default,
-            )
+            if routegroups_by_application:
+                json.dump(
+                    {
+                        **application,
+                        "ingresses": [
+                            {
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                                "host": row["host"],
+                                "status": row["status"],
+                            }
+                            for row in ingresses_by_application[app_id]
+                        ],
+                        "routegroups": [
+                            {
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                                "hosts": row["hosts"],
+                            }
+                            for row in routegroups_by_application[app_id]
+                        ],
+                        "pods": [
+                            {
+                                **row["pod"],
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                            }
+                            for row in pods_by_application[app_id]
+                        ],
+                    },
+                    fd,
+                    default=json_default,
+                )
+            else:
+                json.dump(
+                    {
+                        **application,
+                        "ingresses": [
+                            {
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                                "host": row["host"],
+                                "status": row["status"],
+                            }
+                            for row in ingresses_by_application[app_id]
+                        ],
+                        "pods": [
+                            {
+                                **row["pod"],
+                                "cluster": row["cluster_id"],
+                                "namespace": row["namespace"],
+                                "name": row["name"],
+                            }
+                            for row in pods_by_application[app_id]
+                        ],
+                    },
+                    fd,
+                    default=json_default,
+                )
 
 
 def write_html_files(
@@ -791,20 +880,31 @@ def write_html_files(
     context,
     alpha_ema,
     cluster_summaries,
+    nodes,
+    pods_by_node,
     teams,
     applications,
     ingresses_by_application,
+    routegroups_by_application,
     pods_by_application,
 ):
+    context["enable_routegroups"] = False
+    if routegroups_by_application:
+        context["enable_routegroups"] = True
+
     for page in [
         "index",
         "clusters",
+        "nodes",
         "ingresses",
+        "routegroups",
         "teams",
         "applications",
         "namespaces",
         "pods",
     ]:
+        if page == "routegroups" and not context["enable_routegroups"]:
+            continue
         file_name = f"{page}.html"
         context["page"] = page
         context["alpha_ema"] = alpha_ema
@@ -817,6 +917,15 @@ def write_html_files(
         context["cluster_id"] = cluster_id
         context["summary"] = summary
         out.render_template("cluster.html", context, file_name)
+
+    for node_id, node in nodes.items():
+        page = "nodes"
+        file_name = f"node-{node_id}.html"
+        context["page"] = page
+        context["cluster_id"] = cluster_id
+        context["node"] = node
+        context["pods"] = pods_by_node[node_id]
+        out.render_template("node.html", context, file_name)
 
     for team_id, team in teams.items():
         page = "teams"
@@ -832,6 +941,8 @@ def write_html_files(
         context["page"] = page
         context["application"] = application
         context["ingresses_by_application"] = ingresses_by_application
+        if context["enable_routegroups"]:
+            context["routegroups_by_application"] = routegroups_by_application
         context["pods_by_application"] = pods_by_application
         out.render_template("application.html", context, file_name)
 
@@ -841,15 +952,17 @@ def write_report(
     start,
     notifications,
     cluster_summaries,
+    nodes,
     namespace_usage,
     applications,
     teams,
     node_labels,
     links,
     alpha_ema: float,
+    enable_routegroups: bool,
 ):
     write_tsv_files(
-        out, cluster_summaries, namespace_usage, applications, teams, node_labels
+        out, cluster_summaries, nodes, namespace_usage, applications, teams, node_labels
     )
 
     total_allocatable: dict = collections.defaultdict(int)
@@ -876,6 +989,22 @@ def write_report(
                 }
             )
 
+    routegroups_by_application: Dict[str, list] = collections.defaultdict(list)
+    if enable_routegroups:
+        for cluster_id, summary in cluster_summaries.items():
+            for rg in summary["routegroups"]:
+                routegroups_by_application[rg[2]].append(
+                    {
+                        "cluster_id": cluster_id,
+                        "cluster_summary": summary,
+                        "namespace": rg[0],
+                        "name": rg[1],
+                        "host": rg[3],
+                    }
+                )
+    else:
+        routegroups_by_application = collections.defaultdict(list)
+
     pods_by_application: Dict[str, list] = collections.defaultdict(list)
     for cluster_id, summary in cluster_summaries.items():
         for namespace_name, pod in summary["pods"].items():
@@ -890,6 +1019,24 @@ def write_report(
                 }
             )
 
+    pods_by_node: Dict[str, list] = collections.defaultdict(list)
+    for cluster_id, summary in cluster_summaries.items():
+        for namespace_name, pod in summary["pods"].items():
+            namespace, name = namespace_name
+            if "node" not in pod.keys():
+                continue
+            node_name = pod["node"]
+            node_id = f"{cluster_id}.{node_name}"
+            pods_by_node[node_id].append(
+                {
+                    "cluster_id": cluster_id,
+                    "node": nodes[node_id],
+                    "namespace": namespace,
+                    "name": name,
+                    "pod": pod,
+                }
+            )
+
     total_cost = sum([s["cost"] for s in cluster_summaries.values()])
     total_hourly_cost = total_cost / HOURS_PER_MONTH
     now = datetime.datetime.utcnow()
@@ -897,6 +1044,7 @@ def write_report(
         "links": links,
         "notifications": notifications,
         "cluster_summaries": cluster_summaries,
+        "nodes": nodes,
         "teams": teams,
         "applications": applications,
         "namespace_usage": namespace_usage,
@@ -934,6 +1082,7 @@ def write_report(
         applications,
         teams,
         ingresses_by_application,
+        routegroups_by_application,
         pods_by_application,
     )
 
@@ -942,9 +1091,12 @@ def write_report(
         context,
         alpha_ema,
         cluster_summaries,
+        nodes,
+        pods_by_node,
         teams,
         applications,
         ingresses_by_application,
+        routegroups_by_application,
         pods_by_application,
     )
 

@@ -21,6 +21,7 @@ from pykube import Service
 from requests_futures.sessions import FuturesSession
 
 from .recommender import Recommender
+from .routegroup import RouteGroup
 from .utils import HOURS_PER_MONTH
 from .utils import MIN_CPU_USER_REQUESTS
 from .utils import MIN_MEMORY_USER_REQUESTS
@@ -87,44 +88,87 @@ def get_team_from_labels(labels):
     return ""
 
 
-def find_backend_application(client: pykube.HTTPClient, ingress: Ingress, rule):
+def find_ingress_backend_application(client: pykube.HTTPClient, ingress: Ingress, rule):
     """
     Find the application ID for a given Ingress object.
 
     The Ingress object might not have a "application" label, so let's try to find the application by looking at the backend service and its pods
     """
-    paths = rule.get("http", {}).get("paths", [])
     selectors = []
+    paths = rule.get("http", {}).get("paths", [])
     for path in paths:
         service_name = path.get("backend", {}).get("serviceName")
         if service_name:
-            try:
-                service = Service.objects(client, namespace=ingress.namespace).get(
-                    name=service_name
-                )
-            except ObjectDoesNotExist:
-                logger.debug(
-                    f"Referenced service does not exist: {ingress.namespace}/{service_name}"
-                )
-            else:
-                selector = service.obj["spec"].get("selector", {})
-                selectors.append(selector)
-                application = get_application_from_labels(selector)
-                if application:
-                    return application
-    # we still haven't found the application, let's look up pods by label selectors
-    for selector in selectors:
-        application_candidates = set()
-        for pod in Pod.objects(client).filter(
-            namespace=ingress.namespace, selector=selector
-        ):
-            application = get_application_from_labels(pod.labels)
+            application, selector = get_application_label_from_service(
+                client, ingress.namespace, service_name
+            )
             if application:
-                application_candidates.add(application)
+                return application
+            selectors.append(selector)
 
-        if len(application_candidates) == 1:
-            return application_candidates.pop()
+    # we still haven't found the application, let's look up pods by label selectors
+    return find_application_by_selector(client, ingress.namespace, selectors)
+
+
+def find_routegroup_backend_application(
+    client: pykube.HTTPClient, rg: RouteGroup, backend
+):
+    """
+    Find the application ID for a given RouteGroup object.
+
+    The RouteGroup object might not have a "application" label, so let's try to find the application by looking at the backend service and its pods
+    """
+    if backend["type"] != "service":
+        return ""
+
+    selectors = []
+    service_name = backend["serviceName"]
+    if service_name:
+        application, selector = get_application_label_from_service(
+            client, rg.namespace, service_name
+        )
+        if application:
+            return application
+        selectors.append(selector)
+
+    # we still haven't found the application, let's look up pods by label selectors
+    return find_application_by_selector(client, rg.namespace, selectors)
+
+
+def find_application_by_selector(client: pykube.HTTPClient, namespace, selectors):
+    for selector in selectors:
+        application = get_application_label_from_pods(client, namespace, selector)
+        if application:
+            return application
     return ""
+
+
+def get_application_label_from_pods(client: pykube.HTTPClient, namespace, selector):
+    application_candidates = set()
+    for pod in Pod.objects(client).filter(namespace=namespace, selector=selector):
+        application = get_application_from_labels(pod.labels)
+        if application:
+            application_candidates.add(application)
+
+    if len(application_candidates) == 1:
+        return application_candidates.pop()
+    return ""
+
+
+def get_application_label_from_service(
+    client: pykube.HTTPClient, namespace, service_name
+):
+    try:
+        service = Service.objects(client, namespace=namespace).get(name=service_name)
+    except ObjectDoesNotExist:
+        logger.debug(f"Referenced service does not exist: {namespace}/{service_name}")
+        return None, None
+    else:
+        selector = service.obj["spec"].get("selector", {})
+        application = get_application_from_labels(selector)
+        if application:
+            return application, []
+        return "", selector
 
 
 def convert(lst):
@@ -172,6 +216,8 @@ def map_node(_node: Node):
     node["allocatable"] = {}
     node["requests"] = new_resources()
     node["usage"] = new_resources()
+    node["pods"] = {}
+    node["slack_cost"] = 0
 
     status = _node.obj["status"]
     for k, v in status.get("capacity", {}).items():
@@ -242,6 +288,7 @@ def query_cluster(
     alpha_ema,
     prev_cluster_summaries,
     no_ingress_status,
+    enable_routegroups,
     node_labels,
     node_exclude_labels,
     data_path: Path,
@@ -312,6 +359,7 @@ def query_cluster(
                 user_requests[k] += v
         node_name = pod.obj["spec"].get("nodeName")
         if node_name and node_name in nodes:
+            pod_["node"] = node_name
             for k in ("cpu", "memory"):
                 nodes[node_name]["requests"][k] += pod_["requests"].get(k, 0)
         found_vpa = False
@@ -369,6 +417,7 @@ def query_cluster(
             / max(user_requests["memory"] / ONE_GIBI, MIN_MEMORY_USER_REQUESTS),
         },
         "ingresses": [],
+        "routegroups": [],
     }
 
     metrics.get_pod_usage(
@@ -391,6 +440,11 @@ def query_cluster(
             pod["recommendation"]["memory"] * cost_per_memory,
         )
         pod["slack_cost"] = max(min(pod["cost"] - usage_cost, pod["cost"]), 0)
+        if "node" in pod.keys():
+            node_name = pod["node"]
+            if node_name and node_name in nodes:
+                node = nodes[node_name]
+                node["slack_cost"] += pod["slack_cost"]
         cluster_slack_cost += pod["slack_cost"]
 
     cluster_summary["slack_cost"] = min(cluster_cost, cluster_slack_cost)
@@ -405,7 +459,7 @@ def query_cluster(
                 host = rule.get("host", "")
                 if not application:
                     # find the application by getting labels from pods
-                    backend_application = find_backend_application(
+                    backend_application = find_ingress_backend_application(
                         cluster.client, _ingress, rule
                     )
                 else:
@@ -439,5 +493,27 @@ def query_cluster(
                     status = 999
                 for ingress in ingresses:
                     ingress[4] = status
+
+    if enable_routegroups:
+        for _rg in RouteGroup.objects(cluster.client, namespace=pykube.all):
+            application = get_application_from_labels(_rg.labels)
+            hosts = _rg.obj["spec"]["hosts"]
+
+            for backend in _rg.obj["spec"]["backends"]:
+                if not application:
+                    # find the application by getting labels from pods
+                    backend_application = find_routegroup_backend_application(
+                        cluster.client, _rg, backend
+                    )
+                else:
+                    backend_application = None
+
+                routegroup = [
+                    _rg.namespace,
+                    _rg.name,
+                    application or backend_application,
+                    hosts,
+                ]
+                cluster_summary["routegroups"].append(routegroup)
 
     return cluster_summary

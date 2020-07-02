@@ -83,7 +83,7 @@
         <tbody>
             {% for node_name, node in summary.nodes.items()|sort: %}
             <tr>
-                <td>{{ node_name }}</td>
+                <td><a href="./node-{{ summary.cluster.id }}.{{ node_name }}.html">{{ node_name }}</a></td>
                 <td>{{ node.role }}</td>
                 <td>{{ node.instance_type }}</td>
                 <td>{% if node.spot: %}

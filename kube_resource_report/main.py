@@ -71,6 +71,11 @@ def get_parser():
         help="Do not check Ingress HTTP status",
     )
     parser.add_argument(
+        "--enable-routegroups",
+        action="store_true",
+        help="Do check RouteGroups and show in report",
+    )
+    parser.add_argument(
         "--system-namespaces",
         type=comma_separated_values,
         metavar="NS1,NS2",
@@ -198,6 +203,7 @@ def main():
             args.application_registry,
             args.use_cache,
             args.no_ingress_status,
+            args.enable_routegroups,
             args.output_dir,
             data_path,
             set(args.system_namespaces),

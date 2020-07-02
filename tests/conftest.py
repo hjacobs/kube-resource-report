@@ -107,7 +107,7 @@ def fake_responses():
                 },
             ]
         },
-        ("extensions/v1beta1", "ingresses"): {
+        ("networking.k8s.io/v1beta1", "ingresses"): {
             "items": [
                 {
                     "metadata": {"name": "ing-1", "namespace": "default"},
@@ -116,6 +116,19 @@ def fake_responses():
                             # no "host" field!
                             {"http": {}}
                         ]
+                    },
+                }
+            ]
+        },
+        ("zalando.org/v1", "routegroups"): {
+            "items": [
+                {
+                    "metadata": {"name": "rg-1", "namespace": "default"},
+                    "spec": {
+                        "backends": [],
+                        "default_backends": [],
+                        "hosts": [],
+                        "routes": [],
                     },
                 }
             ]

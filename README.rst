@@ -64,6 +64,8 @@ The output will be HTML files plus multiple tab-separated files:
     List of potential savings (CPU/memory slack).
 ``output/ingresses.tsv``
     List of ingress host rules (informational).
+``output/routegroups.tsv``
+    List of routegroups host rules (informational).
 ``output/pods.tsv``
     List of all pods and their CPU/memory requests, usage, and recommendations.
 
@@ -122,7 +124,7 @@ Running as Docker container
 
     $ kubectl proxy & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output
-    $ docker run --rm -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:20.4.5 /output
+    $ docker run --rm -it --user=$(id -u) --net=host -v $(pwd)/output:/output hjacobs/kube-resource-report:20.7.3 /output
 
 **For macOS**:
 
@@ -130,7 +132,7 @@ Running as Docker container
 
     $ kubectl proxy --accept-hosts '.*' & # start proxy to your cluster (e.g. Minikube)
     $ # run kube-resource-report and generate static HTML to ./output
-    $ docker run --rm -it -e CLUSTERS=http://docker.for.mac.localhost:8001 --user=$(id -u) -v $(pwd)/output:/output hjacobs/kube-resource-report:20.4.5 /output
+    $ docker run --rm -it -e CLUSTERS=http://docker.for.mac.localhost:8001 --user=$(id -u) -v $(pwd)/output:/output hjacobs/kube-resource-report:20.7.3 /output
 
 --------------------
 Application Registry
@@ -178,6 +180,10 @@ with the links per entity. Example file:
     - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/namespaces/{namespace}/ingresses/{name}"
       title: "View ingress {name} in Kubernetes Web View"
       icon: external-link-alt
+    routegroups:
+    - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/namespaces/{namespace}/routegroups/{name}"
+      title: "View routegroup {name} in Kubernetes Web View"
+      icon: external-link-alt
     node:
     - href: "https://kube-web-view.mycorp.example.org/clusters/{cluster}/nodes/{name}"
       title: "View node {name} in Kubernetes Web View"
@@ -211,7 +217,7 @@ Reference the functions via ``{module-name}.{function-name}``, e.g. ``--map-pod-
 Settings
 --------
 
-You can run ``docker run --rm hjacobs/kube-resource-report:20.4.5 --help`` to find out information.
+You can run ``docker run --rm hjacobs/kube-resource-report:20.7.3 --help`` to find out information.
 
 Besides this, you can also pass environment variables:
 
