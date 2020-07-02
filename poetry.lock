@@ -402,7 +402,7 @@ description = "Python client library for Kubernetes"
 name = "pykube-ng"
 optional = false
 python-versions = ">=3.6"
-version = "20.5.0"
+version = "20.7.1"
 
 [package.dependencies]
 pyyaml = "*"
@@ -876,8 +876,8 @@ pyflakes = [
     {file = "pyflakes-2.2.0.tar.gz", hash = "sha256:35b2d75ee967ea93b55750aa9edbbf72813e06a66ba54438df2cfac9e3c27fc8"},
 ]
 pykube-ng = [
-    {file = "pykube-ng-20.5.0.tar.gz", hash = "sha256:f0dea2b53eb33d3c5a5504388b3b3d4b63f27082f2b42588d415105e9e9633d9"},
-    {file = "pykube_ng-20.5.0-py3-none-any.whl", hash = "sha256:09f4059440ff12e1a850e00223eb7265192553257c08c79aa75c843c2ddff58d"},
+    {file = "pykube-ng-20.7.1.tar.gz", hash = "sha256:61f6f44e5f845288a69ffc0c117b4a84680aa4469e174821bc1b5722cecd0396"},
+    {file = "pykube_ng-20.7.1-py3-none-any.whl", hash = "sha256:784d802808d8f30947f0b2e9930be6ddfdbfe1d95b383338b674a755f0095461"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
