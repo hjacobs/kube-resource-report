@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kube_resource_report"
-version = "20.7.1"
+version = "20.7.2"
 description = "Report Kubernetes cluster and pod resource requests vs usage and generate static HTML"
 authors = ["Henning Jacobs <henning@jacobs1.de>"]
 
