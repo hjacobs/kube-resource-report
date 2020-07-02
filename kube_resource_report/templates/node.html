@@ -49,10 +49,11 @@
     <table class="table is-striped is-hoverable is-fullwidth" data-sortable>
         <thead>
             <tr>
-                <th>Cluster</th>
                 <th>Namespace</th>
-                <th>Component</th>
                 <th>Name</th>
+                <th>Application</th>
+                <th>Component</th>
+                <th>Team</th>
                 <th><abbr title="Container Images">Cont.</abbr></th>
                 <th><abbr title="CPU Requests">CR</abbr></th>
                 <th><abbr title="Memory Requests">MR</abbr></th>
@@ -68,10 +69,11 @@
         <tbody>
             {% for row in pods: %}
             <tr>
-                <td><a href="./cluster-{{ row.cluster_id }}.html">{{ summary.cluster.name }}</a></td>
                 <td>{{ row.namespace }}</td>
-                <td>{{ row.pod.component }}</td>
                 <td>{{ row.name }}</td>
+                <td>{{ row.pod.application }}</td>
+                <td>{{ row.pod.component }}</td>
+                <td><a href="team-{{ row.pod.team }}.html">{{ row.pod.team }}</a></td>
                 <td title="{{ row.pod.container_images|join(', ') }}">{{ row.pod.container_images|count }}</td>
                 <td>{{ row.pod.requests.cpu|round(3) }}</td>
                 <td data-value="{{ row.pod.requests.memory }}">{{ row.pod.requests.memory|filesizeformat(True) }}</td>
