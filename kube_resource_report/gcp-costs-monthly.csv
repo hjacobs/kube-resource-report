@@ -8,6 +8,7 @@ asia-northeast3,custom-per-cpu-core,29.6714
 asia-south1,custom-per-cpu-core,27.7342
 asia-southeast,custom-per-cpu-core,28.4866
 asia-southeast1,custom-per-cpu-core,28.4866
+asia-southeast2,custom-per-cpu-core,31.0503
 australia-southeast1,custom-per-cpu-core,32.7848
 europe-north1,custom-per-cpu-core,25.4229
 europe-west1,custom-per-cpu-core,26.6552
@@ -34,6 +35,7 @@ asia-northeast3,custom-preemptible-per-cpu-core,6.4503
 asia-south1,custom-preemptible-per-cpu-core,4.8615
 asia-southeast,custom-preemptible-per-cpu-core,5.6979
 asia-southeast1,custom-preemptible-per-cpu-core,5.6979
+asia-southeast2,custom-preemptible-per-cpu-core,6.2107
 australia-southeast1,custom-preemptible-per-cpu-core,6.5599
 europe-north1,custom-preemptible-per-cpu-core,5.3473
 europe-west1,custom-preemptible-per-cpu-core,5.3473
@@ -60,6 +62,7 @@ asia-northeast3,custom-per-memory-gib,3.9578
 asia-south1,custom-per-memory-gib,3.7168
 asia-southeast,custom-per-memory-gib,3.8176
 asia-southeast1,custom-per-memory-gib,3.8176
+asia-southeast2,custom-per-memory-gib,4.1612
 australia-southeast1,custom-per-memory-gib,4.3903
 europe-north1,custom-per-memory-gib,3.4071
 europe-west1,custom-per-memory-gib,3.5736
@@ -86,6 +89,7 @@ asia-northeast3,custom-preemptible-per-memory-gib,0.8605
 asia-south1,custom-preemptible-per-memory-gib,0.6516
 asia-southeast,custom-preemptible-per-memory-gib,0.7670
 asia-southeast1,custom-preemptible-per-memory-gib,0.7670
+asia-southeast2,custom-preemptible-per-memory-gib,0.8361
 australia-southeast1,custom-preemptible-per-memory-gib,0.8766
 europe-north1,custom-preemptible-per-memory-gib,0.7166
 europe-west1,custom-preemptible-per-memory-gib,0.7166
@@ -110,6 +114,7 @@ asia-northeast1,e2-highcpu-16,371.2766,,
 asia-south1,e2-highcpu-16,347.2505,,
 asia-southeast,e2-highcpu-16,356.6593,,
 asia-southeast1,e2-highcpu-16,356.6593,,
+asia-southeast2,e2-highcpu-16,388.7587,,
 australia-southeast1,e2-highcpu-16,410.2269,,
 europe-north1,e2-highcpu-16,318.3154,,
 europe-west1,e2-highcpu-16,318.0232,,
@@ -133,6 +138,7 @@ asia-northeast1,e2-highcpu-16-preemptible,111.3793,,
 asia-south1,e2-highcpu-16-preemptible,104.1766,,
 asia-southeast,e2-highcpu-16-preemptible,106.9963,,
 asia-southeast1,e2-highcpu-16-preemptible,106.9963,,
+asia-southeast2,e2-highcpu-16-preemptible,116.6260,,
 australia-southeast1,e2-highcpu-16-preemptible,123.0673,,
 europe-north1,e2-highcpu-16-preemptible,95.4910,,
 europe-west1,e2-highcpu-16-preemptible,95.4106,,
@@ -156,6 +162,7 @@ asia-northeast1,e2-highcpu-2,46.4087,,
 asia-south1,e2-highcpu-2,43.4063,,
 asia-southeast,e2-highcpu-2,44.5824,,
 asia-southeast1,e2-highcpu-2,44.5824,,
+asia-southeast2,e2-highcpu-2,48.5948,,
 australia-southeast1,e2-highcpu-2,51.2811,,
 europe-north1,e2-highcpu-2,39.7903,,
 europe-west1,e2-highcpu-2,39.7538,,
@@ -179,6 +186,7 @@ asia-northeast1,e2-highcpu-2-preemptible,13.9233,,
 asia-south1,e2-highcpu-2-preemptible,13.0248,,
 asia-southeast,e2-highcpu-2-preemptible,13.3755,,
 asia-southeast1,e2-highcpu-2-preemptible,13.3755,,
+asia-southeast2,e2-highcpu-2-preemptible,14.5792,,
 australia-southeast1,e2-highcpu-2-preemptible,15.3843,,
 europe-north1,e2-highcpu-2-preemptible,11.9364,,
 europe-west1,e2-highcpu-2-preemptible,11.9291,,
@@ -202,6 +210,7 @@ asia-northeast1,e2-highcpu-4,92.8173,,
 asia-south1,e2-highcpu-4,86.8126,,
 asia-southeast,e2-highcpu-4,89.1648,,
 asia-southeast1,e2-highcpu-4,89.1648,,
+asia-southeast2,e2-highcpu-4,97.1897,,
 australia-southeast1,e2-highcpu-4,102.5549,,
 europe-north1,e2-highcpu-4,79.5807,,
 europe-west1,e2-highcpu-4,79.5076,,
@@ -225,6 +234,7 @@ asia-northeast1,e2-highcpu-4-preemptible,27.8467,,
 asia-south1,e2-highcpu-4-preemptible,26.0423,,
 asia-southeast,e2-highcpu-4-preemptible,26.7509,,
 asia-southeast1,e2-highcpu-4-preemptible,26.7509,,
+asia-southeast2,e2-highcpu-4-preemptible,29.1585,,
 australia-southeast1,e2-highcpu-4-preemptible,30.7687,,
 europe-north1,e2-highcpu-4-preemptible,23.8727,,
 europe-west1,e2-highcpu-4-preemptible,23.8508,,
@@ -248,6 +258,7 @@ asia-northeast1,e2-highcpu-8,185.6347,,
 asia-south1,e2-highcpu-8,173.6252,,
 asia-southeast,e2-highcpu-8,178.3297,,
 asia-southeast1,e2-highcpu-8,178.3297,,
+asia-southeast2,e2-highcpu-8,194.3793,,
 australia-southeast1,e2-highcpu-8,205.1171,,
 europe-north1,e2-highcpu-8,159.1540,,
 europe-west1,e2-highcpu-8,159.0152,,
@@ -271,6 +282,7 @@ asia-northeast1,e2-highcpu-8-preemptible,55.6933,,
 asia-south1,e2-highcpu-8-preemptible,52.0847,,
 asia-southeast,e2-highcpu-8-preemptible,53.5018,,
 asia-southeast1,e2-highcpu-8-preemptible,53.5018,,
+asia-southeast2,e2-highcpu-8-preemptible,58.3170,,
 australia-southeast1,e2-highcpu-8-preemptible,61.5373,,
 europe-north1,e2-highcpu-8-preemptible,47.7455,,
 europe-west1,e2-highcpu-8-preemptible,47.7017,,
@@ -294,6 +306,7 @@ asia-northeast1,e2-highmem-16,677.1954,,
 asia-south1,e2-highmem-16,634.4831,,
 asia-southeast,e2-highmem-16,651.6864,,
 asia-southeast1,e2-highmem-16,651.6864,,
+asia-southeast2,e2-highmem-16,710.3381,,
 australia-southeast1,e2-highmem-16,749.5661,,
 europe-north1,e2-highmem-16,581.6095,,
 europe-west1,e2-highmem-16,581.1493,,
@@ -317,6 +330,7 @@ asia-northeast1,e2-highmem-16-preemptible,203.1594,,
 asia-south1,e2-highmem-16-preemptible,190.3464,,
 asia-southeast,e2-highmem-16-preemptible,195.5037,,
 asia-southeast1,e2-highmem-16-preemptible,195.5037,,
+asia-southeast2,e2-highmem-16-preemptible,213.0990,,
 australia-southeast1,e2-highmem-16-preemptible,224.8698,,
 europe-north1,e2-highmem-16-preemptible,174.4799,,
 europe-west1,e2-highmem-16-preemptible,174.3484,,
@@ -340,6 +354,7 @@ asia-northeast1,e2-highmem-2,84.6503,,
 asia-south1,e2-highmem-2,79.3104,,
 asia-southeast,e2-highmem-2,81.4581,,
 asia-southeast1,e2-highmem-2,81.4581,,
+asia-southeast2,e2-highmem-2,88.7893,,
 australia-southeast1,e2-highmem-2,93.6939,,
 europe-north1,e2-highmem-2,72.6994,,
 europe-west1,e2-highmem-2,72.6409,,
@@ -363,6 +378,7 @@ asia-northeast1,e2-highmem-2-preemptible,25.3922,,
 asia-south1,e2-highmem-2-preemptible,23.7924,,
 asia-southeast,e2-highmem-2-preemptible,24.4352,,
 asia-southeast1,e2-highmem-2-preemptible,24.4352,,
+asia-southeast2,e2-highmem-2-preemptible,26.6344,,
 australia-southeast1,e2-highmem-2-preemptible,28.1096,,
 europe-north1,e2-highmem-2-preemptible,21.8127,,
 europe-west1,e2-highmem-2-preemptible,21.7908,,
@@ -386,6 +402,7 @@ asia-northeast1,e2-highmem-4,169.3007,,
 asia-south1,e2-highmem-4,158.6208,,
 asia-southeast,e2-highmem-4,162.9234,,
 asia-southeast1,e2-highmem-4,162.9234,,
+asia-southeast2,e2-highmem-4,177.5865,,
 australia-southeast1,e2-highmem-4,187.3952,,
 europe-north1,e2-highmem-4,145.4060,,
 europe-west1,e2-highmem-4,145.2891,,
@@ -409,6 +426,7 @@ asia-northeast1,e2-highmem-4-preemptible,50.7917,,
 asia-south1,e2-highmem-4-preemptible,47.5848,,
 asia-southeast,e2-highmem-4-preemptible,48.8778,,
 asia-southeast1,e2-highmem-4-preemptible,48.8778,,
+asia-southeast2,e2-highmem-4-preemptible,53.2768,,
 australia-southeast1,e2-highmem-4-preemptible,56.2193,,
 europe-north1,e2-highmem-4-preemptible,43.6182,,
 europe-west1,e2-highmem-4-preemptible,43.5889,,
@@ -432,6 +450,7 @@ asia-northeast1,e2-highmem-8,338.5941,,
 asia-south1,e2-highmem-8,317.2415,,
 asia-southeast,e2-highmem-8,325.8395,,
 asia-southeast1,e2-highmem-8,325.8395,,
+asia-southeast2,e2-highmem-8,355.1651,,
 australia-southeast1,e2-highmem-8,374.7830,,
 europe-north1,e2-highmem-8,290.8047,,
 europe-west1,e2-highmem-8,290.5783,,
@@ -455,6 +474,7 @@ asia-northeast1,e2-highmem-8-preemptible,101.5760,,
 asia-south1,e2-highmem-8-preemptible,95.1695,,
 asia-southeast,e2-highmem-8-preemptible,97.7555,,
 asia-southeast1,e2-highmem-8-preemptible,97.7555,,
+asia-southeast2,e2-highmem-8-preemptible,106.5535,,
 australia-southeast1,e2-highmem-8-preemptible,112.4386,,
 europe-north1,e2-highmem-8-preemptible,87.2436,,
 europe-west1,e2-highmem-8-preemptible,87.1706,,
@@ -478,6 +498,7 @@ asia-northeast1,e2-medium,31.3969,1,4
 asia-south1,e2-medium,29.3953,1,4
 asia-southeast,e2-medium,30.1916,1,4
 asia-southeast1,e2-medium,30.1916,1,4
+asia-southeast2,e2-medium,32.9088,1,4
 australia-southeast1,e2-medium,34.7280,1,4
 europe-north1,e2-medium,26.9481,1,4
 europe-west1,e2-medium,26.9262,1,4
@@ -501,6 +522,7 @@ asia-northeast1,e2-medium-preemptible,9.4161,1,4
 asia-south1,e2-medium-preemptible,8.8171,1,4
 asia-southeast,e2-medium-preemptible,9.0582,1,4
 asia-southeast1,e2-medium-preemptible,9.0582,1,4
+asia-southeast2,e2-medium-preemptible,9.8734,1,4
 australia-southeast1,e2-medium-preemptible,10.4169,1,4
 europe-north1,e2-medium-preemptible,8.0866,1,4
 europe-west1,e2-medium-preemptible,8.0793,1,4
@@ -524,6 +546,7 @@ asia-northeast1,e2-micro,7.8529,0.25,1
 asia-south1,e2-micro,7.3488,0.25,1
 asia-southeast,e2-micro,7.5461,0.25,1
 asia-southeast1,e2-micro,7.5461,0.25,1
+asia-southeast2,e2-micro,8.2252,0.25,1
 australia-southeast1,e2-micro,8.6856,0.25,1
 europe-north1,e2-micro,6.7352,0.25,1
 europe-west1,e2-micro,6.7279,0.25,1
@@ -547,6 +570,7 @@ asia-northeast1,e2-micro-preemptible,2.3522,0.25,1
 asia-south1,e2-micro-preemptible,2.2061,0.25,1
 asia-southeast,e2-micro-preemptible,2.2645,0.25,1
 asia-southeast1,e2-micro-preemptible,2.2645,0.25,1
+asia-southeast2,e2-micro-preemptible,2.4684,0.25,1
 australia-southeast1,e2-micro-preemptible,2.6079,0.25,1
 europe-north1,e2-micro-preemptible,2.0235,0.25,1
 europe-west1,e2-micro-preemptible,2.0162,0.25,1
@@ -570,6 +594,7 @@ asia-northeast1,e2-small,15.6984,0.5,2
 asia-south1,e2-small,14.6977,0.5,2
 asia-southeast,e2-small,15.0994,0.5,2
 asia-southeast1,e2-small,15.0994,0.5,2
+asia-southeast2,e2-small,16.4584,0.5,2
 australia-southeast1,e2-small,17.3640,0.5,2
 europe-north1,e2-small,13.4704,0.5,2
 europe-west1,e2-small,13.4631,0.5,2
@@ -593,6 +618,7 @@ asia-northeast1,e2-small-preemptible,4.7117,0.5,2
 asia-south1,e2-small-preemptible,4.4122,0.5,2
 asia-southeast,e2-small-preemptible,4.5291,0.5,2
 asia-southeast1,e2-small-preemptible,4.5291,0.5,2
+asia-southeast2,e2-small-preemptible,4.9367,0.5,2
 australia-southeast1,e2-small-preemptible,5.2085,0.5,2
 europe-north1,e2-small-preemptible,4.0397,0.5,2
 europe-west1,e2-small-preemptible,4.0397,0.5,2
@@ -616,6 +642,7 @@ asia-northeast1,e2-standard-16,502.3868,,
 asia-south1,e2-standard-16,470.3470,,
 asia-southeast,e2-standard-16,483.1016,,
 asia-southeast1,e2-standard-16,483.1016,,
+asia-southeast2,e2-standard-16,526.5807,,
 australia-southeast1,e2-standard-16,555.6621,,
 europe-north1,e2-standard-16,431.1557,,
 europe-west1,e2-standard-16,430.7905,,
@@ -639,6 +666,7 @@ asia-northeast1,e2-standard-16-preemptible,150.7168,,
 asia-south1,e2-standard-16-preemptible,141.1034,,
 asia-southeast,e2-standard-16-preemptible,144.9312,,
 asia-southeast1,e2-standard-16-preemptible,144.9312,,
+asia-southeast2,e2-standard-16-preemptible,157.9750,,
 australia-southeast1,e2-standard-16-preemptible,166.7001,,
 europe-north1,e2-standard-16-preemptible,129.3496,,
 europe-west1,e2-standard-16-preemptible,129.2401,,
@@ -662,6 +690,7 @@ asia-northeast1,e2-standard-2,62.8011,,
 asia-south1,e2-standard-2,58.7906,,
 asia-southeast,e2-standard-2,60.3904,,
 asia-southeast1,e2-standard-2,60.3904,,
+asia-southeast2,e2-standard-2,65.8256,,
 australia-southeast1,e2-standard-2,69.4559,,
 europe-north1,e2-standard-2,53.8963,,
 europe-west1,e2-standard-2,53.8525,,
@@ -685,6 +714,7 @@ asia-northeast1,e2-standard-2-preemptible,18.8396,,
 asia-south1,e2-standard-2-preemptible,17.6416,,
 asia-southeast,e2-standard-2-preemptible,18.1164,,
 asia-southeast1,e2-standard-2-preemptible,18.1164,,
+asia-southeast2,e2-standard-2-preemptible,19.7469,,
 australia-southeast1,e2-standard-2-preemptible,20.8339,,
 europe-north1,e2-standard-2-preemptible,16.1660,,
 europe-west1,e2-standard-2-preemptible,16.1514,,
@@ -708,6 +738,7 @@ asia-northeast1,e2-standard-4,125.5949,,
 asia-south1,e2-standard-4,117.5886,,
 asia-southeast,e2-standard-4,120.7736,,
 asia-southeast1,e2-standard-4,120.7736,,
+asia-southeast2,e2-standard-4,131.6432,,
 australia-southeast1,e2-standard-4,138.9119,,
 europe-north1,e2-standard-4,107.7926,,
 europe-west1,e2-standard-4,107.6976,,
@@ -731,6 +762,7 @@ asia-northeast1,e2-standard-4-preemptible,37.6792,,
 asia-south1,e2-standard-4-preemptible,35.2758,,
 asia-southeast,e2-standard-4-preemptible,36.2328,,
 asia-southeast1,e2-standard-4-preemptible,36.2328,,
+asia-southeast2,e2-standard-4-preemptible,39.4938,,
 australia-southeast1,e2-standard-4-preemptible,41.6750,,
 europe-north1,e2-standard-4-preemptible,32.3392,,
 europe-west1,e2-standard-4-preemptible,32.3100,,
@@ -754,6 +786,7 @@ asia-northeast1,e2-standard-8,251.1897,,
 asia-south1,e2-standard-8,235.1772,,
 asia-southeast,e2-standard-8,241.5471,,
 asia-southeast1,e2-standard-8,241.5471,,
+asia-southeast2,e2-standard-8,263.2864,,
 australia-southeast1,e2-standard-8,277.8311,,
 europe-north1,e2-standard-8,215.5779,,
 europe-west1,e2-standard-8,215.3952,,
@@ -777,6 +810,7 @@ asia-northeast1,e2-standard-8-preemptible,75.3584,,
 asia-south1,e2-standard-8-preemptible,70.5517,,
 asia-southeast,e2-standard-8-preemptible,72.4656,,
 asia-southeast1,e2-standard-8-preemptible,72.4656,,
+asia-southeast2,e2-standard-8-preemptible,78.9875,,
 australia-southeast1,e2-standard-8-preemptible,83.3500,,
 europe-north1,e2-standard-8-preemptible,64.6712,,
 europe-west1,e2-standard-8-preemptible,64.6200,,
@@ -802,6 +836,7 @@ asia-northeast3,f1-micro,6.7206,shared,0.6
 asia-south1,f1-micro,6.6476,shared,0.6
 asia-southeast,f1-micro,6.7206,shared,0.6
 asia-southeast1,f1-micro,6.7206,shared,0.6
+asia-southeast2,f1-micro,7.3255,shared,0.6
 australia-southeast1,f1-micro,7.7433,shared,0.6
 europe-north1,f1-micro,6.1362,shared,0.6
 europe-west1,f1-micro,6.2823,shared,0.6
@@ -828,6 +863,7 @@ asia-northeast3,f1-micro-preemptible,3.6525,shared,0.6
 asia-south1,f1-micro-preemptible,3.0681,shared,0.6
 asia-southeast,f1-micro-preemptible,2.9220,shared,0.6
 asia-southeast1,f1-micro-preemptible,2.9220,shared,0.6
+asia-southeast2,f1-micro-preemptible,3.1850,shared,0.6
 australia-southeast1,f1-micro-preemptible,3.3603,shared,0.6
 europe-north1,f1-micro-preemptible,2.8489,shared,0.6
 europe-west1,f1-micro-preemptible,2.8489,shared,0.6
@@ -854,6 +890,7 @@ asia-northeast3,g1-small,23.5221,shared,1.7
 asia-south1,g1-small,22.4994,shared,1.7
 asia-southeast,g1-small,22.7185,shared,1.7
 asia-southeast1,g1-small,22.7185,shared,1.7
+asia-southeast2,g1-small,24.7632,shared,1.7
 australia-southeast1,g1-small,26.0788,shared,1.7
 europe-north1,g1-small,20.6731,shared,1.7
 europe-west1,g1-small,20.8193,shared,1.7
@@ -880,6 +917,7 @@ asia-northeast3,g1-small-preemptible,7.3050,shared,1.7
 asia-south1,g1-small-preemptible,6.1362,shared,1.7
 asia-southeast,g1-small-preemptible,5.9170,shared,1.7
 asia-southeast1,g1-small-preemptible,5.9170,shared,1.7
+asia-southeast2,g1-small-preemptible,6.4496,shared,1.7
 australia-southeast1,g1-small-preemptible,6.7936,shared,1.7
 europe-north1,g1-small-preemptible,5.6249,shared,1.7
 europe-west1,g1-small-preemptible,5.6249,shared,1.7
@@ -906,6 +944,7 @@ asia-northeast3,n1-highcpu-16,531.8040,16,14.40
 asia-south1,n1-highcpu-16,497.2514,16,14.40
 asia-southeast,n1-highcpu-16,510.7656,16,14.40
 asia-southeast1,n1-highcpu-16,510.7656,16,14.40
+asia-southeast2,n1-highcpu-16,556.7345,16,14.40
 australia-southeast1,n1-highcpu-16,587.7603,16,14.40
 europe-north1,n1-highcpu-16,456.4164,16,14.40
 europe-west1,n1-highcpu-16,455.8320,16,14.40
@@ -932,6 +971,7 @@ asia-northeast3,n1-highcpu-16-preemptible,115.7112,16,14.40
 asia-south1,n1-highcpu-16-preemptible,104.7318,16,14.40
 asia-southeast,n1-highcpu-16-preemptible,102.2700,16,14.40
 asia-southeast1,n1-highcpu-16-preemptible,102.2700,16,14.40
+asia-southeast2,n1-highcpu-16-preemptible,111.4743,16,14.40
 australia-southeast1,n1-highcpu-16-preemptible,117.6105,16,14.40
 europe-north1,n1-highcpu-16-preemptible,95.9877,16,14.40
 europe-west1,n1-highcpu-16-preemptible,96.4260,16,14.40
@@ -958,6 +998,7 @@ asia-northeast3,n1-highcpu-2,66.4755,2,1.8
 asia-south1,n1-highcpu-2,62.1655,2,1.8
 asia-southeast,n1-highcpu-2,63.8457,2,1.8
 asia-southeast1,n1-highcpu-2,63.8457,2,1.8
+asia-southeast2,n1-highcpu-2,69.5918,2,1.8
 australia-southeast1,n1-highcpu-2,73.4883,2,1.8
 europe-north1,n1-highcpu-2,57.0521,2,1.8
 europe-west1,n1-highcpu-2,56.9790,2,1.8
@@ -984,6 +1025,7 @@ asia-northeast3,n1-highcpu-2-preemptible,14.4639,2,1.8
 asia-south1,n1-highcpu-2-preemptible,13.0906,2,1.8
 asia-southeast,n1-highcpu-2-preemptible,12.7838,2,1.8
 asia-southeast1,n1-highcpu-2-preemptible,12.7838,2,1.8
+asia-southeast2,n1-highcpu-2-preemptible,13.9343,2,1.8
 australia-southeast1,n1-highcpu-2-preemptible,14.7050,2,1.8
 europe-north1,n1-highcpu-2-preemptible,11.9802,2,1.8
 europe-west1,n1-highcpu-2-preemptible,12.0533,2,1.8
@@ -1010,6 +1052,7 @@ asia-northeast3,n1-highcpu-32,1063.6080,32,28.80
 asia-south1,n1-highcpu-32,994.5758,32,28.80
 asia-southeast,n1-highcpu-32,1021.5312,32,28.80
 asia-southeast1,n1-highcpu-32,1021.5312,32,28.80
+asia-southeast2,n1-highcpu-32,1113.4690,32,28.80
 australia-southeast1,n1-highcpu-32,1175.5206,32,28.80
 europe-north1,n1-highcpu-32,912.8328,32,28.80
 europe-west1,n1-highcpu-32,911.6640,32,28.80
@@ -1036,6 +1079,7 @@ asia-northeast3,n1-highcpu-32-preemptible,231.4224,32,28.80
 asia-south1,n1-highcpu-32-preemptible,209.4563,32,28.80
 asia-southeast,n1-highcpu-32-preemptible,204.5400,32,28.80
 asia-southeast1,n1-highcpu-32-preemptible,204.5400,32,28.80
+asia-southeast2,n1-highcpu-32-preemptible,222.9486,32,28.80
 australia-southeast1,n1-highcpu-32-preemptible,235.2283,32,28.80
 europe-north1,n1-highcpu-32-preemptible,192.0485,32,28.80
 europe-west1,n1-highcpu-32-preemptible,192.8520,32,28.80
@@ -1062,6 +1106,7 @@ asia-northeast3,n1-highcpu-4,132.9510,4,3.6
 asia-south1,n1-highcpu-4,124.3311,4,3.6
 asia-southeast,n1-highcpu-4,127.6914,4,3.6
 asia-southeast1,n1-highcpu-4,127.6914,4,3.6
+asia-southeast2,n1-highcpu-4,139.1836,4,3.6
 australia-southeast1,n1-highcpu-4,146.9766,4,3.6
 europe-north1,n1-highcpu-4,114.1041,4,3.6
 europe-west1,n1-highcpu-4,113.9580,4,3.6
@@ -1088,6 +1133,7 @@ asia-northeast3,n1-highcpu-4-preemptible,28.9278,4,3.6
 asia-south1,n1-highcpu-4-preemptible,26.1811,4,3.6
 asia-southeast,n1-highcpu-4-preemptible,25.5675,4,3.6
 asia-southeast1,n1-highcpu-4-preemptible,25.5675,4,3.6
+asia-southeast2,n1-highcpu-4-preemptible,27.8686,4,3.6
 australia-southeast1,n1-highcpu-4-preemptible,29.4026,4,3.6
 europe-north1,n1-highcpu-4-preemptible,24.0334,4,3.6
 europe-west1,n1-highcpu-4-preemptible,24.1065,4,3.6
@@ -1114,6 +1160,7 @@ asia-northeast3,n1-highcpu-64,2127.2160,64,57.6
 asia-south1,n1-highcpu-64,1989.0785,64,57.6
 asia-southeast,n1-highcpu-64,2043.0624,64,57.6
 asia-southeast1,n1-highcpu-64,2043.0624,64,57.6
+asia-southeast2,n1-highcpu-64,2226.9380,64,57.6
 australia-southeast1,n1-highcpu-64,2351.1143,64,57.6
 europe-north1,n1-highcpu-64,1825.6656,64,57.6
 europe-west1,n1-highcpu-64,1823.3280,64,57.6
@@ -1140,6 +1187,7 @@ asia-northeast3,n1-highcpu-64-preemptible,462.8448,64,57.6
 asia-south1,n1-highcpu-64-preemptible,418.9198,64,57.6
 asia-southeast,n1-highcpu-64-preemptible,409.0800,64,57.6
 asia-southeast1,n1-highcpu-64-preemptible,409.0800,64,57.6
+asia-southeast2,n1-highcpu-64-preemptible,445.8972,64,57.6
 australia-southeast1,n1-highcpu-64-preemptible,470.4493,64,57.6
 europe-north1,n1-highcpu-64-preemptible,384.0238,64,57.6
 europe-west1,n1-highcpu-64-preemptible,385.7040,64,57.6
@@ -1166,6 +1214,7 @@ asia-northeast3,n1-highcpu-8,265.9020,8,7.2
 asia-south1,n1-highcpu-8,248.6622,8,7.2
 asia-southeast,n1-highcpu-8,255.3828,8,7.2
 asia-southeast1,n1-highcpu-8,255.3828,8,7.2
+asia-southeast2,n1-highcpu-8,278.3673,8,7.2
 australia-southeast1,n1-highcpu-8,293.8802,8,7.2
 europe-north1,n1-highcpu-8,228.2082,8,7.2
 europe-west1,n1-highcpu-8,227.9160,8,7.2
@@ -1192,6 +1241,7 @@ asia-northeast3,n1-highcpu-8-preemptible,57.8556,8,7.2
 asia-south1,n1-highcpu-8-preemptible,52.3622,8,7.2
 asia-southeast,n1-highcpu-8-preemptible,51.1350,8,7.2
 asia-southeast1,n1-highcpu-8-preemptible,51.1350,8,7.2
+asia-southeast2,n1-highcpu-8-preemptible,55.7372,8,7.2
 australia-southeast1,n1-highcpu-8-preemptible,58.8053,8,7.2
 europe-north1,n1-highcpu-8-preemptible,47.9939,8,7.2
 europe-west1,n1-highcpu-8-preemptible,48.2130,8,7.2
@@ -1218,6 +1268,7 @@ asia-northeast3,n1-highcpu-96,3190.8240,96,86.4
 asia-south1,n1-highcpu-96,2980.4400,96,86.4
 asia-southeast,n1-highcpu-96,3064.5936,96,86.4
 asia-southeast1,n1-highcpu-96,3064.5936,96,86.4
+asia-southeast2,n1-highcpu-96,3340.4070,96,86.4
 australia-southeast1,n1-highcpu-96,3527.4384,96,86.4
 europe-north1,n1-highcpu-96,2734.9642,96,86.4
 europe-west1,n1-highcpu-96,2734.9920,96,86.4
@@ -1243,6 +1294,7 @@ asia-northeast3,n1-highcpu-96-preemptible,694.2672,96,86.4
 asia-south1,n1-highcpu-96-preemptible,525.9600,96,86.4
 asia-southeast,n1-highcpu-96-preemptible,613.6200,96,86.4
 asia-southeast1,n1-highcpu-96-preemptible,613.6200,96,86.4
+asia-southeast2,n1-highcpu-96-preemptible,668.8458,96,86.4
 australia-southeast1,n1-highcpu-96-preemptible,708.2928,96,86.4
 europe-north1,n1-highcpu-96-preemptible,575.9823,96,86.4
 europe-west1,n1-highcpu-96-preemptible,578.5560,96,86.4
@@ -1267,6 +1319,7 @@ asia-northeast3,n1-highmem-16,886.5348,16,104
 asia-south1,n1-highmem-16,830.2863,16,104
 asia-southeast,n1-highmem-16,853.2240,16,104
 asia-southeast1,n1-highmem-16,853.2240,16,104
+asia-southeast2,n1-highmem-16,930.0142,16,104
 australia-southeast1,n1-highmem-16,981.1345,16,104
 europe-north1,n1-highmem-16,761.4732,16,104
 europe-west1,n1-highmem-16,760.8888,16,104
@@ -1293,6 +1346,7 @@ asia-northeast3,n1-highmem-16-preemptible,192.8520,16,104
 asia-south1,n1-highmem-16-preemptible,175.1593,16,104
 asia-southeast,n1-highmem-16-preemptible,170.6448,16,104
 asia-southeast1,n1-highmem-16-preemptible,170.6448,16,104
+asia-southeast2,n1-highmem-16-preemptible,186.0028,16,104
 australia-southeast1,n1-highmem-16-preemptible,196.3511,16,104
 europe-north1,n1-highmem-16-preemptible,160.5639,16,104
 europe-west1,n1-highmem-16-preemptible,160.7100,16,104
@@ -1319,6 +1373,7 @@ asia-northeast3,n1-highmem-2,110.8169,2,13
 asia-south1,n1-highmem-2,103.8041,2,13
 asia-southeast,n1-highmem-2,106.6530,2,13
 asia-southeast1,n1-highmem-2,106.6530,2,13
+asia-southeast2,n1-highmem-2,116.2518,2,13
 australia-southeast1,n1-highmem-2,122.6510,2,13
 europe-north1,n1-highmem-2,95.1842,2,13
 europe-west1,n1-highmem-2,95.1111,2,13
@@ -1345,6 +1400,7 @@ asia-northeast3,n1-highmem-2-preemptible,24.1065,2,13
 asia-south1,n1-highmem-2-preemptible,21.8931,2,13
 asia-southeast,n1-highmem-2-preemptible,21.3306,2,13
 asia-southeast1,n1-highmem-2-preemptible,21.3306,2,13
+asia-southeast2,n1-highmem-2-preemptible,23.2504,2,13
 australia-southeast1,n1-highmem-2-preemptible,24.5448,2,13
 europe-north1,n1-highmem-2-preemptible,20.0888,2,13
 europe-west1,n1-highmem-2-preemptible,20.0888,2,13
@@ -1371,6 +1427,7 @@ asia-northeast3,n1-highmem-32,1773.0696,32,208
 asia-south1,n1-highmem-32,1660.5726,32,208
 asia-southeast,n1-highmem-32,1706.4480,32,208
 asia-southeast1,n1-highmem-32,1706.4480,32,208
+asia-southeast2,n1-highmem-32,1860.0283,32,208
 australia-southeast1,n1-highmem-32,1962.2691,32,208
 europe-north1,n1-highmem-32,1522.9464,32,208
 europe-west1,n1-highmem-32,1521.7776,32,208
@@ -1397,6 +1454,7 @@ asia-northeast3,n1-highmem-32-preemptible,385.7040,32,208
 asia-south1,n1-highmem-32-preemptible,350.3113,32,208
 asia-southeast,n1-highmem-32-preemptible,341.2896,32,208
 asia-southeast1,n1-highmem-32-preemptible,341.2896,32,208
+asia-southeast2,n1-highmem-32-preemptible,372.0057,32,208
 australia-southeast1,n1-highmem-32-preemptible,392.7022,32,208
 europe-north1,n1-highmem-32-preemptible,321.2009,32,208
 europe-west1,n1-highmem-32-preemptible,321.4200,32,208
@@ -1423,6 +1481,7 @@ asia-northeast3,n1-highmem-4,221.6337,4,26
 asia-south1,n1-highmem-4,207.6081,4,26
 asia-southeast,n1-highmem-4,213.3060,4,26
 asia-southeast1,n1-highmem-4,213.3060,4,26
+asia-southeast2,n1-highmem-4,232.5035,4,26
 australia-southeast1,n1-highmem-4,245.3019,4,26
 europe-north1,n1-highmem-4,190.3683,4,26
 europe-west1,n1-highmem-4,190.2222,4,26
@@ -1449,6 +1508,7 @@ asia-northeast3,n1-highmem-4-preemptible,48.2130,4,26
 asia-south1,n1-highmem-4-preemptible,43.7862,4,26
 asia-southeast,n1-highmem-4-preemptible,42.6612,4,26
 asia-southeast1,n1-highmem-4-preemptible,42.6612,4,26
+asia-southeast2,n1-highmem-4-preemptible,46.5007,4,26
 australia-southeast1,n1-highmem-4-preemptible,49.0896,4,26
 europe-north1,n1-highmem-4-preemptible,40.1775,4,26
 europe-west1,n1-highmem-4-preemptible,40.1775,4,26
@@ -1475,6 +1535,7 @@ asia-northeast3,n1-highmem-64,3546.1392,64,416
 asia-south1,n1-highmem-64,3321.2182,64,416
 asia-southeast,n1-highmem-64,3412.8960,64,416
 asia-southeast1,n1-highmem-64,3412.8960,64,416
+asia-southeast2,n1-highmem-64,3720.0566,64,416
 australia-southeast1,n1-highmem-64,3924.6112,64,416
 europe-north1,n1-highmem-64,3045.8928,64,416
 europe-west1,n1-highmem-64,3043.5552,64,416
@@ -1501,6 +1562,7 @@ asia-northeast3,n1-highmem-64-preemptible,771.4080,64,416
 asia-south1,n1-highmem-64-preemptible,700.6226,64,416
 asia-southeast,n1-highmem-64-preemptible,682.5792,64,416
 asia-southeast1,n1-highmem-64-preemptible,682.5792,64,416
+asia-southeast2,n1-highmem-64-preemptible,744.0113,64,416
 australia-southeast1,n1-highmem-64-preemptible,785.4117,64,416
 europe-north1,n1-highmem-64-preemptible,642.3287,64,416
 europe-west1,n1-highmem-64-preemptible,642.8400,64,416
@@ -1527,6 +1589,7 @@ asia-northeast3,n1-highmem-8,443.2674,8,52
 asia-south1,n1-highmem-8,415.1432,8,52
 asia-southeast,n1-highmem-8,426.6120,8,52
 asia-southeast1,n1-highmem-8,426.6120,8,52
+asia-southeast2,n1-highmem-8,465.0071,8,52
 australia-southeast1,n1-highmem-8,490.6038,8,52
 europe-north1,n1-highmem-8,380.7366,8,52
 europe-west1,n1-highmem-8,380.4444,8,52
@@ -1553,6 +1616,7 @@ asia-northeast3,n1-highmem-8-preemptible,96.4260,8,52
 asia-south1,n1-highmem-8-preemptible,87.5796,8,52
 asia-southeast,n1-highmem-8-preemptible,85.3224,8,52
 asia-southeast1,n1-highmem-8-preemptible,85.3224,8,52
+asia-southeast2,n1-highmem-8-preemptible,93.0014,8,52
 australia-southeast1,n1-highmem-8-preemptible,98.1792,8,52
 europe-north1,n1-highmem-8-preemptible,80.2819,8,52
 europe-west1,n1-highmem-8-preemptible,80.3550,8,52
@@ -1579,6 +1643,7 @@ asia-northeast3,n1-highmem-96,5319.2088,96,624
 asia-south1,n1-highmem-96,4982.0100,96,624
 asia-southeast,n1-highmem-96,5119.3440,96,624
 asia-southeast1,n1-highmem-96,5119.3440,96,624
+asia-southeast2,n1-highmem-96,5580.0850,96,624
 australia-southeast1,n1-highmem-96,5887.2456,96,624
 europe-north1,n1-highmem-96,4566.5951,96,624
 europe-west1,n1-highmem-96,4565.3328,96,624
@@ -1603,6 +1668,7 @@ asia-northeast3,n1-highmem-96-preemptible,1157.1120,96,624
 asia-south1,n1-highmem-96-preemptible,876.6000,96,624
 asia-southeast,n1-highmem-96-preemptible,1023.8688,96,624
 asia-southeast1,n1-highmem-96-preemptible,1023.8688,96,624
+asia-southeast2,n1-highmem-96-preemptible,1116.0170,96,624
 australia-southeast1,n1-highmem-96-preemptible,1178.1504,96,624
 europe-north1,n1-highmem-96-preemptible,963.5938,96,624
 europe-west1,n1-highmem-96-preemptible,964.2600,96,624
@@ -1621,6 +1687,7 @@ asia-east,n1-megamem-96,9030.4410,96,1433.6
 asia-east1,n1-megamem-96,9030.4410,96,1433.6
 asia-southeast,n1-megamem-96,9165.2913,96,1433.6
 asia-southeast1,n1-megamem-96,9165.2913,96,1433.6
+asia-southeast2,n1-megamem-96,9990.1675,96,1433.6
 europe-west1,n1-megamem-96,8578.2615,96,1433.6
 europe-west3,n1-megamem-96,9563.7060,96,1433.6
 us-central1,n1-megamem-96,7797.3570,96,1433.6
@@ -1630,6 +1697,7 @@ asia-east,n1-megamem-96-preemptible,1811.6400,96,1433.6
 asia-east1,n1-megamem-96-preemptible,1811.6400,96,1433.6
 asia-southeast,n1-megamem-96-preemptible,1831.0713,96,1433.6
 asia-southeast1,n1-megamem-96-preemptible,1831.0713,96,1433.6
+asia-southeast2,n1-megamem-96-preemptible,1995.8677,96,1433.6
 europe-west1,n1-megamem-96-preemptible,1811.6400,96,1433.6
 europe-west3,n1-megamem-96-preemptible,1909.3809,96,1433.6
 us-central1,n1-megamem-96-preemptible,1650.9300,96,1433.6
@@ -1645,6 +1713,7 @@ asia-northeast3,n1-node-96-624,5850.4740,96,624
 asia-south1,n1-node-96-624,5480.8076,96,624
 asia-southeast,n1-node-96-624,5626.8042,96,624
 asia-southeast1,n1-node-96-624,5626.8042,96,624
+asia-southeast2,n1-node-96-624,6133.2166,96,624
 australia-southeast1,n1-node-96-624,6492.7869,96,624
 europe-north1,n1-node-96-624,5019.5133,96,624
 europe-west1,n1-node-96-624,5019.5133,96,624
@@ -1671,6 +1740,7 @@ asia-northeast3,n1-standard-1,44.5605,1,3.75
 asia-south1,n1-standard-1,41.6385,1,3.75
 asia-southeast,n1-standard-1,42.8073,1,3.75
 asia-southeast1,n1-standard-1,42.8073,1,3.75
+asia-southeast2,n1-standard-1,46.6600,1,3.75
 australia-southeast1,n1-standard-1,49.2357,1,3.75
 europe-north1,n1-standard-1,38.2051,1,3.75
 europe-west1,n1-standard-1,38.2051,1,3.75
@@ -1697,6 +1767,7 @@ asia-northeast3,n1-standard-1-preemptible,9.6791,1,3.75
 asia-south1,n1-standard-1-preemptible,8.7879,1,3.75
 asia-southeast,n1-standard-1-preemptible,8.6199,1,3.75
 asia-southeast1,n1-standard-1-preemptible,8.6199,1,3.75
+asia-southeast2,n1-standard-1-preemptible,9.3957,1,3.75
 australia-southeast1,n1-standard-1-preemptible,9.8544,1,3.75
 europe-north1,n1-standard-1-preemptible,8.0355,1,3.75
 europe-west1,n1-standard-1-preemptible,8.0355,1,3.75
@@ -1723,6 +1794,7 @@ asia-northeast3,n1-standard-16,712.9680,16,60
 asia-south1,n1-standard-16,666.7273,16,60
 asia-southeast,n1-standard-16,684.9168,16,60
 asia-southeast1,n1-standard-16,684.9168,16,60
+asia-southeast2,n1-standard-16,746.5593,16,60
 australia-southeast1,n1-standard-16,787.9904,16,60
 europe-north1,n1-standard-16,611.2824,16,60
 europe-west1,n1-standard-16,611.2824,16,60
@@ -1749,6 +1821,7 @@ asia-northeast3,n1-standard-16-preemptible,154.8660,16,60
 asia-south1,n1-standard-16-preemptible,140.5701,16,60
 asia-southeast,n1-standard-16-preemptible,137.9184,16,60
 asia-southeast1,n1-standard-16-preemptible,137.9184,16,60
+asia-southeast2,n1-standard-16-preemptible,150.3311,16,60
 australia-southeast1,n1-standard-16-preemptible,157.6857,16,60
 europe-north1,n1-standard-16-preemptible,128.8602,16,60
 europe-west1,n1-standard-16-preemptible,128.5680,16,60
@@ -1775,6 +1848,7 @@ asia-northeast3,n1-standard-2,89.1210,2,7.5
 asia-south1,n1-standard-2,83.3500,2,7.5
 asia-southeast,n1-standard-2,85.6146,2,7.5
 asia-southeast1,n1-standard-2,85.6146,2,7.5
+asia-southeast2,n1-standard-2,93.3199,2,7.5
 australia-southeast1,n1-standard-2,98.4714,2,7.5
 europe-north1,n1-standard-2,76.4103,2,7.5
 europe-west1,n1-standard-2,76.4103,2,7.5
@@ -1801,6 +1875,7 @@ asia-northeast3,n1-standard-2-preemptible,19.3583,2,7.5
 asia-south1,n1-standard-2-preemptible,17.5685,2,7.5
 asia-southeast,n1-standard-2-preemptible,17.2398,2,7.5
 asia-southeast1,n1-standard-2-preemptible,17.2398,2,7.5
+asia-southeast2,n1-standard-2-preemptible,18.7914,2,7.5
 australia-southeast1,n1-standard-2-preemptible,19.7089,2,7.5
 europe-north1,n1-standard-2-preemptible,16.1441,2,7.5
 europe-west1,n1-standard-2-preemptible,16.0710,2,7.5
@@ -1827,6 +1902,7 @@ asia-northeast3,n1-standard-32,1425.9360,32,120
 asia-south1,n1-standard-32,1333.5277,32,120
 asia-southeast,n1-standard-32,1369.8336,32,120
 asia-southeast1,n1-standard-32,1369.8336,32,120
+asia-southeast2,n1-standard-32,1493.1186,32,120
 australia-southeast1,n1-standard-32,1575.9807,32,120
 europe-north1,n1-standard-32,1222.5648,32,120
 europe-west1,n1-standard-32,1222.5648,32,120
@@ -1853,6 +1929,7 @@ asia-northeast3,n1-standard-32-preemptible,309.7320,32,120
 asia-south1,n1-standard-32-preemptible,281.1402,32,120
 asia-southeast,n1-standard-32-preemptible,275.8368,32,120
 asia-southeast1,n1-standard-32-preemptible,275.8368,32,120
+asia-southeast2,n1-standard-32-preemptible,300.6621,32,120
 australia-southeast1,n1-standard-32-preemptible,315.3715,32,120
 europe-north1,n1-standard-32-preemptible,257.7204,32,120
 europe-west1,n1-standard-32-preemptible,257.1360,32,120
@@ -1879,6 +1956,7 @@ asia-northeast3,n1-standard-4,178.2420,4,15
 asia-south1,n1-standard-4,166.7001,4,15
 asia-southeast,n1-standard-4,171.2292,4,15
 asia-southeast1,n1-standard-4,171.2292,4,15
+asia-southeast2,n1-standard-4,186.6398,4,15
 australia-southeast1,n1-standard-4,197.0158,4,15
 europe-north1,n1-standard-4,152.8206,4,15
 europe-west1,n1-standard-4,152.8206,4,15
@@ -1905,6 +1983,7 @@ asia-northeast3,n1-standard-4-preemptible,38.7165,4,15
 asia-south1,n1-standard-4-preemptible,35.1444,4,15
 asia-southeast,n1-standard-4-preemptible,34.4796,4,15
 asia-southeast1,n1-standard-4-preemptible,34.4796,4,15
+asia-southeast2,n1-standard-4-preemptible,37.5828,4,15
 australia-southeast1,n1-standard-4-preemptible,39.4251,4,15
 europe-north1,n1-standard-4-preemptible,32.2150,4,15
 europe-west1,n1-standard-4-preemptible,32.1420,4,15
@@ -1931,6 +2010,7 @@ asia-northeast3,n1-standard-64,2851.8720,64,240
 asia-south1,n1-standard-64,2667.0555,64,240
 asia-southeast,n1-standard-64,2739.6672,64,240
 asia-southeast1,n1-standard-64,2739.6672,64,240
+asia-southeast2,n1-standard-64,2986.2372,64,240
 australia-southeast1,n1-standard-64,3151.8884,64,240
 europe-north1,n1-standard-64,2445.1296,64,240
 europe-west1,n1-standard-64,2445.1296,64,240
@@ -1957,6 +2037,7 @@ asia-northeast3,n1-standard-64-preemptible,619.4640,64,240
 asia-south1,n1-standard-64-preemptible,562.2878,64,240
 asia-southeast,n1-standard-64-preemptible,551.6736,64,240
 asia-southeast1,n1-standard-64-preemptible,551.6736,64,240
+asia-southeast2,n1-standard-64-preemptible,601.3242,64,240
 australia-southeast1,n1-standard-64-preemptible,630.7429,64,240
 europe-north1,n1-standard-64-preemptible,515.5138,64,240
 europe-west1,n1-standard-64-preemptible,514.2720,64,240
@@ -1983,6 +2064,7 @@ asia-northeast3,n1-standard-8,356.4840,8,30
 asia-south1,n1-standard-8,333.4002,8,30
 asia-southeast,n1-standard-8,342.4584,8,30
 asia-southeast1,n1-standard-8,342.4584,8,30
+asia-southeast2,n1-standard-8,373.2797,8,30
 australia-southeast1,n1-standard-8,393.9587,8,30
 europe-north1,n1-standard-8,305.6412,8,30
 europe-west1,n1-standard-8,305.6412,8,30
@@ -2009,6 +2091,7 @@ asia-northeast3,n1-standard-8-preemptible,77.4330,8,30
 asia-south1,n1-standard-8-preemptible,70.2887,8,30
 asia-southeast,n1-standard-8-preemptible,68.9592,8,30
 asia-southeast1,n1-standard-8-preemptible,68.9592,8,30
+asia-southeast2,n1-standard-8-preemptible,75.1655,8,30
 australia-southeast1,n1-standard-8-preemptible,78.8429,8,30
 europe-north1,n1-standard-8-preemptible,64.4301,8,30
 europe-west1,n1-standard-8-preemptible,64.2840,8,30
@@ -2035,6 +2118,7 @@ asia-northeast3,n1-standard-96,4277.8080,96,360
 asia-south1,n1-standard-96,4003.1400,96,360
 asia-southeast,n1-standard-96,4109.5008,96,360
 asia-southeast1,n1-standard-96,4109.5008,96,360
+asia-southeast2,n1-standard-96,4479.3559,96,360
 australia-southeast1,n1-standard-96,4733.6400,96,360
 europe-north1,n1-standard-96,3667.1334,96,360
 europe-west1,n1-standard-96,3667.6944,96,360
@@ -2059,6 +2143,7 @@ asia-northeast3,n1-standard-96-preemptible,929.1960,96,360
 asia-south1,n1-standard-96-preemptible,701.2800,96,360
 asia-southeast,n1-standard-96-preemptible,827.5104,96,360
 asia-southeast1,n1-standard-96-preemptible,827.5104,96,360
+asia-southeast2,n1-standard-96-preemptible,901.9863,96,360
 australia-southeast1,n1-standard-96-preemptible,946.7280,96,360
 europe-north1,n1-standard-96-preemptible,773.2489,96,360
 europe-west1,n1-standard-96-preemptible,771.4080,96,360
@@ -2079,6 +2164,7 @@ asia-northeast2,n1-ultramem-160,22480.8453,160,3844
 asia-northeast3,n1-ultramem-160,22480.8453,160,3844
 asia-southeast,n1-ultramem-160,21661.8087,160,3844
 asia-southeast1,n1-ultramem-160,21661.8087,160,3844
+asia-southeast2,n1-ultramem-160,23611.3715,160,3844
 australia-southeast1,n1-ultramem-160,24915.6018,160,3844
 europe-west1,n1-ultramem-160,20275.5389,160,3844
 europe-west3,n1-ultramem-160,22602.9849,160,3844
@@ -2095,6 +2181,7 @@ asia-northeast2,n1-ultramem-160-preemptible,4874.3343,160,3844
 asia-northeast3,n1-ultramem-160-preemptible,4874.3343,160,3844
 asia-southeast,n1-ultramem-160-preemptible,4326.8976,160,3844
 asia-southeast1,n1-ultramem-160-preemptible,4326.8976,160,3844
+asia-southeast2,n1-ultramem-160-preemptible,4716.3184,160,3844
 australia-southeast1,n1-ultramem-160-preemptible,4977.2617,160,3844
 europe-west1,n1-ultramem-160-preemptible,4255.5278,160,3844
 europe-west3,n1-ultramem-160-preemptible,4510.5453,160,3844
@@ -2111,6 +2198,7 @@ asia-northeast2,n1-ultramem-40,5620.2478,40,961
 asia-northeast3,n1-ultramem-40,5620.2478,40,961
 asia-southeast,n1-ultramem-40,5415.4156,40,961
 asia-southeast1,n1-ultramem-40,5415.4156,40,961
+asia-southeast2,n1-ultramem-40,5902.8031,40,961
 australia-southeast1,n1-ultramem-40,6228.9005,40,961
 europe-west1,n1-ultramem-40,5068.8665,40,961
 europe-west3,n1-ultramem-40,5650.7097,40,961
@@ -2127,6 +2215,7 @@ asia-northeast2,n1-ultramem-40-preemptible,1218.6201,40,961
 asia-northeast3,n1-ultramem-40-preemptible,1218.6201,40,961
 asia-southeast,n1-ultramem-40-preemptible,1081.7244,40,961
 asia-southeast1,n1-ultramem-40-preemptible,1081.7244,40,961
+asia-southeast2,n1-ultramem-40-preemptible,1179.0796,40,961
 australia-southeast1,n1-ultramem-40-preemptible,1244.3337,40,961
 europe-west1,n1-ultramem-40-preemptible,1063.9002,40,961
 europe-west3,n1-ultramem-40-preemptible,1127.6728,40,961
@@ -2143,6 +2232,7 @@ asia-northeast2,n1-ultramem-80,11240.4227,80,1922
 asia-northeast3,n1-ultramem-80,11240.4227,80,1922
 asia-southeast,n1-ultramem-80,10830.9044,80,1922
 asia-southeast1,n1-ultramem-80,10830.9044,80,1922
+asia-southeast2,n1-ultramem-80,11805.6857,80,1922
 australia-southeast1,n1-ultramem-80,12457.8009,80,1922
 europe-west1,n1-ultramem-80,10137.8060,80,1922
 europe-west3,n1-ultramem-80,11301.4924,80,1922
@@ -2159,6 +2249,7 @@ asia-northeast2,n1-ultramem-80-preemptible,2437.1672,80,1922
 asia-northeast3,n1-ultramem-80-preemptible,2437.1672,80,1922
 asia-southeast,n1-ultramem-80-preemptible,2163.4488,80,1922
 asia-southeast1,n1-ultramem-80-preemptible,2163.4488,80,1922
+asia-southeast2,n1-ultramem-80-preemptible,2358.1592,80,1922
 australia-southeast1,n1-ultramem-80-preemptible,2488.6674,80,1922
 europe-west1,n1-ultramem-80-preemptible,2127.8004,80,1922
 europe-west3,n1-ultramem-80-preemptible,2255.2727,80,1922

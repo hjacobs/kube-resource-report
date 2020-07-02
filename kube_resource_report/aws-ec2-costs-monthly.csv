@@ -1,3 +1,75 @@
+EU (Milan),c5.12xlarge,1770.7320
+EU (Milan),c5.18xlarge,2656.0980
+EU (Milan),c5.24xlarge,3541.4640
+EU (Milan),c5.2xlarge,295.1220
+EU (Milan),c5.4xlarge,590.2440
+EU (Milan),c5.9xlarge,1328.0490
+EU (Milan),c5.large,73.7805
+EU (Milan),c5.metal,3541.4640
+EU (Milan),c5.xlarge,147.5610
+EU (Milan),c5d.12xlarge,1998.6480
+EU (Milan),c5d.18xlarge,2997.9720
+EU (Milan),c5d.24xlarge,3997.2960
+EU (Milan),c5d.2xlarge,333.1080
+EU (Milan),c5d.4xlarge,666.2160
+EU (Milan),c5d.9xlarge,1498.9860
+EU (Milan),c5d.large,83.2770
+EU (Milan),c5d.metal,3997.2960
+EU (Milan),c5d.xlarge,166.5540
+EU (Milan),d2.2xlarge,1127.8920
+EU (Milan),d2.4xlarge,2255.7840
+EU (Milan),d2.8xlarge,4511.5680
+EU (Milan),d2.xlarge,563.9460
+EU (Milan),i3.16xlarge,4231.0560
+EU (Milan),i3.2xlarge,528.8820
+EU (Milan),i3.4xlarge,1057.7640
+EU (Milan),i3.8xlarge,2115.5280
+EU (Milan),i3.large,132.2205
+EU (Milan),i3.metal,4231.0560
+EU (Milan),i3.xlarge,264.4410
+EU (Milan),m5.12xlarge,1963.5840
+EU (Milan),m5.16xlarge,2618.1120
+EU (Milan),m5.24xlarge,3927.1680
+EU (Milan),m5.2xlarge,327.2640
+EU (Milan),m5.4xlarge,654.5280
+EU (Milan),m5.8xlarge,1309.0560
+EU (Milan),m5.large,81.8160
+EU (Milan),m5.metal,3927.1680
+EU (Milan),m5.xlarge,163.6320
+EU (Milan),m5d.12xlarge,2314.2240
+EU (Milan),m5d.16xlarge,3085.6320
+EU (Milan),m5d.24xlarge,4628.4480
+EU (Milan),m5d.2xlarge,385.7040
+EU (Milan),m5d.4xlarge,771.4080
+EU (Milan),m5d.8xlarge,1542.8160
+EU (Milan),m5d.large,96.4260
+EU (Milan),m5d.metal,4628.4480
+EU (Milan),m5d.xlarge,192.8520
+EU (Milan),r5.12xlarge,2594.7360
+EU (Milan),r5.16xlarge,3459.6480
+EU (Milan),r5.24xlarge,5189.4720
+EU (Milan),r5.2xlarge,432.4560
+EU (Milan),r5.4xlarge,864.9120
+EU (Milan),r5.8xlarge,1729.8240
+EU (Milan),r5.large,108.1140
+EU (Milan),r5.metal,5189.4720
+EU (Milan),r5.xlarge,216.2280
+EU (Milan),r5d.12xlarge,2945.3760
+EU (Milan),r5d.16xlarge,3927.1680
+EU (Milan),r5d.24xlarge,5890.7520
+EU (Milan),r5d.2xlarge,490.8960
+EU (Milan),r5d.4xlarge,981.7920
+EU (Milan),r5d.8xlarge,1963.5840
+EU (Milan),r5d.large,122.7240
+EU (Milan),r5d.metal,5890.7520
+EU (Milan),r5d.xlarge,245.4480
+EU (Milan),t3.2xlarge,280.0737
+EU (Milan),t3.large,69.9819
+EU (Milan),t3.medium,34.9909
+EU (Milan),t3.micro,8.7660
+EU (Milan),t3.nano,4.3830
+EU (Milan),t3.small,17.5320
+EU (Milan),t3.xlarge,140.0369
 af-south-1,c5.12xlarge,1998.6480
 af-south-1,c5.18xlarge,2997.9720
 af-south-1,c5.24xlarge,3997.2960
@@ -186,6 +258,15 @@ ap-northeast-1,c5n.9xlarge,1788.2640
 ap-northeast-1,c5n.large,99.3480
 ap-northeast-1,c5n.metal,3576.5280
 ap-northeast-1,c5n.xlarge,198.6960
+ap-northeast-1,c6g.12xlarge,1500.7392
+ap-northeast-1,c6g.16xlarge,2000.9856
+ap-northeast-1,c6g.2xlarge,250.1232
+ap-northeast-1,c6g.4xlarge,500.2464
+ap-northeast-1,c6g.8xlarge,1000.4928
+ap-northeast-1,c6g.large,62.5308
+ap-northeast-1,c6g.medium,31.2654
+ap-northeast-1,c6g.metal,2000.9856
+ap-northeast-1,c6g.xlarge,125.0616
 ap-northeast-1,cc2.8xlarge,1715.9445
 ap-northeast-1,cr1.8xlarge,2998.7025
 ap-northeast-1,d2.2xlarge,1233.0840
@@ -203,6 +284,7 @@ ap-northeast-1,g4dn.16xlarge,4291.6875
 ap-northeast-1,g4dn.2xlarge,741.4575
 ap-northeast-1,g4dn.4xlarge,1187.0625
 ap-northeast-1,g4dn.8xlarge,2146.2090
+ap-northeast-1,g4dn.metal,7715.5410
 ap-northeast-1,g4dn.xlarge,518.6550
 ap-northeast-1,hs1.8xlarge,3944.7000
 ap-northeast-1,i2.2xlarge,1461.7305
@@ -290,6 +372,15 @@ ap-northeast-1,m5n.4xlarge,894.1320
 ap-northeast-1,m5n.8xlarge,1788.2640
 ap-northeast-1,m5n.large,111.7665
 ap-northeast-1,m5n.xlarge,223.5330
+ap-northeast-1,m6g.12xlarge,1735.6680
+ap-northeast-1,m6g.16xlarge,2314.2240
+ap-northeast-1,m6g.2xlarge,289.2780
+ap-northeast-1,m6g.4xlarge,578.5560
+ap-northeast-1,m6g.8xlarge,1157.1120
+ap-northeast-1,m6g.large,72.3195
+ap-northeast-1,m6g.medium,36.1598
+ap-northeast-1,m6g.metal,2314.2240
+ap-northeast-1,m6g.xlarge,144.6390
 ap-northeast-1,p2.16xlarge,18022.8960
 ap-northeast-1,p2.8xlarge,9011.4480
 ap-northeast-1,p2.xlarge,1126.4310
@@ -358,6 +449,15 @@ ap-northeast-1,r5n.4xlarge,1057.7640
 ap-northeast-1,r5n.8xlarge,2115.5280
 ap-northeast-1,r5n.large,132.2205
 ap-northeast-1,r5n.xlarge,264.4410
+ap-northeast-1,r6g.12xlarge,2131.8912
+ap-northeast-1,r6g.16xlarge,2842.5216
+ap-northeast-1,r6g.2xlarge,355.3152
+ap-northeast-1,r6g.4xlarge,710.6304
+ap-northeast-1,r6g.8xlarge,1421.2608
+ap-northeast-1,r6g.large,88.8288
+ap-northeast-1,r6g.medium,44.4144
+ap-northeast-1,r6g.metal,2842.5216
+ap-northeast-1,r6g.xlarge,177.6576
 ap-northeast-1,t1.micro,18.9930
 ap-northeast-1,t2.2xlarge,355.3152
 ap-northeast-1,t2.large,88.8288
@@ -896,6 +996,14 @@ ap-southeast-1,c5.9xlarge,1288.6020
 ap-southeast-1,c5.large,71.5890
 ap-southeast-1,c5.metal,3436.2720
 ap-southeast-1,c5.xlarge,143.1780
+ap-southeast-1,c5a.12xlarge,1542.8160
+ap-southeast-1,c5a.16xlarge,2057.0880
+ap-southeast-1,c5a.24xlarge,3085.6320
+ap-southeast-1,c5a.2xlarge,257.1360
+ap-southeast-1,c5a.4xlarge,514.2720
+ap-southeast-1,c5a.8xlarge,1028.5440
+ap-southeast-1,c5a.large,64.2840
+ap-southeast-1,c5a.xlarge,128.5680
 ap-southeast-1,c5d.12xlarge,1963.5840
 ap-southeast-1,c5d.18xlarge,2945.3760
 ap-southeast-1,c5d.24xlarge,3927.1680
@@ -1142,6 +1250,14 @@ ap-southeast-2,c5.9xlarge,1459.5390
 ap-southeast-2,c5.large,81.0855
 ap-southeast-2,c5.metal,3892.1040
 ap-southeast-2,c5.xlarge,162.1710
+ap-southeast-2,c5a.12xlarge,1753.2000
+ap-southeast-2,c5a.16xlarge,2337.6000
+ap-southeast-2,c5a.24xlarge,3506.4000
+ap-southeast-2,c5a.2xlarge,292.2000
+ap-southeast-2,c5a.4xlarge,584.4000
+ap-southeast-2,c5a.8xlarge,1168.8000
+ap-southeast-2,c5a.large,73.0500
+ap-southeast-2,c5a.xlarge,146.1000
 ap-southeast-2,c5d.12xlarge,2209.0320
 ap-southeast-2,c5d.18xlarge,3313.5480
 ap-southeast-2,c5d.24xlarge,4418.0640
@@ -1528,6 +1644,14 @@ eu-central-1,c5.9xlarge,1275.4530
 eu-central-1,c5.large,70.8585
 eu-central-1,c5.metal,3401.2080
 eu-central-1,c5.xlarge,141.7170
+eu-central-1,c5a.12xlarge,1525.2840
+eu-central-1,c5a.16xlarge,2033.7120
+eu-central-1,c5a.24xlarge,3050.5680
+eu-central-1,c5a.2xlarge,254.2140
+eu-central-1,c5a.4xlarge,508.4280
+eu-central-1,c5a.8xlarge,1016.8560
+eu-central-1,c5a.large,63.5535
+eu-central-1,c5a.xlarge,127.1070
 eu-central-1,c5d.12xlarge,1946.0520
 eu-central-1,c5d.18xlarge,2919.0780
 eu-central-1,c5d.24xlarge,3892.1040
@@ -1544,6 +1668,15 @@ eu-central-1,c5n.9xlarge,1617.3270
 eu-central-1,c5n.large,89.8515
 eu-central-1,c5n.metal,3234.6540
 eu-central-1,c5n.xlarge,179.7030
+eu-central-1,c6g.12xlarge,1360.4832
+eu-central-1,c6g.16xlarge,1813.9776
+eu-central-1,c6g.2xlarge,226.7472
+eu-central-1,c6g.4xlarge,453.4944
+eu-central-1,c6g.8xlarge,906.9888
+eu-central-1,c6g.large,56.6868
+eu-central-1,c6g.medium,28.3434
+eu-central-1,c6g.metal,1813.9776
+eu-central-1,c6g.xlarge,113.3736
 eu-central-1,d2.2xlarge,1160.0340
 eu-central-1,d2.4xlarge,2320.0680
 eu-central-1,d2.8xlarge,4640.1360
@@ -1639,6 +1772,15 @@ eu-central-1,m5n.4xlarge,824.0040
 eu-central-1,m5n.8xlarge,1648.0080
 eu-central-1,m5n.large,103.0005
 eu-central-1,m5n.xlarge,206.0010
+eu-central-1,m6g.12xlarge,1612.9440
+eu-central-1,m6g.16xlarge,2150.5920
+eu-central-1,m6g.2xlarge,268.8240
+eu-central-1,m6g.4xlarge,537.6480
+eu-central-1,m6g.8xlarge,1075.2960
+eu-central-1,m6g.large,67.2060
+eu-central-1,m6g.medium,33.6030
+eu-central-1,m6g.metal,2150.5920
+eu-central-1,m6g.xlarge,134.4120
 eu-central-1,p2.16xlarge,15498.2880
 eu-central-1,p2.8xlarge,7749.1440
 eu-central-1,p2.xlarge,968.6430
@@ -1706,6 +1848,15 @@ eu-central-1,r5n.4xlarge,1040.2320
 eu-central-1,r5n.8xlarge,2080.4640
 eu-central-1,r5n.large,130.0290
 eu-central-1,r5n.xlarge,260.0580
+eu-central-1,r6g.12xlarge,2131.8912
+eu-central-1,r6g.16xlarge,2842.5216
+eu-central-1,r6g.2xlarge,355.3152
+eu-central-1,r6g.4xlarge,710.6304
+eu-central-1,r6g.8xlarge,1421.2608
+eu-central-1,r6g.large,88.8288
+eu-central-1,r6g.medium,44.4144
+eu-central-1,r6g.metal,2842.5216
+eu-central-1,r6g.xlarge,177.6576
 eu-central-1,t2.2xlarge,313.2384
 eu-central-1,t2.large,78.3096
 eu-central-1,t2.medium,39.1548
@@ -1846,6 +1997,14 @@ eu-west-1,c5.9xlarge,1262.3040
 eu-west-1,c5.large,70.1280
 eu-west-1,c5.metal,3366.1440
 eu-west-1,c5.xlarge,140.2560
+eu-west-1,c5a.12xlarge,1507.7520
+eu-west-1,c5a.16xlarge,2010.3360
+eu-west-1,c5a.24xlarge,3015.5040
+eu-west-1,c5a.2xlarge,251.2920
+eu-west-1,c5a.4xlarge,502.5840
+eu-west-1,c5a.8xlarge,1005.1680
+eu-west-1,c5a.large,62.8230
+eu-west-1,c5a.xlarge,125.6460
 eu-west-1,c5d.12xlarge,1910.9880
 eu-west-1,c5d.18xlarge,2866.4820
 eu-west-1,c5d.24xlarge,3821.9760
@@ -1862,6 +2021,15 @@ eu-west-1,c5n.9xlarge,1604.1780
 eu-west-1,c5n.large,89.1210
 eu-west-1,c5n.metal,3208.3560
 eu-west-1,c5n.xlarge,178.2420
+eu-west-1,c6g.12xlarge,1346.4576
+eu-west-1,c6g.16xlarge,1795.2768
+eu-west-1,c6g.2xlarge,224.4096
+eu-west-1,c6g.4xlarge,448.8192
+eu-west-1,c6g.8xlarge,897.6384
+eu-west-1,c6g.large,56.1024
+eu-west-1,c6g.medium,28.0512
+eu-west-1,c6g.metal,1795.2768
+eu-west-1,c6g.xlarge,112.2048
 eu-west-1,cc2.8xlarge,1643.6250
 eu-west-1,cr1.8xlarge,2739.3750
 eu-west-1,d2.2xlarge,1073.8350
@@ -1973,6 +2141,15 @@ eu-west-1,m5n.4xlarge,777.2520
 eu-west-1,m5n.8xlarge,1554.5040
 eu-west-1,m5n.large,97.1565
 eu-west-1,m5n.xlarge,194.3130
+eu-west-1,m6g.12xlarge,1507.7520
+eu-west-1,m6g.16xlarge,2010.3360
+eu-west-1,m6g.2xlarge,251.2920
+eu-west-1,m6g.4xlarge,502.5840
+eu-west-1,m6g.8xlarge,1005.1680
+eu-west-1,m6g.large,62.8230
+eu-west-1,m6g.medium,31.4115
+eu-west-1,m6g.metal,2010.3360
+eu-west-1,m6g.xlarge,125.6460
 eu-west-1,p2.16xlarge,11360.7360
 eu-west-1,p2.8xlarge,5680.3680
 eu-west-1,p2.xlarge,710.0460
@@ -2041,6 +2218,15 @@ eu-west-1,r5n.4xlarge,975.9480
 eu-west-1,r5n.8xlarge,1951.8960
 eu-west-1,r5n.large,121.9935
 eu-west-1,r5n.xlarge,243.9870
+eu-west-1,r6g.12xlarge,1977.6096
+eu-west-1,r6g.16xlarge,2636.8128
+eu-west-1,r6g.2xlarge,329.6016
+eu-west-1,r6g.4xlarge,659.2032
+eu-west-1,r6g.8xlarge,1318.4064
+eu-west-1,r6g.large,82.4004
+eu-west-1,r6g.medium,41.2002
+eu-west-1,r6g.metal,2636.8128
+eu-west-1,r6g.xlarge,164.8008
 eu-west-1,t1.micro,14.6100
 eu-west-1,t2.2xlarge,294.5376
 eu-west-1,t2.large,73.6344
@@ -2101,6 +2287,13 @@ eu-west-2,c5d.9xlarge,1512.1350
 eu-west-2,c5d.large,84.0075
 eu-west-2,c5d.metal,4032.3600
 eu-west-2,c5d.xlarge,168.0150
+eu-west-2,c5n.18xlarge,3366.1440
+eu-west-2,c5n.2xlarge,374.0160
+eu-west-2,c5n.4xlarge,748.0320
+eu-west-2,c5n.9xlarge,1683.0720
+eu-west-2,c5n.large,93.5040
+eu-west-2,c5n.metal,3366.1440
+eu-west-2,c5n.xlarge,187.0080
 eu-west-2,d2.2xlarge,1127.8920
 eu-west-2,d2.4xlarge,2255.0535
 eu-west-2,d2.8xlarge,4510.1070
@@ -2482,6 +2675,13 @@ sa-east-1,c5d.9xlarge,1959.2010
 sa-east-1,c5d.large,108.8445
 sa-east-1,c5d.metal,5224.5360
 sa-east-1,c5d.xlarge,217.6890
+sa-east-1,c5n.18xlarge,4365.4680
+sa-east-1,c5n.2xlarge,485.0520
+sa-east-1,c5n.4xlarge,970.1040
+sa-east-1,c5n.9xlarge,2182.7340
+sa-east-1,c5n.large,121.2630
+sa-east-1,c5n.metal,4365.4680
+sa-east-1,c5n.xlarge,242.5260
 sa-east-1,g4dn.12xlarge,4857.0945
 sa-east-1,g4dn.16xlarge,5403.5085
 sa-east-1,g4dn.2xlarge,933.5790
@@ -2649,6 +2849,14 @@ us-east-1,c5.9xlarge,1117.6650
 us-east-1,c5.large,62.0925
 us-east-1,c5.metal,2980.4400
 us-east-1,c5.xlarge,124.1850
+us-east-1,c5a.12xlarge,1349.9640
+us-east-1,c5a.16xlarge,1799.9520
+us-east-1,c5a.24xlarge,2699.9280
+us-east-1,c5a.2xlarge,224.9940
+us-east-1,c5a.4xlarge,449.9880
+us-east-1,c5a.8xlarge,899.9760
+us-east-1,c5a.large,56.2485
+us-east-1,c5a.xlarge,112.4970
 us-east-1,c5d.12xlarge,1683.0720
 us-east-1,c5d.18xlarge,2524.6080
 us-east-1,c5d.24xlarge,3366.1440
@@ -2665,6 +2873,15 @@ us-east-1,c5n.9xlarge,1420.0920
 us-east-1,c5n.large,78.8940
 us-east-1,c5n.metal,2840.1840
 us-east-1,c5n.xlarge,157.7880
+us-east-1,c6g.12xlarge,1192.1760
+us-east-1,c6g.16xlarge,1589.5680
+us-east-1,c6g.2xlarge,198.6960
+us-east-1,c6g.4xlarge,397.3920
+us-east-1,c6g.8xlarge,794.7840
+us-east-1,c6g.large,49.6740
+us-east-1,c6g.medium,24.8370
+us-east-1,c6g.metal,1589.5680
+us-east-1,c6g.xlarge,99.3480
 us-east-1,cc2.8xlarge,1461.0000
 us-east-1,cr1.8xlarge,2556.7500
 us-east-1,d2.2xlarge,1008.0900
@@ -2685,6 +2902,7 @@ us-east-1,g4dn.16xlarge,3179.1360
 us-east-1,g4dn.2xlarge,549.3360
 us-east-1,g4dn.4xlarge,879.5220
 us-east-1,g4dn.8xlarge,1589.5680
+us-east-1,g4dn.metal,5715.4320
 us-east-1,g4dn.xlarge,384.2430
 us-east-1,h1.16xlarge,2734.9920
 us-east-1,h1.2xlarge,341.8740
@@ -2785,6 +3003,7 @@ us-east-1,m6g.4xlarge,449.9880
 us-east-1,m6g.8xlarge,899.9760
 us-east-1,m6g.large,56.2485
 us-east-1,m6g.medium,28.1242
+us-east-1,m6g.metal,1799.9520
 us-east-1,m6g.xlarge,112.4970
 us-east-1,p2.16xlarge,10519.2000
 us-east-1,p2.8xlarge,5259.6000
@@ -2852,6 +3071,15 @@ us-east-1,r5n.4xlarge,870.7560
 us-east-1,r5n.8xlarge,1741.5120
 us-east-1,r5n.large,108.8445
 us-east-1,r5n.xlarge,217.6890
+us-east-1,r6g.12xlarge,1767.2256
+us-east-1,r6g.16xlarge,2356.3008
+us-east-1,r6g.2xlarge,294.5376
+us-east-1,r6g.4xlarge,589.0752
+us-east-1,r6g.8xlarge,1178.1504
+us-east-1,r6g.large,73.6344
+us-east-1,r6g.medium,36.8172
+us-east-1,r6g.metal,2356.3008
+us-east-1,r6g.xlarge,147.2688
 us-east-1,t1.micro,14.6100
 us-east-1,t2.2xlarge,271.1616
 us-east-1,t2.large,67.7904
@@ -2909,6 +3137,14 @@ us-east-2,c5.9xlarge,1117.6650
 us-east-2,c5.large,62.0925
 us-east-2,c5.metal,2980.4400
 us-east-2,c5.xlarge,124.1850
+us-east-2,c5a.12xlarge,1349.9640
+us-east-2,c5a.16xlarge,1799.9520
+us-east-2,c5a.24xlarge,2699.9280
+us-east-2,c5a.2xlarge,224.9940
+us-east-2,c5a.4xlarge,449.9880
+us-east-2,c5a.8xlarge,899.9760
+us-east-2,c5a.large,56.2485
+us-east-2,c5a.xlarge,112.4970
 us-east-2,c5d.12xlarge,1683.0720
 us-east-2,c5d.18xlarge,2524.6080
 us-east-2,c5d.24xlarge,3366.1440
@@ -2925,6 +3161,15 @@ us-east-2,c5n.9xlarge,1420.0920
 us-east-2,c5n.large,78.8940
 us-east-2,c5n.metal,2840.1840
 us-east-2,c5n.xlarge,157.7880
+us-east-2,c6g.12xlarge,1192.1760
+us-east-2,c6g.16xlarge,1589.5680
+us-east-2,c6g.2xlarge,198.6960
+us-east-2,c6g.4xlarge,397.3920
+us-east-2,c6g.8xlarge,794.7840
+us-east-2,c6g.large,49.6740
+us-east-2,c6g.medium,24.8370
+us-east-2,c6g.metal,1589.5680
+us-east-2,c6g.xlarge,99.3480
 us-east-2,d2.2xlarge,1008.0900
 us-east-2,d2.4xlarge,2016.1800
 us-east-2,d2.8xlarge,4032.3600
@@ -3016,6 +3261,15 @@ us-east-2,m5n.4xlarge,695.4360
 us-east-2,m5n.8xlarge,1390.8720
 us-east-2,m5n.large,86.9295
 us-east-2,m5n.xlarge,173.8590
+us-east-2,m6g.12xlarge,1349.9640
+us-east-2,m6g.16xlarge,1799.9520
+us-east-2,m6g.2xlarge,224.9940
+us-east-2,m6g.4xlarge,449.9880
+us-east-2,m6g.8xlarge,899.9760
+us-east-2,m6g.large,56.2485
+us-east-2,m6g.medium,28.1242
+us-east-2,m6g.metal,1799.9520
+us-east-2,m6g.xlarge,112.4970
 us-east-2,p2.16xlarge,10519.2000
 us-east-2,p2.8xlarge,5259.6000
 us-east-2,p2.xlarge,657.4500
@@ -3081,6 +3335,15 @@ us-east-2,r5n.4xlarge,870.7560
 us-east-2,r5n.8xlarge,1741.5120
 us-east-2,r5n.large,108.8445
 us-east-2,r5n.xlarge,217.6890
+us-east-2,r6g.12xlarge,1767.2256
+us-east-2,r6g.16xlarge,2356.3008
+us-east-2,r6g.2xlarge,294.5376
+us-east-2,r6g.4xlarge,589.0752
+us-east-2,r6g.8xlarge,1178.1504
+us-east-2,r6g.large,73.6344
+us-east-2,r6g.medium,36.8172
+us-east-2,r6g.metal,2356.3008
+us-east-2,r6g.xlarge,147.2688
 us-east-2,t2.2xlarge,271.1616
 us-east-2,t2.large,67.7904
 us-east-2,t2.medium,33.8952
@@ -3524,9 +3787,6 @@ us-west-1,d2.2xlarge,1141.7715
 us-west-1,d2.4xlarge,2282.8125
 us-west-1,d2.8xlarge,4565.6250
 us-west-1,d2.xlarge,570.5205
-us-west-1,f1.16xlarge,11179.5720
-us-west-1,f1.2xlarge,1397.4465
-us-west-1,f1.4xlarge,2794.8930
 us-west-1,g2.2xlarge,512.8110
 us-west-1,g2.8xlarge,2051.2440
 us-west-1,g3.16xlarge,4482.3480
@@ -3709,6 +3969,14 @@ us-west-2,c5.9xlarge,1117.6650
 us-west-2,c5.large,62.0925
 us-west-2,c5.metal,2980.4400
 us-west-2,c5.xlarge,124.1850
+us-west-2,c5a.12xlarge,1349.9640
+us-west-2,c5a.16xlarge,1799.9520
+us-west-2,c5a.24xlarge,2699.9280
+us-west-2,c5a.2xlarge,224.9940
+us-west-2,c5a.4xlarge,449.9880
+us-west-2,c5a.8xlarge,899.9760
+us-west-2,c5a.large,56.2485
+us-west-2,c5a.xlarge,112.4970
 us-west-2,c5d.12xlarge,1683.0720
 us-west-2,c5d.18xlarge,2524.6080
 us-west-2,c5d.24xlarge,3366.1440
@@ -3725,6 +3993,15 @@ us-west-2,c5n.9xlarge,1420.0920
 us-west-2,c5n.large,78.8940
 us-west-2,c5n.metal,2840.1840
 us-west-2,c5n.xlarge,157.7880
+us-west-2,c6g.12xlarge,1192.1760
+us-west-2,c6g.16xlarge,1589.5680
+us-west-2,c6g.2xlarge,198.6960
+us-west-2,c6g.4xlarge,397.3920
+us-west-2,c6g.8xlarge,794.7840
+us-west-2,c6g.large,49.6740
+us-west-2,c6g.medium,24.8370
+us-west-2,c6g.metal,1589.5680
+us-west-2,c6g.xlarge,99.3480
 us-west-2,cc2.8xlarge,1461.0000
 us-west-2,cr1.8xlarge,2556.7500
 us-west-2,d2.2xlarge,1008.0900
@@ -3745,6 +4022,7 @@ us-west-2,g4dn.16xlarge,3179.1360
 us-west-2,g4dn.2xlarge,549.3360
 us-west-2,g4dn.4xlarge,879.5220
 us-west-2,g4dn.8xlarge,1589.5680
+us-west-2,g4dn.metal,5715.4320
 us-west-2,g4dn.xlarge,384.2430
 us-west-2,h1.16xlarge,2734.9920
 us-west-2,h1.2xlarge,341.8740
@@ -3840,6 +4118,15 @@ us-west-2,m5n.4xlarge,695.4360
 us-west-2,m5n.8xlarge,1390.8720
 us-west-2,m5n.large,86.9295
 us-west-2,m5n.xlarge,173.8590
+us-west-2,m6g.12xlarge,1349.9640
+us-west-2,m6g.16xlarge,1799.9520
+us-west-2,m6g.2xlarge,224.9940
+us-west-2,m6g.4xlarge,449.9880
+us-west-2,m6g.8xlarge,899.9760
+us-west-2,m6g.large,56.2485
+us-west-2,m6g.medium,28.1242
+us-west-2,m6g.metal,1799.9520
+us-west-2,m6g.xlarge,112.4970
 us-west-2,p2.16xlarge,10519.2000
 us-west-2,p2.8xlarge,5259.6000
 us-west-2,p2.xlarge,657.4500
@@ -3908,6 +4195,15 @@ us-west-2,r5n.4xlarge,870.7560
 us-west-2,r5n.8xlarge,1741.5120
 us-west-2,r5n.large,108.8445
 us-west-2,r5n.xlarge,217.6890
+us-west-2,r6g.12xlarge,1767.2256
+us-west-2,r6g.16xlarge,2356.3008
+us-west-2,r6g.2xlarge,294.5376
+us-west-2,r6g.4xlarge,589.0752
+us-west-2,r6g.8xlarge,1178.1504
+us-west-2,r6g.large,73.6344
+us-west-2,r6g.medium,36.8172
+us-west-2,r6g.metal,2356.3008
+us-west-2,r6g.xlarge,147.2688
 us-west-2,t1.micro,14.6100
 us-west-2,t2.2xlarge,271.1616
 us-west-2,t2.large,67.7904
