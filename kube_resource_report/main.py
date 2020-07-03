@@ -126,7 +126,7 @@ def get_parser():
         default=0,
     )
     parser.add_argument(
-        "--pricing-file", type=existing_path, help="Path to alternate pricing file",
+        "--pricing-file", type=existing_path, help="Path to alternate pricing file"
     )
     parser.add_argument(
         "--links-file",
@@ -138,6 +138,11 @@ def get_parser():
         type=comma_separated_values,
         help="Values for the kubernetes.io/role label (e.g. 'worker' if nodes are labeled kubernetes.io/role=worker)",
         default="worker",
+    )
+    parser.add_argument(
+        "--node-exclude-labels",
+        type=comma_separated_values,
+        help="Label pairs on those nodes which should be excluded (e.g. 'type=virtual-kubelet,kubernetes.io/label=excludeme')",
     )
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument(
@@ -210,6 +215,7 @@ def main():
             args.pricing_file,
             args.links_file,
             args.node_labels,
+            args.node_exclude_labels,
             args.templates_path,
             args.prerender_hook,
             args.map_node_hook,

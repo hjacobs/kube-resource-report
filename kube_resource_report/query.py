@@ -171,6 +171,29 @@ def get_application_label_from_service(
         return "", selector
 
 
+def convert(lst):
+    res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
+    return res_dct
+
+
+def exclude_node(node, node_exclude_labels):
+    logger.debug(f"node_exclusions are {node_exclude_labels}")
+    if node_exclude_labels is not None:
+        for label in node_exclude_labels:
+            label_pair = label.split("=")
+            label_dict = convert(label_pair)
+            logger.debug(f"node_exclusion label_dict is {label_dict}")
+            for k in label_dict:
+                logger.debug(f"label_pair k is {k} value is {label_dict[k]}")
+                node_labels = node.labels.get(k)
+                if node_labels is not None and node_labels in label_dict[k]:
+                    logger.debug(
+                        f"node_labels {node_labels} found on node {node}. Excluding this node."
+                    )
+                    return True
+    return False
+
+
 def pod_active(pod):
     pod_status = pod.obj["status"]
     phase = pod_status.get("phase")
@@ -267,6 +290,7 @@ def query_cluster(
     no_ingress_status,
     enable_routegroups,
     node_labels,
+    node_exclude_labels,
     data_path: Path,
     map_node_hook=Optional[Callable[[Node, dict], None]],
     map_pod_hook=Optional[Callable[[Pod, dict], None]],
@@ -290,6 +314,9 @@ def query_cluster(
     cluster_cost = additional_cost_per_cluster
 
     for _node in Node.objects(cluster.client):
+        # skip/hide nodes which contain the node_exclude_labels labels
+        if exclude_node(_node, node_exclude_labels):
+            continue
         node = map_node(_node)
         if map_node_hook:
             map_node_hook(_node, node)

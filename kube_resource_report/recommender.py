@@ -37,7 +37,7 @@ def new_cpu_histogram():
     # CPU histograms use exponential bucketing scheme with the smallest bucket
     # size of 0.001 core, max of 100.0 cores
     return DecayingExponentialHistogram(
-        CPU_HISTOGRAM_MIN_VALUE, 1.05, CPU_HISTOGRAM_DECAY_HALF_LIFE,
+        CPU_HISTOGRAM_MIN_VALUE, 1.05, CPU_HISTOGRAM_DECAY_HALF_LIFE
     )
 
 
@@ -45,7 +45,7 @@ def new_memory_histogram():
     # Memory histograms use exponential bucketing scheme with the smallest
     # bucket size of 10MB, max of 1TB
     return DecayingExponentialHistogram(
-        MEMORY_HISTOGRAM_MIN_VALUE, 1.05, MEMORY_HISTOGRAM_DECAY_HALF_LIFE,
+        MEMORY_HISTOGRAM_MIN_VALUE, 1.05, MEMORY_HISTOGRAM_DECAY_HALF_LIFE
     )
 
 

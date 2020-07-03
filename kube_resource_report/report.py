@@ -64,6 +64,7 @@ def get_cluster_summaries(
     no_ingress_status: bool,
     enable_routegroups: bool,
     node_labels: list,
+    node_exclude_labels: list,
     data_path: Path,
     map_node_hook=None,
     map_pod_hook=None,
@@ -105,6 +106,7 @@ def get_cluster_summaries(
                         no_ingress_status,
                         enable_routegroups,
                         node_labels,
+                        node_exclude_labels,
                         cluster_data_path,
                         map_node_hook,
                         map_pod_hook,
@@ -242,6 +244,7 @@ def generate_report(
     pricing_file,
     links_file,
     node_labels,
+    node_exclude_labels,
     templates_path: Optional[Path] = None,
     prerender_hook: Optional[Callable[[str, dict], None]] = None,
     map_node_hook: Optional[Callable[[Node, dict], None]] = None,
@@ -291,6 +294,7 @@ def generate_report(
             no_ingress_status,
             enable_routegroups,
             node_labels,
+            node_exclude_labels,
             data_path,
             map_node_hook,
             map_pod_hook,
@@ -454,10 +458,7 @@ def write_loading_page(out):
 
     if not out.exists(file_name):
         now = datetime.datetime.utcnow()
-        context = {
-            "now": now,
-            "version": __version__,
-        }
+        context = {"now": now, "version": __version__}
         out.render_template("loading.html", context, file_name)
 
 
