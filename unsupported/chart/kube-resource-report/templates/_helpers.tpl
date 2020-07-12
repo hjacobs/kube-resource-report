@@ -32,17 +32,6 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Return the appropriate apiVersion for Ingress.
-*/}}
-{{- define "kube-resource-report.ingress.apiVersion" -}}
-{{- if and (ge .Capabilities.KubeVersion.Minor "9") (le .Capabilities.KubeVersion.Minor "13") -}}
-{{- print "extensions/v1beta1" -}}
-{{- else if ge .Capabilities.KubeVersion.Minor "14" -}}
-{{- print "networking.k8s.io/v1beta1" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Common labels
 */}}
 {{- define "kube-resource-report.labels" -}}
