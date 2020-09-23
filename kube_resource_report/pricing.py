@@ -99,13 +99,31 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
         if per_cpu and per_memory:
             cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
 
+    elif cost is None and instance_type.startswith("n2-"):
+        # TODO: Add n2-custom logic
+        per_cpu = NODE_COSTS_MONTHLY.get((region, "n2-predefined-per-cpu-core"))
+        per_memory = NODE_COSTS_MONTHLY.get((region, "n2-predefined-per-memory-gib"))
+        if instance_type.endswith("-preemptible"):
+            per_cpu = NODE_COSTS_MONTHLY.get(
+                (region, "n2-predefined-preemptible-per-cpu-core")
+            )
+            per_memory = NODE_COSTS_MONTHLY.get(
+                (region, "n2-predefined-preemptible-per-memory-gib")
+            )
+        if per_cpu and per_memory:
+            cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
+
     elif cost is None and instance_type.startswith("n2d-"):
         # TODO: Add n2d-custom logic
         per_cpu = NODE_COSTS_MONTHLY.get((region, "n2d-predefined-per-cpu-core"))
         per_memory = NODE_COSTS_MONTHLY.get((region, "n2d-predefined-per-memory-gib"))
         if instance_type.endswith("-preemptible"):
-            per_cpu = NODE_COSTS_MONTHLY.get((region, "n2d-predefined-preemptible-per-cpu-core"))
-            per_memory = NODE_COSTS_MONTHLY.get((region, "n2d-predefined-preemptible-per-memory-gib"))
+            per_cpu = NODE_COSTS_MONTHLY.get(
+                (region, "n2d-predefined-preemptible-per-cpu-core")
+            )
+            per_memory = NODE_COSTS_MONTHLY.get(
+                (region, "n2d-predefined-preemptible-per-memory-gib")
+            )
         if per_cpu and per_memory:
             cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
 
@@ -123,6 +141,8 @@ def generate_gcp_price_list():
     )
     prefix = "CP-COMPUTEENGINE-VMIMAGE-"
     custom_prefix = "CP-COMPUTEENGINE-CUSTOM-VM-"
+    n2_predefined_prefix = "CP-COMPUTEENGINE-N2-PREDEFINED-VM-"
+    n2_custom_prefix = "CP-COMPUTEENGINE-N2-CUSTOM-VM-"
     n2d_predefined_prefix = "CP-COMPUTEENGINE-N2D-PREDEFINED-VM-"
     n2d_custom_prefix = "CP-COMPUTEENGINE-N2D-CUSTOM-VM-"
 
@@ -156,6 +176,50 @@ def generate_gcp_price_list():
                     instance_type = "custom-preemptible-per-cpu-core"
                 elif _type == "ram-preemptible":
                     instance_type = "custom-preemptible-per-memory-gib"
+                else:
+                    instance_type = None
+                if instance_type:
+                    for region, hourly_price in sorted(data.items()):
+                        if "-" in region and isinstance(hourly_price, float):
+                            monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
+                            writer.writerow(
+                                [region, instance_type, "{:.4f}".format(monthly_price)]
+                            )
+
+            elif product.startswith(n2_predefined_prefix):
+                _type = product[len(n2_predefined_prefix) :].lower()
+                if _type == "core":
+                    instance_type = "n2-predefined-per-cpu-core"
+                elif _type == "ram":
+                    instance_type = "n2-predefined-per-memory-gib"
+                elif _type == "core-preemptible":
+                    instance_type = "n2-predefined-preemptible-per-cpu-core"
+                elif _type == "ram-preemptible":
+                    instance_type = "n2-predefined-preemptible-per-memory-gib"
+                else:
+                    instance_type = None
+                if instance_type:
+                    for region, hourly_price in sorted(data.items()):
+                        if "-" in region and isinstance(hourly_price, float):
+                            monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
+                            writer.writerow(
+                                [region, instance_type, "{:.4f}".format(monthly_price)]
+                            )
+
+            elif product.startswith(n2_custom_prefix):
+                _type = product[len(n2_custom_prefix) :].lower()
+                if _type == "core":
+                    instance_type = "n2-custom-per-cpu-core"
+                elif _type == "ram":
+                    instance_type = "n2-custom-per-memory-gib"
+                elif _type == "extended-ram":
+                    instance_type = "n2-custom-per-extended-memory-gib"
+                elif _type == "core-preemptible":
+                    instance_type = "n2-custom-preemptible-per-cpu-core"
+                elif _type == "ram-preemptible":
+                    instance_type = "n2-custom-preemptible-per-memory-gib"
+                elif _type == "extended-ram-preemptible":
+                    instance_type = "n2-custom-preemptible-per-extended-memory-gib"
                 else:
                     instance_type = None
                 if instance_type:
