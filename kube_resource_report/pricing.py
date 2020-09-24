@@ -186,6 +186,8 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
     if cost is None:
         logger.warning(f"No cost information for {instance_type} in {region}")
         cost = 0
+    else:
+        logger.debug(f"Monthly cost for {instance_type} in {region} is {cost}")
     return cost
 
 
