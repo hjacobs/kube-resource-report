@@ -99,8 +99,36 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
         if per_cpu and per_memory:
             cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
 
+    elif cost is None and instance_type.startswith("n2-custom-"):
+        per_cpu = NODE_COSTS_MONTHLY.get((region, "n2-custom-per-cpu-core"))
+        per_standard_memory = NODE_COSTS_MONTHLY.get(
+            (region, "n2-custom-per-memory-gib")
+        )
+        per_extended_memory = NODE_COSTS_MONTHLY.get(
+            (region, "n2-custom-per-extended-memory-gib")
+        )
+        if instance_type.endswith("-preemptible"):
+            per_cpu = NODE_COSTS_MONTHLY.get(
+                (region, "n2-predefined-custom-per-cpu-core")
+            )
+            per_standard_memory = NODE_COSTS_MONTHLY.get(
+                (region, "n2-predefined-custom-per-memory-gib")
+            )
+            per_extended_memory = NODE_COSTS_MONTHLY.get(
+                (region, "n2-predefined-custom-per-extended-memory-gib")
+            )
+        if per_cpu and per_standard_memory and per_extended_memory:
+            # standard memory up to 8GB per vCPU
+            standard_memory = cpu * 8
+            # extended memory over 8GB per vCPU
+            extended_memory = memory % standard_memory
+            cost = (
+                (cpu * per_cpu)
+                + (standard_memory / ONE_GIBI * per_standard_memory)
+                + (extended_memory / ONE_GIBI * per_extended_memory)
+            )
+
     elif cost is None and instance_type.startswith("n2-"):
-        # TODO: Add n2-custom logic
         per_cpu = NODE_COSTS_MONTHLY.get((region, "n2-predefined-per-cpu-core"))
         per_memory = NODE_COSTS_MONTHLY.get((region, "n2-predefined-per-memory-gib"))
         if instance_type.endswith("-preemptible"):
@@ -113,8 +141,36 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
         if per_cpu and per_memory:
             cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
 
+    elif cost is None and instance_type.startswith("n2d-custom-"):
+        per_cpu = NODE_COSTS_MONTHLY.get((region, "n2d-custom-per-cpu-core"))
+        per_standard_memory = NODE_COSTS_MONTHLY.get(
+            (region, "n2d-custom-per-memory-gib")
+        )
+        per_extended_memory = NODE_COSTS_MONTHLY.get(
+            (region, "n2d-custom-per-extended-memory-gib")
+        )
+        if instance_type.endswith("-preemptible"):
+            per_cpu = NODE_COSTS_MONTHLY.get(
+                (region, "n2d-predefined-custom-per-cpu-core")
+            )
+            per_standard_memory = NODE_COSTS_MONTHLY.get(
+                (region, "n2d-predefined-custom-per-memory-gib")
+            )
+            per_extended_memory = NODE_COSTS_MONTHLY.get(
+                (region, "n2d-predefined-custom-per-extended-memory-gib")
+            )
+        if per_cpu and per_standard_memory and per_extended_memory:
+            # standard memory up to 8GB per vCPU
+            standard_memory = cpu * 8
+            # extended memory over 8GB per vCPU
+            extended_memory = memory % standard_memory
+            cost = (
+                (cpu * per_cpu)
+                + (standard_memory / ONE_GIBI * per_standard_memory)
+                + (extended_memory / ONE_GIBI * per_extended_memory)
+            )
+
     elif cost is None and instance_type.startswith("n2d-"):
-        # TODO: Add n2d-custom logic
         per_cpu = NODE_COSTS_MONTHLY.get((region, "n2d-predefined-per-cpu-core"))
         per_memory = NODE_COSTS_MONTHLY.get((region, "n2d-predefined-per-memory-gib"))
         if instance_type.endswith("-preemptible"):
