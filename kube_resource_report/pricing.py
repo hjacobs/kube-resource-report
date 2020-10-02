@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import logging
+import re
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -99,9 +100,65 @@ def get_node_cost(region, instance_type, is_spot, cpu, memory):
         if per_cpu and per_memory:
             cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_memory)
 
+    elif cost is None and re.match("[a-z][0-9][a-z]?-", instance_type):
+        if re.match("[a-z][0-9][a-z]?-custom-", instance_type):
+            instance_prefix = re.sub(
+                "([a-z][0-9][a-z]?-custom-).*", r"\1", instance_type
+            )
+        else:
+            instance_prefix = re.sub(
+                "([a-z][0-9][a-z]?)-.*", r"\1-predefined-", instance_type
+            )
+
+        per_cpu = NODE_COSTS_MONTHLY.get((region, instance_prefix + "vm-core"))
+        per_standard_memory = NODE_COSTS_MONTHLY.get(
+            (region, instance_prefix + "vm-ram")
+        )
+        per_extended_memory = NODE_COSTS_MONTHLY.get(
+            (region, instance_prefix + "extended-ram")
+        )
+        if instance_type.endswith("-preemptible"):
+            per_cpu = NODE_COSTS_MONTHLY.get(
+                (region, instance_prefix + "vm-core-preemptible")
+            )
+            per_standard_memory = NODE_COSTS_MONTHLY.get(
+                (region, instance_prefix + "vm-ram-preemptible")
+            )
+            per_extended_memory = NODE_COSTS_MONTHLY.get(
+                (region, instance_prefix + "vm-extended-ram-preemptible")
+            )
+        if per_cpu and per_standard_memory:
+            logger.debug(
+                f"Monthly per-cpu cost for {instance_type} in {region} is {per_cpu}"
+            )
+            logger.debug(
+                f"Monthly per-standard-memory cost for {instance_type} in {region} is {per_standard_memory}"
+            )
+
+            # standard memory is up to 8GB per vCPU
+            standard_memory = cpu * 8 * ONE_GIBI
+
+            if memory <= standard_memory:
+                cost = (cpu * per_cpu) + (memory / ONE_GIBI * per_standard_memory)
+            else:
+                if per_extended_memory:
+                    logger.debug(
+                        f"Monthly per-extended-memory cost for {instance_type} in {region} is {per_extended_memory}"
+                    )
+
+                    cost = (cpu * per_cpu) + (
+                        standard_memory / ONE_GIBI * per_standard_memory
+                    )
+
+                    # extended memory is over 8GB per vCPU
+                    extended_memory = memory - standard_memory
+                    cost += extended_memory / ONE_GIBI * per_extended_memory
+
     if cost is None:
         logger.warning(f"No cost information for {instance_type} in {region}")
         cost = 0
+    else:
+        logger.debug(f"Monthly cost for {instance_type} in {region} is {cost}")
     return cost
 
 
@@ -146,6 +203,16 @@ def generate_gcp_price_list():
                     instance_type = "custom-preemptible-per-memory-gib"
                 else:
                     instance_type = None
+                if instance_type:
+                    for region, hourly_price in sorted(data.items()):
+                        if "-" in region and isinstance(hourly_price, float):
+                            monthly_price = hourly_price * 24 * AVG_DAYS_PER_MONTH
+                            writer.writerow(
+                                [region, instance_type, "{:.4f}".format(monthly_price)]
+                            )
+
+            elif re.match("^CP-COMPUTEENGINE-[A-Z0-9]+-(CUSTOM|PREDEFINED)-", product):
+                instance_type = product[17:].lower()
                 if instance_type:
                     for region, hourly_price in sorted(data.items()):
                         if "-" in region and isinstance(hourly_price, float):
